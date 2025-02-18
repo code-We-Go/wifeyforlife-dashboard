@@ -21,6 +21,11 @@ const config: Config = {
     },
     extend: {
       colors: {
+        primary:"#473728",
+        secondary:"#F0EA9B",
+        backgroundColor:"#F7F8F4",
+        yellowBGC:"#F0EA9B",
+        babyBlue:"#D8DFE2",
         current: "currentColor",
         transparent: "transparent",
         white: "#FFFFFF",
@@ -37,8 +42,9 @@ const config: Config = {
         bodydark: "#AEB7C0",
         bodydark1: "#DEE4EE",
         bodydark2: "#8A99AF",
-        primary: "#3C50E0",
-        secondary: "#80CAEE",
+        // primary:"#473728",
+        // secondary:"#F0EA9B",
+
         stroke: "#E2E8F0",
         gray: {
           ...colors.gray,
