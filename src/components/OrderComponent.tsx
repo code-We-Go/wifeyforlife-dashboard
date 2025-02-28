@@ -8,12 +8,14 @@ import Swal from "sweetalert2";
 
 const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dispatch<React.SetStateAction<IOrder[]>> }) => {
 
+  const [status, setStatus] = useState(order.status);
+  const [payment, setPayment] = useState(order.payment)
   const updateOrder = async (field: keyof IOrder, value: string) => {
     if (!order) return;
   
     try {
       // Update local state optimistically
-      // const updateOdrder: IOrder = { ...order, [field]: value };
+      const updateOdrder: IOrder = { ...order, [field]: value };
       
       // Send update request to backend
       const updatedOrder=  await axios.put(`/api/orders?orderID=${order._id}`, { [field]: value });
@@ -152,8 +154,12 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
 
       {/* Confirmation Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6  shadow-lg w-4/5 md:w-1/3 text-center">
+        <div 
+        onClick={()=>setIsModalOpen(false)}
+        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div 
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white p-6  shadow-lg w-4/5 md:w-1/3 text-center">
             <h2 className="text-lg font-bold mb-4">CONFIRM DELETION</h2>
             <p className="mb-6">Are you sure you want to delete your account? This action cannot be undone.</p>
             <div className="flex justify-around">
@@ -174,8 +180,16 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
         </div>
       )}
   {isDetailsModalOpen  && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white p-6 shadow-lg w-[90%] max-w-2xl text-center">
+  <div 
+  onClick={()=>setDetailsModal(false)}
+  className="fixed   lg:ml-[290px] lg:w-[calc(100vw-290px)]  inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div
+        onClick={(e) => e.stopPropagation()} 
+
+    className="bg-white p-6 shadow-lg w-[90%] max-w-3xl text-center">
+      <div className="flex mb-2 w-full items-center justify-end">
+        <span className="hover:cursor-pointer" onClick={()=>setDetailsModal(false)}>x</span>
+      </div>
       <h2 className="text-lg font-bold mb-4">ORDER DETAILS</h2>
       
       {/* Order Info */}
@@ -194,8 +208,13 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
         <label className="block font-semibold mt-4">Status:</label>
         <select
           className="border p-2 w-full"
-          value={order.status}
-          onChange={(e) => updateOrder("status", e.target.value)}
+          value={status}
+          onChange={(e) =>{ 
+
+            const newStatus = e.target.value as "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+            setStatus(newStatus);
+            updateOrder("status", newStatus);
+          }}
         >
           {["pending", "confirmed", "shipped", "delivered", "cancelled"].map((status) => (
             <option key={status} value={status}>{status}</option>
@@ -206,8 +225,11 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
         <label className="block font-semibold mt-4">Payment:</label>
         <select
           className="border p-2 w-full"
-          value={order.payment}
-          onChange={(e) => updateOrder("payment", e.target.value)}
+          value={payment}
+          onChange={(e) =>{ 
+            const newPayment = e.target.value as "pending"| "failed"| "confirmed";
+            setPayment(newPayment);
+            updateOrder("payment", e.target.value)}}
         >
           {["pending", "failed", "confirmed"].map((payment) => (
             <option key={payment} value={payment}>{payment}</option>
@@ -218,7 +240,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
       </div>
 
       {/* Buttons */}
-      <div className="flex justify-around mt-6">
+      {/* <div className="flex justify-around mt-6">
         <button
           className="px-4 py-2 text-primary border-[1px] border-primary"
           onClick={deleteOrder}
@@ -231,7 +253,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
         >
           Close
         </button>
-      </div>
+      </div> */}
     </div>
   </div>
 )}
