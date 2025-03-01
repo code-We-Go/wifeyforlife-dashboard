@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CgDetailsMore } from "react-icons/cg";
 import Swal from "sweetalert2";
 import Image from "next/image";
-import { ExposureRegular } from "@/app/layout";
+// import { ExposureRegular } from "@/app/layout";
 import ProductVariant from "./ProductVariant";
 
 const ProductsComponent = ({ product, setProducts }: { product: Product; setProducts: React.Dispatch<React.SetStateAction<Product[]>> }) => {
@@ -201,7 +201,7 @@ const updateFeild = async(field:string,value:any)=>{
 
             <Image fill alt={product.title} src={product.variations[0].images[0]}></Image>
           </div>
-          <h2 className={`${ExposureRegular.className} text-lg`}>{product.title}</h2>
+          <h2 className={` text-lg`}>{product.title}</h2>
           <p className='text-[12px] lg:text-lg'>{`${product.price.global} USD || ${product.price.local} LE`}</p>
         </div>
       </div>
