@@ -82,7 +82,6 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
     
       // Update Variant Function
       const updateVariant = async (index: number, field: string, value: any) => {
-          console.log('hna' + value.length)
           // Create a copy of the product with the updated variant
           const updatedVariations = [...product.variations];
           updatedVariations[index] = {
