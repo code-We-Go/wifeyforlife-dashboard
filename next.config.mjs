@@ -1,11 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains:["tyfa2qhumr.ufs.sh","images.pexels.com"],
               remotePatterns: [
+                {
+                  protocol: "https",
+                  hostname: "tyfa2qhumr.ufs.sh",
+                },
                       {
                         protocol: "https",
                         hostname: "images.pexels.com",
+    
+                      },
+                      {
+                        protocol: "https",
+                        hostname: "utfs.io",
     
                       },
               ]

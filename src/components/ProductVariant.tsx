@@ -1,11 +1,47 @@
+'use client'
 import { Variant ,Product} from '@/interfaces/interfaces'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
+import UploadProductsImagesButton from './UploadProductImagesButton'
+import axios from 'axios'
 
-const ProductVariant = ({index ,product,variant,updateVariant,deleteProductImage}:{index:number,product:Product,variant:Variant,
+const ProductVariant = ({index ,product,variant,updateVariant,onVariantChange}:{index:number,product:Product,variant:Variant,
     updateVariant:(index: number, field: string, value: any) => Promise<void>,
-    deleteProductImage:(value: string, variantIndex: number)=> Promise<void>
+   onVariantChange: (index: number, field: string, value: any) => void
 }) => {
+  async function deleteProductImage(value:string,variantIndex:number) {
+    console.log(value)
+        try{
+         const res =   await axios.delete("/api/uploadthing", {
+              data: {
+                url: value,
+              },
+            });
+            if (res.status === 200){
+
+              const imagesAfterDelete = product.variations[variantIndex].images.filter(image => image !== value);
+
+              console.log('images after delete'+imagesAfterDelete.length) 
+              updateVariant(variantIndex, "images", imagesAfterDelete)
+
+            }
+            // setProducts((prevProducts) =>
+            //   prevProducts.map((p) =>
+            //     p._id === product._id ? { ...p, variations[variantIndex].images: imagesAfterDelete } : p
+            //   )
+            // );                // setImagesUrl(imagesAfterDelete);    
+                   }
+        catch(err){
+        console.log(err);}  
+}
+  const [imagesUrl,setImagesUrl]=useState<string[]>(variant.images);
+  useEffect(() => {
+    
+  updateVariant(index, "images", imagesUrl)
+   
+  }
+, [setImagesUrl,imagesUrl])
+
   return (
                     <div key={index} className="border p-4 mt-4">
                       <h3 className="font-semibold">Variant {index + 1}</h3>
@@ -14,7 +50,7 @@ const ProductVariant = ({index ,product,variant,updateVariant,deleteProductImage
                         <input
                           type="text"
                           value={variant.color}
-                          onChange={(e) => updateVariant(index, "color", e.target.value)}
+                          onChange={(e) => onVariantChange(index, "color", e.target.value)}
                           className="border p-2 w-full"
                         />
                       </div>
@@ -22,8 +58,8 @@ const ProductVariant = ({index ,product,variant,updateVariant,deleteProductImage
                       <div>
                         <label className="block font-semibold">Images:</label>
                        <div className="flex gap-2">
-                        {variant.images.map((image, i) => (
-                          <div key={i} className="relative w-16 h-16">
+                        {variant.images.map((image, i) => 
+                            <div key={i} className="relative w-16 h-16">
                                       <span 
                      onClick={()=>{
                         console.log(image)
@@ -32,14 +68,11 @@ const ProductVariant = ({index ,product,variant,updateVariant,deleteProductImage
     
                             <Image fill alt={product.title} src={image}></Image>
                           </div>
-                        ))}
-                        </div>
-                        {/* <input
-                          type="text"
-                          value={variant.images.join(",")}
-                          onChange={(e) => updateVariant(index, "images", e.target.value.split(","))}
-                          className="border p-2 w-full"
-                        /> */}
+                        
+                        )}
+        <UploadProductsImagesButton imagesUrl={imagesUrl} setImagesUrl={setImagesUrl} />
+        </div>
+
                       </div>
     
                       <div>
@@ -47,7 +80,7 @@ const ProductVariant = ({index ,product,variant,updateVariant,deleteProductImage
                         <input
                           type="number"
                           value={variant.stock}
-                          onChange={(e) => updateVariant(index, "stock", parseInt(e.target.value))}
+                          onChange={(e) => onVariantChange(index, "stock", parseInt(e.target.value))}
                           className="border p-2 w-full"
                         />
                       </div>
@@ -57,7 +90,7 @@ const ProductVariant = ({index ,product,variant,updateVariant,deleteProductImage
                         <input
                           type="checkbox"
                           checked={variant.featured ? true : false}
-                          onChange={(e) => updateVariant(index, "featured", e.target.checked)}
+                          onChange={(e) => onVariantChange(index, "featured", e.target.checked)}
                           className="border p-2"
                         />
                       </div>
