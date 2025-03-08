@@ -42,7 +42,8 @@ export default function RootLayout({
       <DndProvider backend={HTML5Backend}>
       <body suppressHydrationWarning={true} className={`${LibreFranklin.className} antialiased`}>
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
-          {loading ? <Loader /> : children}
+          {/* {loading ? <Loader /> : children} */}
+          {children}
         </div>
       </body>
       </DndProvider>

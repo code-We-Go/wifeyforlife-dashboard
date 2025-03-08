@@ -107,7 +107,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   }, [optionsModalIsOpen]);
 
   return (
-    <div className="relative w-[97%] min-h-2 px-2 py-1 text-primary bg-backgroundColor/25 border border-primary">
+    <div className="relative w-[97%] min-h-6 px-2 py-1 text-primary bg-backgroundColor/25 border border-primary">
       <div className="flex w-full border-b pb-1 border-primary justify-between">
         <div className="flex gap-2">
           <h1>ORDER ID :</h1>
