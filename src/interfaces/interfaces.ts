@@ -22,6 +22,8 @@
       productCare:string[];
   }
 
+  export type AddProductType = Omit<Product, '_id'>;
+
 
   export interface ImageVariant
   {

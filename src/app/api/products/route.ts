@@ -9,7 +9,17 @@ const loadDB = async () => {
 };
 
 loadDB();
-
+export async function POST (req: Request, res: Response){
+    console.log('working');
+    try {
+        const data = await req.json();
+        console.log(data)
+        const newProduct = await productModel.create(data);
+        return NextResponse.json({ data: newProduct }, { status: 200 });
+    } catch (error:any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
 export async function DELETE(request:Request){
     console.log('working');
     const req=await request.json()
@@ -17,7 +27,7 @@ export async function DELETE(request:Request){
     
     console.log('working');
     try {
-        const res= await ordersModel.findByIdAndDelete(req.orderID)
+        const res= await productModel.findByIdAndDelete(req.productID)
         console.log(res);
 
      return new Response(JSON.stringify(res),{

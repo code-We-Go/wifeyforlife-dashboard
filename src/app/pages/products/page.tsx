@@ -1,4 +1,5 @@
 'use client'
+import AddProductModal from '@/components/AddProductModal';
 import DefaultLayout from '@/components/Layouts/DefaultLayout'
 import ProductComponent from '@/components/ProductsComponent';
 import { Product } from '@/interfaces/interfaces';
@@ -9,6 +10,7 @@ const ProductsPage = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [addModalisOpen,setAddModalisOpen]=useState(false)
   
     useEffect(() => {
       const fetchproducts = async () => {
@@ -25,7 +27,12 @@ const ProductsPage = () => {
   return (
         <DefaultLayout>
     
-    <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-center items-center gap-4 bg-backgroundColor">
+    <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-start items-center gap-4 bg-backgroundColor">
+      <div 
+      onClick={()=>setAddModalisOpen(true)}
+      className=' text-primary w-[97%] flex justify-end underline hover:cursor-pointer'><h3>
+       ADD NEW PRODUCT </h3></div>
+      <AddProductModal isModalOpen={addModalisOpen} setModalOpen={setAddModalisOpen} setProducts={setProducts} />
     {products.length > 0 ? (
           products.map((product, index) => <ProductComponent setProducts={setProducts} key={index} product={product} />)
         ) : (

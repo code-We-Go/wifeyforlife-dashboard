@@ -4,38 +4,14 @@ import React, { useState } from 'react'
 import Swal from "sweetalert2";
 import Image from "next/image";
 import ProductVariant from "./ProductVariant";
+import DeleteProductModal from './DeleteProductModal';
 
 const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{isDetailsModalOpen:boolean,product:Product,
     setProducts: React.Dispatch<React.SetStateAction<Product[]>>,
     setDetailsModal: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
     const [productState,setProduct]=useState<Product>(product)
-    const deleteProduct = async () => {
-        // setIsModalOpen(false);
-        try {
-          const res = await axios.delete(`/api/products`, {
-            data: { productID: product._id },
-          });
-          if (res.status === 200) {
-            setProducts((prev) => prev.filter((o) => o._id !== product._id));
-            Swal.fire({
-              background: '#FFFFF',
-              color: 'black',
-              toast: false,
-              iconColor: '#473728',
-              position: 'bottom-right',
-              text: 'PRODUCT HAS BEEN DELETED',
-              showConfirmButton: false,
-              timer: 2000,
-              customClass: {
-                popup: 'no-rounded-corners small-popup',
-              },
-            });
-          }
-        } catch (error) {
-          console.error('Error deleting product:', error);
-        }
-      };
+    const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const updateFeild = async(field:string,value:any)=>{
         setProducts((prevProducts) =>
             prevProducts.map((p) =>
@@ -96,44 +72,13 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
               p._id === product._id ? { ...p, variations: updatedVariations } : p
             )
           );
-    
-          // Send update request to backend
-     
-          // const updatedProduct = await axios.put(`/api/products?productID=${product._id}`, {
-          //   variations: updatedVariations,
-          // });
-    
-      //  if(updatedProduct.status===200){
-    
-      //    setProducts((prevProducts) =>
-      //      prevProducts.map((p) =>
-      //        p._id === updatedProduct.data._id ? updatedProduct.data : p
-      //      )
-      //    );
-    
-      //    Swal.fire({
-      //      background: '#FFFFF',
-      //      color: 'black',
-      //      toast: false,
-      //      iconColor: '#473728',
-      //      position: 'bottom-right',
-      //      text: 'VARIANT HAS BEEN UPDATED',
-      //      showConfirmButton: false,
-      //      timer: 2000,
-      //      customClass: {
-      //        popup: 'no-rounded-corners small-popup',
-      //      },
-      //    });
-      //  }  
-        // Update state with the response from the backend
-        
       };
     return (
           isDetailsModalOpen && (
         <div onClick={() => setDetailsModal(false)}
-         className="fixed inset-0 pl-72.5 bg-black bg-opacity-50 flex justify-center items-center z-50">
+         className="fixed inset-0 lg:pl-72.5 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div onClick={(e) => e.stopPropagation()} 
-          className="bg-white max-h-[90vh] overflow-y-scroll p-6 shadow-lg w-[90%] text-center">
+          className="bg-white max-lg:mt-16  max-h-[90vh] overflow-y-scroll p-6 shadow-lg w-[90%] text-center">
             <h2 className="text-lg font-bold mb-4">PRODUCT DETAILS</h2>
 
             {/* Product Info */}
@@ -321,11 +266,23 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
     Add More
   </button>
 </div>
-
-
             </div>
 
             {/* Buttons */}
+            <div className="flex w-full justify-end">
+              <h3
+                className="px-4 py-2 hover:cursor-pointer text-primary underline"
+                onClick={()=>setDeleteModalOpen(true)}
+              >
+                DELETE PRODUCT
+              </h3>
+              <DeleteProductModal
+              setBigModal={setDetailsModal}
+                productID={product._id}
+                isModalOpen={isDeleteModalOpen}
+                setModalOpen={setDeleteModalOpen}
+                setProducts={setProducts}/>
+            </div>
             <div className="flex justify-around mt-6">
               <button
                 className="px-4 py-2 text-primary border-[1px] border-primary"
@@ -340,5 +297,4 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
       )
   )
 }
-
 export default ProductModal

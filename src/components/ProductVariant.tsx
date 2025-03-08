@@ -45,9 +45,16 @@ const ProductVariant = ({
   }
 
   // Update variant images when imagesUrl state changes
+  // useEffect(() => {
+  //   updateVariant(index, "images", imagesUrl);
+  // }, [imagesUrl, updateVariant, index]);
+
   useEffect(() => {
-    updateVariant(index, "images", imagesUrl);
-  }, [imagesUrl, updateVariant, index]);
+    
+    updateVariant(index, "images", imagesUrl)
+     
+    }
+  , [setImagesUrl,imagesUrl])
 
   // Function to move images in local state
   const moveImage = (fromIndex: number, toIndex: number) => {
@@ -81,7 +88,7 @@ const ProductVariant = ({
           drag(node);
           drop(node);
         }}
-        className="relative w-16 h-16 cursor-move"
+        className="relative w-28 h-34 cursor-move"
       >
         <span
           onClick={() => {
@@ -112,15 +119,17 @@ const ProductVariant = ({
 
       <div>
         <label className="block font-semibold">Images:</label>
-        <div className="flex gap-2">
-          {imagesUrl.map((image, i) => (
+        <div className="flex gap-2 ">
+         <div className="flex flex-nowrap gap-2 max-w-[90%] scrollbar-hidden overflow-x-scroll">
+           {imagesUrl.map((image, i) => (
             <ImageItem key={i} image={image} index={i} />
           ))}
-        </div>
+          </div>
         <UploadProductsImagesButton
           imagesUrl={imagesUrl}
           setImagesUrl={setImagesUrl}
         />
+        </div>
       </div>
 
       <div>

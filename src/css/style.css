@@ -231,7 +231,13 @@ span.flatpickr-weekday,
 input[type="search"]::-webkit-search-cancel-button {
     @apply appearance-none;
 }
-
+.scrollbar-hidden::-webkit-scrollbar{
+    display: none;
+  }
+  .scrollbar-hidden{
+    
+    scrollbar-width: none;
+  }
 .custom-input-date::-webkit-calendar-picker-indicator {
     background-position: center;
     background-repeat: no-repeat;
