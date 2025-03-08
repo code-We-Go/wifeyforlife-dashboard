@@ -1,9 +1,11 @@
 import { ApexOptions } from "apexcharts";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import axios from "axios";
 
-interface ChartThreeState {
-  series: number[];
+interface Visit {
+  deviceType: string; 
+  countryCode:string;// e.g., 'desktop', 'tablet', 'mobile', 'other'
 }
 
 const options: ApexOptions = {
@@ -11,13 +13,12 @@ const options: ApexOptions = {
     fontFamily: "Satoshi, sans-serif",
     type: "donut",
   },
-  colors: ["#3C50E0", "#6577F3", "#8FD0EF", "#0FADCF"],
-  labels: ["Desktop", "Tablet", "Mobile", "Unknown"],
+  colors: ["#473728", "#F0EA9B", "#D8DFE2","#F0EA9B"],
+  labels: ["Desktop", "Tablet", "Mobile", "Other"],
   legend: {
-    show: false,
-    position: "bottom",
+    show: true,
+    position: "top",
   },
-
   plotOptions: {
     pie: {
       donut: {
@@ -50,7 +51,57 @@ const options: ApexOptions = {
 };
 
 const ChartThree: React.FC = () => {
-  const series = [65, 34, 12, 56];
+  const [visits, setVisits] = useState<Visit[]>([]);
+
+  // Fetch visits data from API using axios
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Using axios to fetch the data
+        const response = await axios('/api/visites');
+        console.log("API response:", response.data.data); // Check the API response in the console
+        if (Array.isArray(response.data.data)) {
+          setVisits(response.data.data); // Ensure it's an array
+        } else {
+          console.error("API did not return an array");
+        }
+      } catch (error) {
+        console.error("Error fetching visit data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Ensure that visits is an array before using forEach
+  const deviceCounts = {
+    desktop: 0,
+    tablet: 0,
+    mobile: 0,
+    other: 0,
+  };
+
+  // Only process if visits is an array
+  if (Array.isArray(visits)) {
+    visits.forEach((visit) => {
+      if (visit.deviceType === "desktop") {
+        deviceCounts.desktop++;
+      } else if (visit.deviceType === "tablet") {
+        deviceCounts.tablet++;
+      } else if (visit.deviceType === "smartphone") {
+        deviceCounts.mobile++;
+      } else {
+        deviceCounts.other++;
+      }
+    });
+  }
+
+  const series = [
+    deviceCounts.desktop,
+    deviceCounts.tablet,
+    deviceCounts.mobile,
+    deviceCounts.other,
+  ];
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-5">
@@ -104,13 +155,13 @@ const ChartThree: React.FC = () => {
         </div>
       </div>
 
-      <div className="-mx-8 flex flex-wrap items-center justify-center gap-y-3">
+      <div className="-mx-8 flex flex-wrap items-center justify-start gap-y-3">
         <div className="w-full px-8 sm:w-1/2">
           <div className="flex w-full items-center">
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-primary"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Desktop </span>
-              <span> 65% </span>
+              <span> {deviceCounts.desktop} </span>
             </p>
           </div>
         </div>
@@ -119,7 +170,7 @@ const ChartThree: React.FC = () => {
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#6577F3]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Tablet </span>
-              <span> 34% </span>
+              <span> {deviceCounts.tablet} </span>
             </p>
           </div>
         </div>
@@ -128,16 +179,7 @@ const ChartThree: React.FC = () => {
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Mobile </span>
-              <span> 45% </span>
-            </p>
-          </div>
-        </div>
-        <div className="w-full px-8 sm:w-1/2">
-          <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#0FADCF]"></span>
-            <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
-              <span> Unknown </span>
-              <span> 12% </span>
+              <span> {deviceCounts.mobile} </span>
             </p>
           </div>
         </div>

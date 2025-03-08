@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@material-tailwind/react": "^2.1.10",
     "@uploadthing/react": "^7.3.0",
     "apexcharts": "^4.5.0",
     "axios": "^1.7.9",
