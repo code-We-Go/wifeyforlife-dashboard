@@ -19,7 +19,7 @@ const ChartThree = dynamic(() => import("@/components/Charts/ChartThree"), {
 const ECommerce: React.FC = () => {
   return (
     <div className="px-2 space-y-10 py-2">
-      <div className="grid  px-1 lg:px-2  grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+      {/* <div className="grid  px-1 lg:px-2  grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardDataStats title="Total views" total="$3.456K" rate="0.43%" levelUp>
           <svg
             className="fill-primary dark:fill-white"
@@ -104,7 +104,7 @@ const ECommerce: React.FC = () => {
             />
           </svg>
         </CardDataStats>
-      </div>
+      </div> */}
 
       <div className="mt-4 grid grid-cols-12 gap-4  md:gap-6  2xl:gap-7.5">
         <ChartOne />
