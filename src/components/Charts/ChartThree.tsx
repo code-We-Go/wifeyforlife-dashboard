@@ -2,18 +2,16 @@ import { ApexOptions } from "apexcharts";
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import axios from "axios";
-
 interface Visit {
   deviceType: string; 
   countryCode:string;// e.g., 'desktop', 'tablet', 'mobile', 'other'
 }
-
 const options: ApexOptions = {
   chart: {
     fontFamily: "Satoshi, sans-serif",
     type: "donut",
   },
-  colors: ["#473728", "#F0EA9B", "#D8DFE2","#F0EA9B"],
+  colors: ["#473728", "#F0EA9B", "#D8DFE2","#8FD0EF"],
   labels: ["Desktop", "Tablet", "Mobile", "Other"],
   legend: {
     show: true,
@@ -52,13 +50,13 @@ const options: ApexOptions = {
 
 const ChartThree: React.FC = () => {
   const [visits, setVisits] = useState<Visit[]>([]);
-
+const [duration,setDuration]= useState("thisWeek")
   // Fetch visits data from API using axios
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (duration:string) => {
       try {
         // Using axios to fetch the data
-        const response = await axios('/api/visites');
+        const response = await axios(`/api/visites?duration=${duration}`);
         console.log("API response:", response.data.data); // Check the API response in the console
         if (Array.isArray(response.data.data)) {
           setVisits(response.data.data); // Ensure it's an array
@@ -70,8 +68,8 @@ const ChartThree: React.FC = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    fetchData(duration);
+  }, [duration]);
 
   // Ensure that visits is an array before using forEach
   const deviceCounts = {
@@ -104,7 +102,7 @@ const ChartThree: React.FC = () => {
   ];
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-5">
+    <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-6">
       <div className="mb-3 justify-between gap-4 sm:flex">
         <div>
           <h5 className="text-xl font-semibold text-black dark:text-white">
@@ -114,15 +112,25 @@ const ChartThree: React.FC = () => {
         <div>
           <div className="relative z-20 inline-block">
             <select
+            onChange={(e) => setDuration(e.target.value)}
               name=""
               id=""
               className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
             >
-              <option value="" className="dark:bg-boxdark">
-                Monthly
+              <option value="thisWeek" className="dark:bg-boxdark">
+                this week
               </option>
-              <option value="" className="dark:bg-boxdark">
-                Yearly
+              <option value="lastWeek" className="dark:bg-boxdark">
+                last week
+              </option>
+              <option value="thisMonth" className="dark:bg-boxdark">
+                this month
+              </option>
+              <option value="lastMonth" className="dark:bg-boxdark">
+                last month
+              </option>
+              <option value="thisYear" className="dark:bg-boxdark">
+                this year
               </option>
             </select>
             <span className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
@@ -167,7 +175,7 @@ const ChartThree: React.FC = () => {
         </div>
         <div className="w-full px-8 sm:w-1/2">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#6577F3]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#F0EA9B]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Tablet </span>
               <span> {deviceCounts.tablet} </span>
@@ -176,10 +184,19 @@ const ChartThree: React.FC = () => {
         </div>
         <div className="w-full px-8 sm:w-1/2">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#D8DFE2]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Mobile </span>
               <span> {deviceCounts.mobile} </span>
+            </p>
+          </div>
+        </div>
+        <div className="w-full px-8 sm:w-1/2">
+          <div className="flex w-full items-center">
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
+            <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
+              <span> Other </span>
+              <span> {deviceCounts.other} </span>
             </p>
           </div>
         </div>

@@ -1,33 +1,33 @@
 "use client";
 
 import { ApexOptions } from "apexcharts";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
+// Chart configuration
 const options: ApexOptions = {
   legend: {
     show: false,
     position: "top",
     horizontalAlign: "left",
   },
-  colors: ["#3C50E0", "#80CAEE"],
+  colors: ["#473728"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     height: 335,
     type: "area",
     dropShadow: {
       enabled: true,
-      color: "#623CEA14",
+      color: "#473728",
       top: 10,
       blur: 4,
       left: 0,
       opacity: 0.1,
     },
-
     toolbar: {
       show: false,
     },
@@ -52,12 +52,8 @@ const options: ApexOptions = {
   ],
   stroke: {
     width: [2, 2],
-    curve: "straight",
+    curve: "smooth",
   },
-  // labels: {
-  //   show: false,
-  //   position: "top",
-  // },
   grid: {
     xaxis: {
       lines: {
@@ -76,7 +72,7 @@ const options: ApexOptions = {
   markers: {
     size: 4,
     colors: "#fff",
-    strokeColors: ["#3056D3", "#80CAEE"],
+    strokeColors: ["#473728"],
     strokeWidth: 3,
     strokeOpacity: 0.9,
     strokeDashArray: 0,
@@ -89,20 +85,7 @@ const options: ApexOptions = {
   },
   xaxis: {
     type: "category",
-    categories: [
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-    ],
+    categories: [], // Will be set dynamically
     axisBorder: {
       show: false,
     },
@@ -112,37 +95,68 @@ const options: ApexOptions = {
   },
   yaxis: {
     title: {
+      text: "Sales (EGP)",
       style: {
-        fontSize: "0px",
+        fontSize: "12px",
       },
     },
     min: 0,
-    max: 100,
   },
 };
 
-interface ChartOneState {
-  series: {
-    name: string;
-    data: number[];
-  }[];
-}
-
 const ChartOne: React.FC = () => {
-  const series = [
-      {
-        name: "Product One",
-        data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 45],
-      },
+  const [series, setSeries] = useState<{ name: string; data: number[] }[]>([
+    { name: "Orders", data: new Array(12).fill(0) },
+  ]);  const [categories, setCategories] = useState<string[]>([]);
 
-      {
-        name: "Product Two",
-        data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 51],
-      },
-    ]
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch("/api/orders");
+        const result = await response.json();
+
+        if (response.ok) {
+          const orders = result.data;
+
+          // Prepare last 11 months' labels
+          const now = new Date();
+          const months = [];
+          for (let i = 11; i >= 0; i--) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push(date.toLocaleString("en-US", { month: "short" }));
+          }
+
+          // Initialize monthly totals
+          const monthlyTotals: { [key: string]: number } = {};
+          months.forEach((month) => (monthlyTotals[month] = 0));
+
+          // Aggregate orders by month
+          orders.forEach((order: any) => {
+            const orderDate = new Date(order.createdAt);
+            const monthLabel = orderDate.toLocaleString("en-US", { month: "short" });
+
+            if (monthlyTotals.hasOwnProperty(monthLabel)) {
+              
+              monthlyTotals[monthLabel] += order.billingCountry==="EGYPT"? order.total:order.total *50; // Sum up order totals
+            }
+          });
+
+          // Update chart
+          setCategories(months);
+          setSeries([{ name: "Orders", data: months.map((m) => monthlyTotals[m] || 0) }]);
+        } else {
+          console.error("Error fetching orders:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
+    <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 ">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
         <div className="flex w-full flex-wrap gap-3 sm:gap-5">
           <div className="flex min-w-47.5">
@@ -150,31 +164,8 @@ const ChartOne: React.FC = () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
             </span>
             <div className="w-full">
-              <p className="font-semibold text-primary">Total Revenue</p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="font-semibold text-primary">Monthly sales</p>
             </div>
-          </div>
-          <div className="flex min-w-47.5">
-            <span className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-secondary">
-              <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
-            </span>
-            <div className="w-full">
-              <p className="font-semibold text-secondary">Total Sales</p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex w-full max-w-45 justify-end">
-          <div className="inline-flex items-center rounded-md bg-whiter p-1.5 dark:bg-meta-4">
-            <button className="rounded bg-white px-3 py-1 text-xs font-medium text-black shadow-card hover:bg-white hover:shadow-card dark:bg-boxdark dark:text-white dark:hover:bg-boxdark">
-              Day
-            </button>
-            <button className="rounded px-3 py-1 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark">
-              Week
-            </button>
-            <button className="rounded px-3 py-1 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark">
-              Month
-            </button>
           </div>
         </div>
       </div>
@@ -182,7 +173,7 @@ const ChartOne: React.FC = () => {
       <div>
         <div id="chartOne" className="-ml-5">
           <ReactApexChart
-            options={options}
+            options={{ ...options, xaxis: { ...options.xaxis, categories } }}
             series={series}
             type="area"
             height={350}

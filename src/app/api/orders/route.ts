@@ -53,21 +53,33 @@ export async function PUT(request:Request){
 }
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 10;
-    const skip = (page - 1) * limit;
+    if(searchParams.get("page") !== null){
+        const paga = searchParams.get("page")!
+        const page = parseInt(paga);
 
-    try {
-        const orders = await ordersModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-        const totalOrders = await ordersModel.countDocuments();
-
-        return NextResponse.json({
-            data: orders,
-            total: totalOrders,
-            currentPage: page,
-            totalPages: Math.ceil(totalOrders / limit),
-        }, { status: 200 });
-    } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+        const limit = 10;
+        const skip = (page - 1) * limit;
+        try {
+            const orders = await ordersModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
+            const totalOrders = await ordersModel.countDocuments();
+    
+            return NextResponse.json({
+                data: orders,
+                total: totalOrders,
+                currentPage: page,
+                totalPages: Math.ceil(totalOrders / limit),
+            }, { status: 200 });
+        } catch (error) {
+            return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+        }
     }
+    else{
+        try {
+            const orders = await ordersModel.find().sort({ createdAt: -1 });
+            return NextResponse.json({ data: orders }, { status: 200 });
+        } catch (error) {
+            return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+        }
+    }
+
 }
