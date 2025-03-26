@@ -22,10 +22,10 @@ const ExposureRegular = localFont({
 });
 
 
-// export const Gluten = localFont({
-//   src: "/fonts/Gluten.ttf",
-// });
-export const Genos = localFont({
+ const Gluten = localFont({
+  src: "/fonts/Gluten.ttf",
+});
+ const Genos = localFont({
   src: "/fonts/Genos.ttf",
 });
 
