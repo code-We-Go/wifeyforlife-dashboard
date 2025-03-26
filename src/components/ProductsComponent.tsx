@@ -132,7 +132,7 @@ const ProductsComponent = ({ product, setProducts }: { product: Product; setProd
             <Image fill alt={product.title} src={product.variations[0].images[0]}></Image>
           </div>
           <h2 className={` text-lg`}>{product.title}</h2>
-          <p className='text-[12px] lg:text-lg'>{`${product.price.global} USD || ${product.price.local} LE`}</p>
+          <p className='text-[12px] lg:text-lg'>{`${product.price.local} LE`}</p>
         </div>
       </div>
       <ProductModal

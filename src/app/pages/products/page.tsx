@@ -29,8 +29,10 @@ const ProductsPage = () => {
     
     <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-start items-center gap-4 bg-backgroundColor">
       <div 
-      onClick={()=>setAddModalisOpen(true)}
-      className=' text-primary w-[97%] flex justify-end underline hover:cursor-pointer'><h3>
+     
+      className=' text-primary w-[97%] flex justify-end underline '><h3
+      className='hover:cursor-pointer'
+      onClick={()=>setAddModalisOpen(true)}>
        ADD NEW PRODUCT </h3></div>
       <AddProductModal isModalOpen={addModalisOpen} setModalOpen={setAddModalisOpen} setProducts={setProducts} />
     {products.length > 0 ? (

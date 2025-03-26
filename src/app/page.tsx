@@ -4,8 +4,8 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 
 export const metadata: Metadata = {
   title:
-    "Anchuva Dashboard",
-  description: "This is Anchuva Dashboard",
+    "Mamilk dashboard",
+  description: "This is mamilk Dashboard",
 };
 
 export default function Home() {

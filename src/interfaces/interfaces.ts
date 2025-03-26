@@ -1,14 +1,16 @@
 
   
  export interface Variant {
-    color: string;
-    images:string[];
-    stock: number;
-    featured:Boolean
-  }
+   color: string;
+   sizes:Size[]
+   images:string[];
+ }
   export type price={
    local:number;
-   global:number;
+  }
+  export interface Collection {
+      _id: string;
+      collectionName:string;
   }
 
  export interface Product {
@@ -16,6 +18,7 @@
     title: string;
     description: string;
     price: price;
+    collectionID: string;
     variations: Variant[];
     productDimensions:string[];
       productDetails:string[];
@@ -23,6 +26,12 @@
   }
 
   export type AddProductType = Omit<Product, '_id'>;
+
+  export interface Newsletters{
+   name:string;
+   number:string;
+   _id:string;
+  }
 
 
   export interface ImageVariant
@@ -32,8 +41,9 @@
   }
   export interface Size
   {
-     type:string;
-     name:string 
+   //   type:string;
+     name:string
+     stock:number 
   }
   export interface CartItem 
   {
@@ -84,6 +94,7 @@ export interface IOrder {
     phone?: string;
     cash?: boolean;
     cart?: CartItem[]; // Assuming CartItem interface exists
+    subTotal?: number;
     total?: number;
     currency?: string;
     status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";

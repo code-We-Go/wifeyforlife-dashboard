@@ -18,7 +18,7 @@ const ChartThree = dynamic(() => import("@/components/Charts/ChartThree"), {
 
 const ECommerce: React.FC = () => {
   return (
-    <div className="px-2 space-y-10 py-2">
+    <div className="px-2 space-y-10 bg-babyBlue/60 py-2">
       {/* <div className="grid  px-1 lg:px-2  grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardDataStats title="Total views" total="$3.456K" rate="0.43%" levelUp>
           <svg
@@ -110,7 +110,7 @@ const ECommerce: React.FC = () => {
         <ChartOne />
         <ChartTwo />
         <ChartThree />
-        <MapOne />
+        {/* <MapOne /> */}
         {/* <div className="col-span-12 xl:col-span-8">
           <TableOne />
         </div> */}

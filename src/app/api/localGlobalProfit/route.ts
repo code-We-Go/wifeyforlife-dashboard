@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     const orders = await ordersModel.find({
       createdAt: { $gte: startOfWeek, $lte: endOfWeek },
     }).sort({ createdAt: -1 });
-
+    console.log('here'+orders.length);
     return NextResponse.json({ data: orders }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });

@@ -24,19 +24,22 @@ const ProductVariant = ({
   const ItemTypes = {
     IMAGE: "image",
   };
+  const [sizes, setSizes] = useState<{ name: string; stock: number }[]>(variant.sizes || []);
+
+  useEffect(() => {
+    updateVariant(index, "images", imagesUrl);
+  }, [imagesUrl]);
+
+  useEffect(() => {
+    updateVariant(index, "sizes", sizes);
+  }, [sizes]);
 
   // Handle image deletion
   async function deleteProductImage(value: string, variantIndex: number) {
     try {
-      const res = await axios.delete("/api/uploadthing", {
-        data: {
-          url: value,
-        },
-      });
+      const res = await axios.delete("/api/uploadthing", { data: { url: value } });
       if (res.status === 200) {
-        const imagesAfterDelete = product.variations[variantIndex].images.filter(
-          (image) => image !== value
-        );
+        const imagesAfterDelete = product.variations[variantIndex].images.filter((image) => image !== value);
         updateVariant(variantIndex, "images", imagesAfterDelete);
       }
     } catch (err) {
@@ -44,19 +47,23 @@ const ProductVariant = ({
     }
   }
 
-  // Update variant images when imagesUrl state changes
-  // useEffect(() => {
-  //   updateVariant(index, "images", imagesUrl);
-  // }, [imagesUrl, updateVariant, index]);
+  // Handle adding a new size
+  const addSize = () => {
+    setSizes([...sizes, { name: "", stock: 0 }]);
+  };
 
-  useEffect(() => {
-    
-    updateVariant(index, "images", imagesUrl)
-     
-    }
-  , [setImagesUrl,imagesUrl])
+  // Handle updating a size name or stock
+  const updateSize = (index: number, field: "name" | "stock", value: string | number) => {
+    const updatedSizes = sizes.map((size, i) =>
+      i === index ? { ...size, [field]: value } : size
+    );
+    setSizes(updatedSizes);
+  };
 
-  // Function to move images in local state
+  // Handle removing a size
+  const removeSize = (sizeIndex: number) => {
+    setSizes(sizes.filter((_, i) => i !== sizeIndex));
+  };
   const moveImage = (fromIndex: number, toIndex: number) => {
     const updatedImages = [...imagesUrl];
     const [movedImage] = updatedImages.splice(fromIndex, 1);
@@ -64,7 +71,6 @@ const ProductVariant = ({
     setImagesUrl(updatedImages);
     updateVariant(index, "images", updatedImages); // Sync with parent state
   };
-
   // Drag-and-drop image item
   const ImageItem = ({ image, index }: { image: string; index: number }) => {
     const [, drag] = useDrag({
@@ -107,6 +113,8 @@ const ProductVariant = ({
   return (
     <div key={index} className="border p-4 mt-4">
       <h3 className="font-semibold">Variant {index + 1}</h3>
+      
+      {/* Color Input */}
       <div>
         <label className="block font-semibold">Color:</label>
         <input
@@ -117,6 +125,36 @@ const ProductVariant = ({
         />
       </div>
 
+      {/* Sizes Section */}
+      <div>
+        <label className="block font-semibold">Sizes:</label>
+        {sizes.map((size, i) => (
+          <div key={i} className="flex items-center gap-2 mb-2">
+            <input
+              type="text"
+              placeholder="Size"
+              value={size.name}
+              onChange={(e) => updateSize(i, "name", e.target.value)}
+              className="border p-2 w-1/2"
+            />
+            <input
+              type="number"
+              placeholder="Stock"
+              value={size.stock}
+              onChange={(e) => updateSize(i, "stock", parseInt(e.target.value))}
+              className="border p-2 w-1/2"
+            />
+            <button className="text-red-500" onClick={() => removeSize(i)}>
+              ✖
+            </button>
+          </div>
+        ))}
+        <button onClick={addSize} className="underline text-primary">
+          Add Size
+        </button>
+      </div>
+
+      {/* Images Section */}
       <div>
         <label className="block font-semibold">Images:</label>
         <div className="flex gap-2 ">
@@ -130,26 +168,6 @@ const ProductVariant = ({
           setImagesUrl={setImagesUrl}
         />
         </div>
-      </div>
-
-      <div>
-        <label className="block font-semibold">Stock:</label>
-        <input
-          type="number"
-          value={variant.stock}
-          onChange={(e) => onVariantChange(index, "stock", parseInt(e.target.value))}
-          className="border p-2 w-full"
-        />
-      </div>
-
-      <div>
-        <label className="block font-semibold">Featured:</label>
-        <input
-          type="checkbox"
-          checked={variant.featured ? true : false}
-          onChange={(e) => onVariantChange(index, "featured", e.target.checked)}
-          className="border p-2"
-        />
       </div>
     </div>
   );

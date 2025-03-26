@@ -1,6 +1,6 @@
-import { Product } from '@/interfaces/interfaces';
+import { Collection, Product } from '@/interfaces/interfaces';
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Swal from "sweetalert2";
 import Image from "next/image";
 import ProductVariant from "./ProductVariant";
@@ -12,6 +12,22 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
 }) => {
     const [productState,setProduct]=useState<Product>(product)
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+     const [collections,setCollections]=useState<Collection[]>([])
+   useEffect(() => {
+     const fetchCollections = async()=>  {
+       try{
+         const res = await axios('/api/collections')
+         if(res.status===200){
+           setCollections(res.data.data)
+         
+       }
+     }
+     catch(err){
+       console.error(err)
+     }
+     }
+     fetchCollections()
+   }, [])
     const updateFeild = async(field:string,value:any)=>{
         setProducts((prevProducts) =>
             prevProducts.map((p) =>
@@ -114,10 +130,21 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
                   className="border p-2 w-full"
                 />
               </div>
-
+            {/* collections */}
+            <div>
+              <label className="block font-semibold">Collection:</label>
+              <select
+                value={productState.collectionID}
+                onChange={(e) => updateFeild("collectionID", e.target.value)}
+                className="border p-2 w-full"
+              >
+                {collections.map((collection,index) => <option key={index} value={collection._id}>{collection.collectionName}</option>)}
+                </select>
+              {/* {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>} */}
+            </div>
               {/* Price */}
               <div> 
-  <label className="block font-semibold">Price (Local):</label>
+  <label className="block font-semibold">Price  :</label>
   <input
     type="number"
     value={product.price.local}
@@ -132,22 +159,6 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
   />
 </div>
 
-
-              <div>
-                <label className="block font-semibold">Price (Global):</label>
-                <input
-                  type="number"
-                  value={product.price.global}
-                  onChange={(e) => {
-                    const newPrice = {
-                      ...product.price,
-                      global: parseFloat(e.target.value)
-                    };
-                    updateFeild("price", newPrice);
-                  }}                  className="border p-2 w-full"
-                />
-              </div>
-
               {/* Variations */}
               <div>
   <label className="block font-semibold">Product Variants:</label>
@@ -161,42 +172,6 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
     Add Variant
   </button>
 </div>
-
-
-{/* Product Dimensions */}
-<div>
-  <label className="block font-semibold">Product Dimensions:</label>
-  {product.productDimensions.map((dimension, index) => (
-    <div key={index} className="flex items-center gap-2 mb-2">
-      <input
-        type="text"
-        value={dimension}
-        onChange={(e) => {
-          const newDimensions = [...product.productDimensions];
-          newDimensions[index] = e.target.value;
-          updateFeild("productDimensions", newDimensions);
-        }}
-        className="border p-2 w-full"
-      />
-      <span 
-        className="cursor-pointer text-red-500" 
-        onClick={() => {
-          const newDimensions = product.productDimensions.filter((_, i) => i !== index);
-          updateFeild("productDimensions", newDimensions);
-        }}
-      >
-        &#10006;
-      </span>
-    </div>
-  ))}
-  <button 
-    onClick={() => updateFeild("productDimensions", [...product.productDimensions, ""])} 
-    className="underline text-primary px-4 py-2"
-  >
-    Add More
-  </button>
-</div>
-
 
 {/* Product Details */}
 <div>
@@ -234,7 +209,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
 
 
 {/* Product Care */}
-<div>
+{/* <div>
   <label className="block font-semibold">Product Care:</label>
   {product.productCare.map((care, index) => (
     <div key={index} className="flex items-center gap-2 mb-2">
@@ -265,7 +240,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
   >
     Add More
   </button>
-</div>
+</div> */}
             </div>
 
             {/* Buttons */}

@@ -15,14 +15,14 @@ const options: ApexOptions = {
     position: "top",
     horizontalAlign: "left",
   },
-  colors: ["#473728"],
+  colors: ["#2C5694"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     height: 335,
     type: "area",
     dropShadow: {
       enabled: true,
-      color: "#473728",
+      color: "#2C5694",
       top: 10,
       blur: 4,
       left: 0,
@@ -72,7 +72,7 @@ const options: ApexOptions = {
   markers: {
     size: 4,
     colors: "#fff",
-    strokeColors: ["#473728"],
+    strokeColors: ["#2C5694"],
     strokeWidth: 3,
     strokeOpacity: 0.9,
     strokeDashArray: 0,
@@ -137,7 +137,7 @@ const ChartOne: React.FC = () => {
 
             if (monthlyTotals.hasOwnProperty(monthLabel)) {
               
-              monthlyTotals[monthLabel] += order.billingCountry==="EGYPT"? order.total:order.total *50; // Sum up order totals
+              monthlyTotals[monthLabel] +=  order.subTotal; // Sum up order totals
             }
           });
 

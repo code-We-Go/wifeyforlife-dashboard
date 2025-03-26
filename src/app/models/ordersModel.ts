@@ -4,6 +4,7 @@ import mongoose, { Schema, Document } from "mongoose";
 const CartItemSchema = new Schema({
     productId: { type: String, required: true },
     productName: { type: String, required: true },
+    size:{ type: String, required: true },
     color: { type: String, required: true },
     imageUrl: { type: String, required: true },
     quantity: { type: Number, required: true },
@@ -13,7 +14,6 @@ const CartItemSchema = new Schema({
 // Define the Order schema
 const OrderSchema = new Schema(
     { email:{type: String, required: true}
-        ,orderID:{type: String, required: false}
         ,country: { type: String, required: false },
         firstName: { type: String, required: false },
         lastName: { type: String, required: false },
@@ -23,11 +23,13 @@ const OrderSchema = new Schema(
         city: { type: String, required: false },
         state: { type: String, required: false },
         phone: { type: String, required: false },
-        cash: { type: String, required: false, default: false }, // Payment method: Cash or not
+        cash: { type: String, required: false, default: true }, // Payment method: Cash or not
         cart: {
             type: [CartItemSchema],required:false // Array of cart items
         },
+        subTotal: { type: Number, required: false}, 
         total: { type: Number, required: false}, 
+        currency: { type: String, required: false}, 
         status: {
             type: String,
             enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],

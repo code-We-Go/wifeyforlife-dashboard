@@ -8,7 +8,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 });
 
 const options: ApexOptions = {
-  colors: ["#473728", "#F0EA9B"],
+  colors: ["#2C5694"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     type: "bar",
@@ -27,15 +27,15 @@ const options: ApexOptions = {
         formatter: (value) => value.toFixed(0),
       },
     },
-    {
-      title: { text: "Global Profit ($)" },
-      min: 0,
-      max: 1000,
-      tickAmount: 5,
-      labels: {
-        formatter: (value) => value.toFixed(0),
-      },
-    },
+    // {
+    //   title: { text: "Global Profit ($)" },
+    //   min: 0,
+    //   max: 1000,
+    //   tickAmount: 5,
+    //   labels: {
+    //     formatter: (value) => value.toFixed(0),
+    //   },
+    // },
   ],
   responsive: [
     {
@@ -74,7 +74,7 @@ const options: ApexOptions = {
 const ChartTwo: React.FC = () => {
   const [series, setSeries] = useState([
     { name: "Local Profit", data: [0, 0, 0, 0, 0, 0, 0] },
-    { name: "Global Profit", data: [0, 0, 0, 0, 0, 0, 0] },
+    // { name: "Global Profit", data: [0, 0, 0, 0, 0, 0, 0] },
   ]);
   const [week, setWeek] = useState("thisWeek"); // state to store week selection
 
@@ -89,22 +89,20 @@ const ChartTwo: React.FC = () => {
       }
   
       const localProfits = new Array(7).fill(0);
-      const globalProfits = new Array(7).fill(0);
+      // const globalProfits = new Array(7).fill(0);
   
       orders.forEach((order: any) => {
         const date = new Date(order.createdAt);
         const dayOfWeek = date.getDay();
   
-        if (order.billingCountry.trim().toUpperCase() === "EGYPT") {
-          localProfits[dayOfWeek] += order.total || 0;
-        } else {
-          globalProfits[dayOfWeek] += order.total || 0;
-        }
+       
+          localProfits[dayOfWeek] += order.subTotal || 0;
+ 
       });
   
       setSeries([
         { name: "Local Profit", data: localProfits },
-        { name: "Global Profit", data: globalProfits },
+        // { name: "Global Profit", data: globalProfits },
       ]);
     } catch (error) {
       console.error("Error fetching orders:", error);

@@ -1,8 +1,8 @@
 "use client";
 
-import { AddProductType, Product } from "@/interfaces/interfaces";
+import { AddProductType, Collection, Product } from "@/interfaces/interfaces";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Image from "next/image";
 import ProductVariant from "./ProductVariant";
@@ -35,8 +35,9 @@ const AddProductModal = ({
   const [productState, setProduct] = useState<AddProductType>({
     title: "",
     description: "",
-    price: { local: 0, global: 0 },
+    price: { local: 0 },
     variations: [],
+    collectionID: "",
     productDimensions: [],
     productDetails: [],
     productCare: [],
@@ -50,11 +51,26 @@ const AddProductModal = ({
     if (!productState.title) newErrors.title = "Title is required";
     if (!productState.description) newErrors.description = "Description is required";
     if (productState.price.local <= 0) newErrors.localPrice = "Local price must be greater than 0";
-    if (productState.price.global <= 0) newErrors.globalPrice = "Global price must be greater than 0";
     if (productState.variations.length === 0) newErrors.variations = "At least one variation is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  const [collections,setCollections]=useState<Collection[]>([])
+useEffect(() => {
+  const fetchCollections = async()=>  {
+    try{
+      const res = await axios('/api/collections')
+      if(res.status===200){
+        setCollections(res.data.data)
+      
+    }
+  }
+  catch(err){
+    console.error(err)
+  }
+  }
+  fetchCollections()
+}, [])
 
   // Create Product Function
   const addProduct = async () => {
@@ -134,10 +150,22 @@ const AddProductModal = ({
               />
               {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
             </div>
+            {/* collections */}
+            <div>
+              <label className="block font-semibold">Collection:</label>
+              <select
+                value={productState.collectionID}
+                onChange={(e) => updateField("collectionID", e.target.value)}
+                className="border p-2 w-full"
+              >
+                {collections.map((collection,index) => <option key={index} value={collection._id}>{collection.collectionName}</option>)}
+                </select>
+              {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>}
+            </div>
 
             {/* Price */}
             <div>
-              <label className="block font-semibold">Price (Local):</label>
+              <label className="block font-semibold">Price  :</label>
               <input
                 type="number"
                 value={productState.price.local}
@@ -147,17 +175,6 @@ const AddProductModal = ({
               {errors.localPrice && <p className="text-red-500 text-sm">{errors.localPrice}</p>}
             </div>
 
-            <div>
-              <label className="block font-semibold">Price (Global):</label>
-              <input
-                type="number"
-                value={productState.price.global}
-                onChange={(e) => updateField("price", { ...productState.price, global: parseFloat(e.target.value) })}
-                className="border p-2 w-full"
-              />
-              {errors.globalPrice && <p className="text-red-500 text-sm">{errors.globalPrice}</p>}
-            </div>
-
             {/* Product Variants */}
             <div>
               <label className="block font-semibold">Product Variants:</label>
@@ -165,44 +182,10 @@ const AddProductModal = ({
                 <ProductVariant key={index} index={index} product={{...productState,"_id":""}} variant={variant} updateVariant={updateVariant} onVariantChange={updateVariant} />
               ))}
               {errors.variations && <p className="text-red-500 text-sm">{errors.variations}</p>}
-              <button onClick={() => updateField("variations", [...productState.variations, { color: "", stock: 0, featured: false, images: [] }])} className="underline text-primary px-4 py-2">
+              <button onClick={() => updateField("variations", [...productState.variations, { color: "", size:"",stock: 0, featured: false, images: [] }])} className="underline text-primary px-4 py-2">
                 Add Variant
               </button>
             </div>
-            <div>
-  <label className="block font-semibold">Product Dimensions:</label>
-  {productState.productDimensions.map((dimension, index) => (
-    <div key={index} className="flex items-center gap-2 mb-2">
-      <input
-        type="text"
-        value={dimension}
-        onChange={(e) => {
-          const newDimensions = [...productState.productDimensions];
-          newDimensions[index] = e.target.value;
-          updateField("productDimensions", newDimensions);
-        }}
-        className="border p-2 w-full"
-      />
-      <span 
-        className="cursor-pointer text-red-500" 
-        onClick={() => {
-          const newDimensions = productState.productDimensions.filter((_, i) => i !== index);
-          updateField("productDimensions", newDimensions);
-        }}
-      >
-        &#10006;
-      </span>
-    </div>
-  ))}
-  <button 
-    onClick={() => updateField("productDimensions", [...productState.productDimensions, ""])} 
-    className="underline text-primary px-4 py-2"
-  >
-    Add More
-  </button>
-</div>
-
-
 {/* Product Details */}
 <div>
   <label className="block font-semibold">Product Details:</label>

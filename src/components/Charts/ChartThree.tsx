@@ -11,7 +11,7 @@ const options: ApexOptions = {
     fontFamily: "Satoshi, sans-serif",
     type: "donut",
   },
-  colors: ["#473728", "#F0EA9B", "#D8DFE2","#8FD0EF"],
+  colors: ["#2C5694", "#F0EA9B", "#cb808b","#1b3d6d"],
   labels: ["Desktop", "Tablet", "Mobile", "Other"],
   legend: {
     show: true,
@@ -184,7 +184,7 @@ const [duration,setDuration]= useState("thisWeek")
         </div>
         <div className="w-full px-8 sm:w-1/2">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#D8DFE2]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#cb808b]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Mobile </span>
               <span> {deviceCounts.mobile} </span>
@@ -193,7 +193,7 @@ const [duration,setDuration]= useState("thisWeek")
         </div>
         <div className="w-full px-8 sm:w-1/2">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#1b3d6d]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Other </span>
               <span> {deviceCounts.other} </span>

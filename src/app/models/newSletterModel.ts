@@ -1,10 +1,15 @@
 const { default: mongoose } = require("mongoose");
 
 const newSletterShcema =mongoose.Schema({
-    email:{
+    number:{
         type:String,
         required:true,
         unique:true
+    },
+    name:{
+        type:String,
+        required:true,
+        unique:false
     },
 
     });

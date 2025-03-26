@@ -186,7 +186,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
     <div
         onClick={(e) => e.stopPropagation()} 
 
-    className="bg-white p-6 shadow-lg w-[90%] max-w-3xl text-center">
+    className="bg-white  p-6 shadow-lg w-[90%] max-w-3xl text-center">
       <div className="flex mb-2 w-full items-center justify-end">
         <span className="hover:cursor-pointer" onClick={()=>setDetailsModal(false)}>x</span>
       </div>

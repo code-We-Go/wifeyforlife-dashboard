@@ -28,13 +28,13 @@ const SidebarItem = ({ item, pageName, setPageName }: any) => {
         <Link
           href={item.route}
           onClick={handleClick}
-          className={`${isItemActive ? "bg-primary text-white dark:bg-meta-4" : ""} group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-primary duration-300 ease-in-out hover:text-primary hover:bg-backgroundColor dark:hover:bg-meta-4`}
+          className={`${isItemActive ? "bg-secondary text-white dark:bg-meta-4" : ""} group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-white duration-300 ease-in-out hover:text-primary hover:bg-backgroundColor dark:hover:bg-meta-4`}
         >
           {item.icon}
           {item.label}
           {item.children && (
             <svg
-              className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+              className={`absolute right-4 top-1/ -translate-y-1/2 fill-current ${
                 pageName === item.label.toLowerCase() && "rotate-180"
               }`}
               width="20"
@@ -68,3 +68,4 @@ const SidebarItem = ({ item, pageName, setPageName }: any) => {
 };
 
 export default SidebarItem;
+2
