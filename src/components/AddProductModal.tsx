@@ -62,7 +62,7 @@ useEffect(() => {
       const res = await axios('/api/collections')
       if(res.status===200){
         setCollections(res.data.data)
-      
+        updateField('collectionID', res.data.data[0]._id)
     }
   }
   catch(err){
@@ -222,7 +222,7 @@ useEffect(() => {
 
 
 {/* Product Care */}
-<div>
+{/* <div>
   <label className="block font-semibold">Product Care:</label>
   {productState.productCare.map((care, index) => (
     <div key={index} className="flex items-center gap-2 mb-2">
@@ -253,7 +253,7 @@ useEffect(() => {
   >
     Add More
   </button>
-</div>
+</div> */}
           </div>
 
           {/* Buttons */}
