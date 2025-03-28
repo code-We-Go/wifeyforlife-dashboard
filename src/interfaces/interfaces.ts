@@ -19,6 +19,8 @@ export interface SubCollection {
   subCollectionName:string;
   products :string[];
   imageUrl:string;
+  collectionID:string;
+  description:string;
 }
  export interface Product {
     _id: string;

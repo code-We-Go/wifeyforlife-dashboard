@@ -7,10 +7,14 @@ const Shcema =mongoose.Schema({
     },
     collectionID:{type:String},
 
-    imgUrl:{
+    imageUrl:{
+        type:String,
+        default:""
+    },
+    products:{type:[String]},
+    description:{
         type:String,
     },
-    products:{type:[String]}
 
 
     });
