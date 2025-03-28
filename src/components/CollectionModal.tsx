@@ -91,12 +91,19 @@ const addNewCollection =async()=>{
           </>
         ) :type==='add'?    
         <>
+          <label className="block mb-2">Name</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border px-3 py-2 rounded mb-4"
         />
+                    <label className="block mb-2">Description</label>
+            <textarea 
+                          className="w-full border px-3 py-2 rounded mb-4"
+
+            value={description} onChange={(e)=>setdescription(e.target.value)}></textarea>
+
         <button onClick={addNewCollection} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded mr-2">
           Add
         </button>
