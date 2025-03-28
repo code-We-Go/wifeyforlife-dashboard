@@ -5,6 +5,10 @@ const collectionsShcema =mongoose.Schema({
         type:String,
         required:true,
     },
+    description:{
+        type:String,
+        
+    }
     });
 
     const collectionsModel= mongoose.models.collections || mongoose.model('collections', collectionsShcema)
