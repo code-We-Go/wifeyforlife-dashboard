@@ -11,7 +11,7 @@ const CategoriesPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [modalType, setModalType] = useState<'edit' | 'delete' | 'add' | null>(null);
-  const [selectedCollection, setSelectedCollection] = useState<Collection>({ _id: '', collectionName: '' });
+  const [selectedCollection, setSelectedCollection] = useState<Collection>({ _id: '', collectionName: '',description:"" });
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -28,7 +28,7 @@ const CategoriesPage = () => {
 
   const openModal = (type: 'edit' | 'delete' | 'add', collection?: Collection) => {
     setModalType(type);
-    setSelectedCollection(collection || { _id: '', collectionName: '' });
+    setSelectedCollection(collection || { _id: '', collectionName: '',description:"" });
   };
 
   return (
