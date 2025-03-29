@@ -1,6 +1,5 @@
 import ordersModel from "@/app/models/ordersModel";
 import productsModel from "@/app/models/productsModel";
-import productModel from "@/app/models/productsModel";
 import { ConnectDB } from "@/config/db";
 import { NextResponse } from "next/server";
 
@@ -14,7 +13,7 @@ export async function POST (req: Request, res: Response){
     try {
         const data = await req.json();
         console.log(data)
-        const newProduct = await productModel.create(data);
+        const newProduct = await productsModel.create(data);
         return NextResponse.json({ data: newProduct }, { status: 200 });
     } catch (error:any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -27,7 +26,7 @@ export async function DELETE(request:Request){
     
     console.log('working');
     try {
-        const res= await productModel.findByIdAndDelete(req.productID)
+        const res= await productsModel.findByIdAndDelete(req.productID)
         console.log(res);
 
      return new Response(JSON.stringify(res),{
@@ -71,8 +70,8 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     try {
-        const products = await productModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-        const totalProducts = await productModel.countDocuments();
+        const products = await productsModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
+        const totalProducts = await productsModel.countDocuments();
 
         return NextResponse.json({
             data: products,

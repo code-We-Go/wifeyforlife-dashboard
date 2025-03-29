@@ -28,6 +28,7 @@ export interface SubCollection {
     description: string;
     price: price;
     collectionID: string;
+    subCollectionID: string;
     variations: Variant[];
     productDimensions:string[];
       productDetails:string[];

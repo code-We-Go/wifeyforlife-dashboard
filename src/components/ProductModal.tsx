@@ -1,4 +1,4 @@
-import { Collection, Product } from '@/interfaces/interfaces';
+import { Collection, Product, SubCollection } from '@/interfaces/interfaces';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Swal from "sweetalert2";
@@ -13,6 +13,8 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
     const [productState,setProduct]=useState<Product>(product)
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
      const [collections,setCollections]=useState<Collection[]>([])
+     const [subCollections,setSubCollections]=useState<SubCollection[]>([])
+
    useEffect(() => {
      const fetchCollections = async()=>  {
        try{
@@ -28,6 +30,28 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
      }
      fetchCollections()
    }, [])
+   useEffect(() => {
+    const fetchSubCollections = async()=>  {
+     if(productState.collectionID){
+
+       try{
+         const res = await axios(`/api/subCollections?collectionID=${productState.collectionID}`)
+         if(res.status===200){
+           setSubCollections(res.data)
+           console.log(res.data[0]._id)
+   
+           updateFeild('subCollectionID', res.data[0]._id)
+       }
+     }
+     catch(err){
+       console.error(err)
+     }
+     }
+  
+     }
+    fetchSubCollections()
+  }, [productState.collectionID])
+  
     const updateFeild = async(field:string,value:any)=>{
         setProducts((prevProducts) =>
             prevProducts.map((p) =>
@@ -139,6 +163,17 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
                 className="border p-2 w-full"
               >
                 {collections.map((collection,index) => <option key={index} value={collection._id}>{collection.collectionName}</option>)}
+                </select>
+              {/* {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>} */}
+            </div>
+            <div>
+              <label className="block font-semibold">Sub-Collection:</label>
+              <select
+                value={productState.subCollectionID}
+                onChange={(e) => updateFeild("subCollectionID", e.target.value)}
+                className="border p-2 w-full"
+              >
+                {subCollections.map((subCollection,index) => <option key={index} value={subCollection._id}>{subCollection.subCollectionName}</option>)}
                 </select>
               {/* {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>} */}
             </div>

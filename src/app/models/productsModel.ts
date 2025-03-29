@@ -14,6 +14,7 @@ export interface Product extends Document {
   title: string;
   description: string;
   collectionID: string;
+  subCollectionID: string;
   price: {
     local: number;
   };
@@ -55,7 +56,8 @@ const VariantSchema = new Schema<Variant>({
 const ProductSchema = new Schema<Product>({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  collectionID: { type: String, required: false },
+  collectionID: { type: String, required: true },
+  subCollectionID: { type: String, required: false },
   price: {
     local: { 
       type: Number, 
@@ -79,5 +81,5 @@ const ProductSchema = new Schema<Product>({
 });
 
 // Create and export the Product model
-const productModel = mongoose.models.products || mongoose.model<Product>('products', ProductSchema);
-export default productModel;
+const productsModel = mongoose.models.products || mongoose.model<Product>('products', ProductSchema);
+export default productsModel;

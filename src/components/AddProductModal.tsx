@@ -1,6 +1,6 @@
 "use client";
 
-import { AddProductType, Collection, Product } from "@/interfaces/interfaces";
+import { AddProductType, Collection, Product, SubCollection } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -24,13 +24,6 @@ const AddProductModal = ({
           [field]: value,
         };
         setProduct((prev)=>({...prev,variations:updatedVariations}))
-  
-        // Update local state optimistically
-        // setProducts((prevProducts) =>
-        //   prevProducts.map((p) =>
-        //     p._id === product._id ? { ...p, variations: updatedVariations } : p
-        //   )
-        // );
     };
   const [productState, setProduct] = useState<AddProductType>({
     title: "",
@@ -38,13 +31,14 @@ const AddProductModal = ({
     price: { local: 0 },
     variations: [],
     collectionID: "",
+    subCollectionID: "",
     productDimensions: [],
     productDetails: [],
     productCare: [],
   });
 
   const [errors, setErrors] = useState<any>({}); // For validation errors
-
+const [collectionID,setCollectionID]=useState<string>(); 
   // Validation function
   const validate = () => {
     const newErrors: any = {};
@@ -56,12 +50,15 @@ const AddProductModal = ({
     return Object.keys(newErrors).length === 0;
   };
   const [collections,setCollections]=useState<Collection[]>([])
+  const [subCollections,setSubCollections]=useState<SubCollection[]>([])
+  
 useEffect(() => {
   const fetchCollections = async()=>  {
     try{
       const res = await axios('/api/collections')
       if(res.status===200){
         setCollections(res.data.data)
+setCollectionID(res.data.data[0]._id)
         updateField('collectionID', res.data.data[0]._id)
     }
   }
@@ -69,8 +66,29 @@ useEffect(() => {
     console.error(err)
   }
   }
+
   fetchCollections()
 }, [])
+useEffect(() => {
+  const fetchSubCollections = async()=>  {
+   if(collectionID){
+
+     try{
+       const res = await axios(`/api/subCollections?collectionID=${collectionID}`)
+       if(res.status===200){
+         setSubCollections(res.data)
+         console.log(res.data[0]._id)
+ 
+         updateField('subCollectionID', res.data[0]._id)
+     }
+   }
+   catch(err){
+     console.error(err)
+   }
+   }
+  }
+  fetchSubCollections()
+}, [collectionID,setCollectionID])
 
   // Create Product Function
   const addProduct = async () => {
@@ -154,11 +172,22 @@ useEffect(() => {
             <div>
               <label className="block font-semibold">Collection:</label>
               <select
-                value={productState.collectionID}
-                onChange={(e) => updateField("collectionID", e.target.value)}
+                value={collectionID}
+                onChange={(e) => setCollectionID(e.target.value)}
                 className="border p-2 w-full"
               >
                 {collections.map((collection,index) => <option key={index} value={collection._id}>{collection.collectionName}</option>)}
+                </select>
+              {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>}
+            </div>
+            <div>
+              <label className="block font-semibold">Sub-Collection:</label>
+              <select
+                value={productState.subCollectionID}
+                onChange={(e) => updateField("subCollectionID", e.target.value)}
+                className="border p-2 w-full"
+              >
+                {subCollections.map((subCollection,index) => <option key={index} value={subCollection._id}>{subCollection.subCollectionName}</option>)}
                 </select>
               {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>}
             </div>
