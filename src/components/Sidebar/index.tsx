@@ -9,6 +9,10 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
+import { GiClothes } from "react-icons/gi";
+import { LiaShippingFastSolid } from "react-icons/lia";
+
+
 
 
 interface SidebarProps {
@@ -96,6 +100,14 @@ const menuGroups = [
       },
       {
         icon: (
+<GiClothes />
+
+        ),
+        label: "Categories",
+        route: "/pages/categories",
+      },
+      {
+        icon: (
 <BsCollection />
 
           // <svg
@@ -137,6 +149,12 @@ const menuGroups = [
         ),
         label: "USERS",
         route: "/pages/users",
+      },
+      {
+        icon: <LiaShippingFastSolid />
+        ,
+        label: "SHIPPING",
+        route: "/pages/shipping",
       },
       // {
       //   icon: (
@@ -376,7 +394,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   return (
     <ClickOutside onClick={() => setSidebarOpen(false)}>
       <aside
-        className={`fixed left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-primary duration-300 ease-linear dark:bg-boxdark lg:translate-x-0 ${
+        className={`fixed left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-600 duration-300 ease-linear dark:bg-boxdark lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

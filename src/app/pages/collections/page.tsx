@@ -6,19 +6,19 @@ import { Collection } from '@/interfaces/interfaces';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
-const CategoriesPage = () => {
+const CollectionsPage = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [modalType, setModalType] = useState<'edit' | 'delete' | 'add' | null>(null);
-  const [selectedCollection, setSelectedCollection] = useState<Collection>({ _id: '', collectionName: '',description:"" });
+  const [selectedCollection, setSelectedCollection] = useState<Collection>({ _id: '', collectionName: '',description:"", imageURL: '', products: [] });
 
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const res = await axios.get(`/api/collections?page=${page}`);
-        setCollections(res.data.data);
-        setTotalPages(res.data.totalPages);
+        const res = await axios.get(`/api/collections`);
+        setCollections(res.data);
+        // setTotalPages(res.data.totalPages);
       } catch (error) {
         console.error("Error fetching collections:", error);
       }
@@ -28,7 +28,7 @@ const CategoriesPage = () => {
 
   const openModal = (type: 'edit' | 'delete' | 'add', collection?: Collection) => {
     setModalType(type);
-    setSelectedCollection(collection || { _id: '', collectionName: '',description:"" });
+    setSelectedCollection(collection || { _id: '', collectionName: '',description:"", imageURL: '', products: [] });
   };
 
   return (
@@ -109,8 +109,8 @@ const CategoriesPage = () => {
               setModalType(null);
             }}
             refreshCollections={() => {
-              axios.get(`/api/collections?page=${page}`).then(res => {
-                setCollections(res.data.data);
+              axios.get(`/api/collections`).then(res => {
+                setCollections(res.data);
               });
             }}
           />
@@ -120,4 +120,4 @@ const CategoriesPage = () => {
   );
 };
 
-export default CategoriesPage;
+export default CollectionsPage;

@@ -20,8 +20,8 @@ const RecentOrders = () => {
       }, []); 
   
   return (
-    <div className=' h-auto col-span-12 bg-white flex flex-col gap-3 justify-start items-center  w-full border py-4 border-primary'>
-      <h2 className='uppercase text-primary'>Recent Orders</h2>
+    <div className=' h-auto col-span-12 bg-white flex flex-col gap-3 md:gap-6 justify-start items-center  w-full border py-4 border-primary'>
+      <h2 className=' font-semibold text-xl md:text-2xl text-secondary'>Recent Orders</h2>
       <div className=' flex flex-col  h-auto w-full    gap-4  items-center  '>
 
       {orders.length > 0 ? (

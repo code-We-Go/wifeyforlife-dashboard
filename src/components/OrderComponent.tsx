@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { CgDetailsMore } from "react-icons/cg";
 import Swal from "sweetalert2";
+import { IoMenuSharp } from "react-icons/io5";
+
 
 const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dispatch<React.SetStateAction<IOrder[]>> }) => {
 
@@ -107,8 +109,8 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   }, [optionsModalIsOpen]);
 
   return (
-    <div className="relative w-[97%] min-h-6 px-2 py-1 text-primary bg-backgroundColor/25 border border-primary">
-      <div className="flex w-full border-b pb-1 border-primary justify-between">
+    <div className="relative  rounded-md w-[97%] min-h-6 px-4 py-8 text-white bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-600 bg-backgroundColor/25 border border-primary">
+      <div className="flex w-full border-b pb-1 border-white justify-between">
         <div className="flex gap-2">
           <h1>ORDER ID :</h1>
           <p>{order._id}</p>
@@ -116,11 +118,11 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
 
         {/* Clickable Icon to Open Modal */}
         <div className="relative">
-          <CgDetailsMore onClick={() => setOptionsModal(true)} className="cursor-pointer" />
+        <IoMenuSharp  onClick={() => setOptionsModal(true)} className="cursor-pointer" />
           
           {/* Options Modal */}
           {optionsModalIsOpen && (
-            <div ref={modalRef} className="px-2 flex flex-col gap-2 py-2 absolute top-0 right-0 w-auto h-auto bg-backgroundColor p-2 z-30 shadow-xl">
+            <div ref={modalRef} className="px-2 flex flex-col text-primary gap-2 py-2 absolute top-0 right-0 w-auto h-auto bg-backgroundColor p-2 z-30 shadow-xl">
               <p 
               onClick={()=>{
                 setDetailsModal(true)
@@ -145,7 +147,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
           <p>{order.firstName } {order.lastName}</p>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <p>{order.total} {order.currency}</p>
+          <p>{order.total} LE</p>
         </div>
         <div className="flex items-center justify-center gap-2">
           <p>{order.city}</p>
@@ -156,7 +158,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
       {isModalOpen && (
         <div 
         onClick={()=>setIsModalOpen(false)}
-        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        className="fixed inset-0 text-primary bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div 
           onClick={(e) => e.stopPropagation()}
           className="bg-white p-6  shadow-lg w-4/5 md:w-1/3 text-center">
@@ -182,7 +184,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   {isDetailsModalOpen  && (
   <div 
   onClick={()=>setDetailsModal(false)}
-  className="fixed   lg:ml-[290px] lg:w-[calc(100vw-290px)]  inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+  className="fixed   lg:ml-[290px] lg:w-[calc(100vw-290px)] text-primary inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
     <div
         onClick={(e) => e.stopPropagation()} 
 
@@ -235,7 +237,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
             <option key={payment} value={payment}>{payment}</option>
           ))}
         </select>
-        <p><strong>Total:</strong> {order.total?.toFixed(2)}{order.currency}</p>
+        <p><strong>Total:</strong> {order.total?.toFixed(2)} LE</p>
         <p><strong>Created At:</strong> {new Date(order.createdAt!).toLocaleString("en-EG", { timeZone: "Africa/Cairo" })}</p>
       </div>
 

@@ -8,27 +8,35 @@
   export type price={
    local:number;
   }
-  export interface Collection {
+  export interface Category {
       _id: string;
-      collectionName:string;
+      categoryName:string;
       description:string;
 
   }
-export interface SubCollection {
-  _id: string;
-  subCollectionName:string;
-  products :string[];
-  imageUrl:string;
-  collectionID:string;
-  description:string;
+  export interface Collection {
+    _id: string;
+    collectionName:string;
+    description:string;
+    imageURL:string;
+    products:string[];
+
 }
+// export interface SubCollection {
+//   _id: string;
+//   subCollectionName:string;
+//   products :string[];
+//   imageUrl:string;
+//   collectionID:string;
+//   description:string;
+// }
  export interface Product {
     _id: string;
     title: string;
     description: string;
     price: price;
-    collectionID: string;
-    subCollectionID: string;
+    categoryID: string;
+    season: string;
     variations: Variant[];
     productDimensions:string[];
       productDetails:string[];
@@ -120,4 +128,10 @@ export interface IOrder {
     billingPhone?: string;
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+export interface ShippingZone {
+  _id: string;
+  zone_name: string;
+  zone_rate: number;
 }

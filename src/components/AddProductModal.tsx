@@ -1,6 +1,6 @@
 "use client";
 
-import { AddProductType, Collection, Product, SubCollection } from "@/interfaces/interfaces";
+import { AddProductType, Category, Product } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -30,15 +30,15 @@ const AddProductModal = ({
     description: "",
     price: { local: 0 },
     variations: [],
-    collectionID: "",
-    subCollectionID: "",
+    categoryID: "",
+    season: "all",
     productDimensions: [],
     productDetails: [],
     productCare: [],
   });
 
   const [errors, setErrors] = useState<any>({}); // For validation errors
-const [collectionID,setCollectionID]=useState<string>(); 
+const [categoryID,setCategoryID]=useState<string>(); 
   // Validation function
   const validate = () => {
     const newErrors: any = {};
@@ -49,17 +49,16 @@ const [collectionID,setCollectionID]=useState<string>();
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const [collections,setCollections]=useState<Collection[]>([])
-  const [subCollections,setSubCollections]=useState<SubCollection[]>([])
+  const [categoris,setCategories]=useState<Category[]>([])
   
 useEffect(() => {
-  const fetchCollections = async()=>  {
+  const fetchCategories = async()=>  {
     try{
-      const res = await axios('/api/collections')
+      const res = await axios('/api/categories')
       if(res.status===200){
-        setCollections(res.data.data)
-setCollectionID(res.data.data[0]._id)
-        updateField('collectionID', res.data.data[0]._id)
+        setCategories(res.data.data)
+setCategoryID(res.data.data[0]._id)
+        updateField('categoryID', res.data.data[0]._id)
     }
   }
   catch(err){
@@ -67,28 +66,9 @@ setCollectionID(res.data.data[0]._id)
   }
   }
 
-  fetchCollections()
+  fetchCategories()
 }, [])
-useEffect(() => {
-  const fetchSubCollections = async()=>  {
-   if(collectionID){
 
-     try{
-       const res = await axios(`/api/subCollections?collectionID=${collectionID}`)
-       if(res.status===200){
-         setSubCollections(res.data)
-         console.log(res.data[0]._id)
- 
-         updateField('subCollectionID', res.data[0]._id)
-     }
-   }
-   catch(err){
-     console.error(err)
-   }
-   }
-  }
-  fetchSubCollections()
-}, [collectionID,setCollectionID])
 
   // Create Product Function
   const addProduct = async () => {
@@ -170,25 +150,37 @@ useEffect(() => {
             </div>
             {/* collections */}
             <div>
-              <label className="block font-semibold">Collection:</label>
+              <label className="block font-semibold">Category:</label>
               <select
-                value={collectionID}
-                onChange={(e) => setCollectionID(e.target.value)}
+                value={categoryID}
+                onChange={(e) => setCategoryID(e.target.value)}
                 className="border p-2 w-full"
               >
-                {collections.map((collection,index) => <option key={index} value={collection._id}>{collection.collectionName}</option>)}
+                {categoris.map((category,index) => <option key={index} value={category._id}>{category.categoryName}</option>)}
                 </select>
               {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>}
             </div>
             <div>
-              <label className="block font-semibold">Sub-Collection:</label>
-              <select
-                value={productState.subCollectionID}
-                onChange={(e) => updateField("subCollectionID", e.target.value)}
-                className="border p-2 w-full"
-              >
-                {subCollections.map((subCollection,index) => <option key={index} value={subCollection._id}>{subCollection.subCollectionName}</option>)}
-                </select>
+            <label className="block font-semibold">Season:</label>
+              <div className="flex gap-4">
+              <div className='flex gap-2'>
+                <label className="block font-semibold">Summer</label>
+              <input type='radio' name='season' value='summer' checked={productState.season=== 'summer'} onChange={(e) => updateField("season", e.target.value)}></input>
+
+              </div>
+              <div className='flex gap-2'>
+                <label className="block font-semibold">Winter</label>
+              <input type='radio' name='season'checked={productState.season=== 'winter'} value='winter' onChange={(e) => updateField("season", e.target.value)}></input>
+
+              </div>
+              <div className='flex gap-2'>
+                <label className="block font-semibold">All</label>
+              <input type='radio' name='season' checked={productState.season=== 'all'} value='all' onChange={(e) => updateField("season", e.target.value)}></input>
+
+              </div>
+              </div>
+
+              
               {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>}
             </div>
 

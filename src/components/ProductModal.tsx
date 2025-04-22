@@ -1,4 +1,4 @@
-import { Collection, Product, SubCollection } from '@/interfaces/interfaces';
+import { Category, Collection, Product } from '@/interfaces/interfaces';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Swal from "sweetalert2";
@@ -12,15 +12,14 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
 }) => {
     const [productState,setProduct]=useState<Product>(product)
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-     const [collections,setCollections]=useState<Collection[]>([])
-     const [subCollections,setSubCollections]=useState<SubCollection[]>([])
+     const [categories,setCategoried]=useState<Category[]>([])
 
    useEffect(() => {
-     const fetchCollections = async()=>  {
+     const fetchCategories = async()=>  {
        try{
-         const res = await axios('/api/collections')
+         const res = await axios('/api/categories')
          if(res.status===200){
-           setCollections(res.data.data)
+           setCategoried(res.data.data)
          
        }
      }
@@ -28,29 +27,8 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
        console.error(err)
      }
      }
-     fetchCollections()
+     fetchCategories()
    }, [])
-   useEffect(() => {
-    const fetchSubCollections = async()=>  {
-     if(productState.collectionID){
-
-       try{
-         const res = await axios(`/api/subCollections?collectionID=${productState.collectionID}`)
-         if(res.status===200){
-           setSubCollections(res.data)
-           console.log(res.data[0]._id)
-   
-           updateFeild('subCollectionID', res.data[0]._id)
-       }
-     }
-     catch(err){
-       console.error(err)
-     }
-     }
-  
-     }
-    fetchSubCollections()
-  }, [productState.collectionID])
   
     const updateFeild = async(field:string,value:any)=>{
         setProducts((prevProducts) =>
@@ -158,24 +136,35 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
             <div>
               <label className="block font-semibold">Collection:</label>
               <select
-                value={productState.collectionID}
-                onChange={(e) => updateFeild("collectionID", e.target.value)}
+                value={productState.categoryID}
+                onChange={(e) => updateFeild("categoryID", e.target.value)}
                 className="border p-2 w-full"
               >
-                {collections.map((collection,index) => <option key={index} value={collection._id}>{collection.collectionName}</option>)}
+                {categories.map((category,index) => <option key={index} value={category._id}>{category.categoryName}</option>)}
                 </select>
               {/* {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>} */}
             </div>
             <div>
-              <label className="block font-semibold">Sub-Collection:</label>
-              <select
-                value={productState.subCollectionID}
-                onChange={(e) => updateFeild("subCollectionID", e.target.value)}
-                className="border p-2 w-full"
-              >
-                {subCollections.map((subCollection,index) => <option key={index} value={subCollection._id}>{subCollection.subCollectionName}</option>)}
-                </select>
-              {/* {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>} */}
+            <label className="block font-semibold">Season:</label>
+              <div className="flex gap-4">
+              <div className='flex gap-2'>
+                <label className="block font-semibold">Summer</label>
+              <input type='radio' name='season' value='summer' checked={productState.season=== 'summer'} onChange={(e) => updateFeild("season", e.target.value)}></input>
+
+              </div>
+              <div className='flex gap-2'>
+                <label className="block font-semibold">Winter</label>
+              <input type='radio' name='season'checked={productState.season=== 'winter'} value='winter' onChange={(e) => updateFeild("season", e.target.value)}></input>
+
+              </div>
+              <div className='flex gap-2'>
+                <label className="block font-semibold">All</label>
+              <input type='radio' name='season' checked={productState.season=== 'all'} value='all' onChange={(e) => updateFeild("season", e.target.value)}></input>
+
+              </div>
+              </div>
+
+              
             </div>
               {/* Price */}
               <div> 

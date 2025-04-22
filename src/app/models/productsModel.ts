@@ -13,8 +13,8 @@ export interface Variant {
 export interface Product extends Document {
   title: string;
   description: string;
-  collectionID: string;
-  subCollectionID: string;
+  categoryID: string;
+  season: string;
   price: {
     local: number;
   };
@@ -56,8 +56,8 @@ const VariantSchema = new Schema<Variant>({
 const ProductSchema = new Schema<Product>({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  collectionID: { type: String, required: true },
-  subCollectionID: { type: String, required: false },
+  categoryID: { type: String, required: true },
+  season: { type: String, required: false },
   price: {
     local: { 
       type: Number, 

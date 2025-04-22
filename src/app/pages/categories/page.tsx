@@ -1,76 +1,72 @@
 'use client'
-
-import CollectionModal from '@/components/CategoryModal';
+import CategoryModal from '@/components/CategoryModal';
 import DefaultLayout from '@/components/Layouts/DefaultLayout';
-import NewSlettersModal from '@/components/NewSlettersModal';
-import { Collection, Newsletters } from '@/interfaces/interfaces';
+import { Category } from '@/interfaces/interfaces';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const CategoriesPage = () => {
-  const [newSletters, setNewSletters] = useState<Newsletters[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [modalType, setModalType] = useState<'edit' | 'delete' | 'add' | null>(null);
-//   const [selectedCollection, setSelectedCollection] = useState<Collection>({ _id: '', collectionName: '' });
-  const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletters>({ _id: '', name: '',number:"" });
+  const [selectedCategory, setSelectedCategory] = useState<Category>({ _id: '', categoryName: '',description:"" });
 
   useEffect(() => {
-    const fetchNewsletters = async () => {
+    const fetchCategories = async () => {
       try {
-        const res = await axios.get(`/api/newSletters?page=${page}`);
-        setNewSletters(res.data.data);
-        setTotalPages(res.data.totalPages);
+        const res = await axios.get(`/api/categories`);
+        setCategories(res.data.data);
+        // setTotalPages(res.data.totalPages);
       } catch (error) {
         console.error("Error fetching collections:", error);
       }
     };
-    fetchNewsletters();
+    fetchCategories();
   }, [page]);
 
-  const openModal = (type: 'edit' | 'delete' | 'add', newSletter?: Newsletters) => {
+  const openModal = (type: 'edit' | 'delete' | 'add', category?: Category) => {
     setModalType(type);
-    setSelectedNewsletter(newSletter || { _id: '', name: '',number: ''});
+    setSelectedCategory(category || { _id: '', categoryName: '',description:""});
   };
 
   return (
     <DefaultLayout>
       <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-start items-center gap-4 bg-backgroundColor">
         <div
-          className="text-primary w-[97%] flex justify-end underline "
+         
+          className="text-primary w-[97%] flex justify-end underline"
         >
           <h3
           className='hover:cursor-pointer'
-          onClick={() => openModal('add')}
-          >ADD NEWSLETTER</h3>
+           onClick={() => openModal('add')}
+          >ADD NEW CATEGORY</h3>
         </div>
 
         {/* Table */}
-        {newSletters.length > 0 ? (
+        {categories.length > 0 ? (
           <table className="w-[97%] text-left border border-gray-300 rounded">
             <thead className="bg-gray-100 text-sm">
               <tr>
                 <th className="p-2 border">#</th>
-                <th className="p-2 border">Name</th>
-                <th className="p-2 border">Whatsapp</th>
+                <th className="p-2 border">Category Name</th>
                 <th className="p-2 border">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {newSletters.map((newSletter, index) => (
-                <tr key={index} className="hover:bg-gray-50 text-sm">
+              {categories.map((category, index) => (
+                <tr key={category._id} className="hover:bg-gray-50 text-sm">
                   <td className="p-2 border">{(page - 1) * 10 + index + 1}</td>
-                  <td className="p-2 border">{newSletter.name}</td>
-                  <td className="p-2 border">{newSletter.number}</td>
+                  <td className="p-2 border">{category.categoryName}</td>
                   <td className="p-2 border space-x-2">
                     <button
-                      onClick={() => openModal('edit', newSletter)}
+                      onClick={() => openModal('edit', category)}
                       className="text-blue-600 underline"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => openModal('delete', newSletter)}
+                      onClick={() => openModal('delete', category)}
                       className="text-red-600 underline"
                     >
                       Delete
@@ -81,7 +77,7 @@ const CategoriesPage = () => {
             </tbody>
           </table>
         ) : (
-          <h1>No collections</h1>
+          <h1>No categories</h1>
         )}
 
         {/* Pagination */}
@@ -105,15 +101,15 @@ const CategoriesPage = () => {
 
         {/* Modal */}
         {modalType && (
-          <NewSlettersModal
+          <CategoryModal
             type={modalType}
-            newSletter={selectedNewsletter}
+            category={selectedCategory}
             closeModal={() => {
               setModalType(null);
             }}
-            refreshNewsletters={() => {
-              axios.get(`/api/newSletters?page=${page}`).then(res => {
-                setNewSletters(res.data.data);
+            refreshCategories={() => {
+              axios.get(`/api/categories?page=${page}`).then(res => {
+                setCategories(res.data.data);
               });
             }}
           />

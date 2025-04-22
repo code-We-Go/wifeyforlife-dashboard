@@ -1,23 +1,53 @@
-import collectionsModel from "@/app/models/collectionsModel";
+
 import { ConnectDB } from "@/config/db";
 import { NextResponse } from "next/server";
+import collectionsModel from "@/app/models/collectionsModel";
 
 const loadDB = async () => {
     await ConnectDB();
 };
 
 loadDB();
-export async function POST (req: Request, res: Response){
-    console.log('working');
+
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const collectionID = searchParams.get("collectionID")!;
+    console.log('collectionID'+collectionID)
+
+
     try {
-        const data = await req.json();
-        console.log(data)
-        const newcollections = await collectionsModel.create(data);
-        return NextResponse.json({ data: newcollections }, { status: 200 });
-    } catch (error:any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        if (!collectionID ) {
+            const collections = await collectionsModel.find().sort({ createdAt: -1 });
+            console.log("collections", collections)
+            return NextResponse.json(collections, { status: 200 });
+        }
+        else{
+
+            const collection = await collectionsModel.findById(collectionID)
+            return NextResponse.json({
+                data: collection,
+                // total: totalProducts,
+                // currentPage: page,
+                // totalPages: Math.ceil(totalProducts / limit),
+            }, { status: 200 });
+        }
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
     }
 }
+
+export async function POST(req: Request) {
+    const body = await req.json();
+    console.log('body', body)
+
+    try {
+        const newCollection = await collectionsModel.create(body);
+        return NextResponse.json(newCollection, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to create collection" }, { status: 500 });
+    }
+}
+
 export async function DELETE(request:Request){
     console.log('working');
     const req=await request.json()
@@ -44,6 +74,7 @@ export async function DELETE(request:Request){
    
 
 }
+
 export async function PUT(request:Request){
     const { searchParams } = new URL(request.url);
     const collectionID = searchParams.get("collectionID") 
@@ -59,25 +90,5 @@ export async function PUT(request:Request){
     catch(error:any){
         return Response.json({ error: error.message }, { status: 500 });
      
-    }
-}
-export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 10;
-    const skip = (page - 1) * limit;
-
-    try {
-        const collections = await collectionsModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-        const totalcollections = await collectionsModel.countDocuments();
-
-        return NextResponse.json({
-            data: collections,
-            total: totalcollections,
-            currentPage: page,
-            totalPages: Math.ceil(totalcollections / limit),
-        }, { status: 200 });
-    } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
     }
 }
