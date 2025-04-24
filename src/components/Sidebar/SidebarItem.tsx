@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import SidebarDropdown from "@/components/Sidebar/SidebarDropdown";
 import { usePathname } from "next/navigation";
-import { Berkishire } from "@/app/layout";
+import { Berkishire } from "@/app/lib/fonts";
 
 const SidebarItem = ({ item, pageName, setPageName }: any) => {
   const handleClick = () => {

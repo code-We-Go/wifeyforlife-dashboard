@@ -11,7 +11,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes } from "react-icons/gi";
 import { LiaShippingFastSolid } from "react-icons/lia";
-import Berkishire from "@/app/layout";
+import { Berkishire } from "@/app/lib/fonts";
 
 
 
@@ -400,7 +400,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         }`}
       >
         {/* <!-- SIDEBAR HEADER --> */}
-        <div className="flex border-white bg-primary border-b items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
+        <div className="flex border-primary bg-primary border-b items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
           <Link href="/">
             <Image
               width={176}
@@ -435,7 +435,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
         <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
           {/* <!-- Sidebar Menu --> */}
-          <nav className={`${Berkishire} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
+          <nav className={`${Berkishire.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
             {menuGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
                 <h3 className="mb-4 ml-4  text-sm font-semibold text-white">
