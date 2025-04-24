@@ -109,8 +109,8 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   }, [optionsModalIsOpen]);
 
   return (
-    <div className="relative  rounded-md w-[97%] min-h-6 px-4 py-8 text-white bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-600 bg-backgroundColor/25 border border-primary">
-      <div className="flex w-full border-b pb-1 border-white justify-between">
+    <div className="relative text-sm rounded-md w-[97%] min-h-6 px-4 py-8 text-white bg-primary bg-backgroundColor/25 border border-primary">
+      <div className="flex text-sm w-full border-b pb-1 border-white justify-between">
         <div className="flex gap-2">
           <h1>ORDER ID :</h1>
           <p>{order._id}</p>
@@ -195,7 +195,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
       <h2 className="text-lg font-bold mb-4">ORDER DETAILS</h2>
       
       {/* Order Info */}
-      <div className="text-left space-y-2">
+      <div className="text-left  space-y-2">
         <p><strong>Order ID:</strong> {order._id || "N/A"}</p>
         <p><strong>Email:</strong> {order.email}</p>
         <p><strong>Customer:</strong> {order.firstName} {order.lastName}</p>

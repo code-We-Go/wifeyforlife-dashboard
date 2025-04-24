@@ -15,14 +15,14 @@ const options: ApexOptions = {
     position: "top",
     horizontalAlign: "left",
   },
-  colors: ["#2C5694"],
+  colors: ["#483C4E"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     height: 335,
     type: "area",
     dropShadow: {
       enabled: true,
-      color: "#2C5694",
+      color: "#483C4E",
       top: 10,
       blur: 4,
       left: 0,
@@ -72,7 +72,7 @@ const options: ApexOptions = {
   markers: {
     size: 4,
     colors: "#fff",
-    strokeColors: ["#2C5694"],
+    strokeColors: ["#483C4E"],
     strokeWidth: 3,
     strokeOpacity: 0.9,
     strokeDashArray: 0,
@@ -164,7 +164,7 @@ const ChartOne: React.FC = () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
             </span>
             <div className="w-full">
-              <p className="font-semibold text-primary">Monthly sales</p>
+              <p className={`font-semibold text-primary`}>Monthly sales</p>
             </div>
           </div>
         </div>

@@ -28,6 +28,13 @@ const ExposureRegular = localFont({
  const Genos = localFont({
   src: "/fonts/Genos.ttf",
 });
+export const Baskerville = localFont({
+  src: "/fonts/LibreBaskerville-Regular.ttf",
+});
+export const Berkishire = localFont({
+  src: "/fonts/BerkshireSwash-Regular.ttf",
+});
+
 
 export default function RootLayout({
   children,
@@ -47,7 +54,7 @@ export default function RootLayout({
     <html lang="en">
       <title>MAMILK</title>
       <DndProvider backend={HTML5Backend}>
-      <body suppressHydrationWarning={true} className={`${Genos.className} antialiased`}>
+      <body suppressHydrationWarning={true} className={`${Baskerville.className} antialiased`}>
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
           {/* {loading ? <Loader /> : children} */}
           {children}
