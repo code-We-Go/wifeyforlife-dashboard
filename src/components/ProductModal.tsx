@@ -96,7 +96,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
         <div onClick={() => setDetailsModal(false)}
          className="fixed inset-0 lg:pl-72.5 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div onClick={(e) => e.stopPropagation()} 
-          className="bg-white max-lg:mt-16  max-h-[90vh] overflow-y-scroll p-6 shadow-lg w-[90%] text-center">
+          className="bg-white rounded-2xl max-lg:mt-16  max-h-[90vh] overflow-y-scroll p-6 shadow-lg w-[90%] text-center">
             <h2 className="text-lg font-bold mb-4">PRODUCT DETAILS</h2>
 
             {/* Product Info */}
@@ -191,7 +191,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
   )}
   <button 
     onClick={() => updateFeild("variations", [...product.variations, { color: "", stock: 0, featured: false, images: [] }])} 
-    className="underline text-primary px-4 py-2"
+    className="underline text-accent px-4 py-2"
   >
     Add Variant
   </button>
@@ -225,7 +225,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
   ))}
   <button 
     onClick={() => updateFeild("productDetails", [...product.productDetails, ""])} 
-    className="underline text-primary px-4 py-2"
+    className="underline text-accent px-4 py-2"
   >
     Add More
   </button>
@@ -284,7 +284,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
             </div>
             <div className="flex justify-around mt-6">
               <button
-                className="px-4 py-2 text-primary border-[1px] border-primary"
+                className="px-4 py-2 text-white bg-accent border-[1px] rounded-2xl"
                 onClick={updateProduct}
               >
                 Update

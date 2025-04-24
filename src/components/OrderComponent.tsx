@@ -109,7 +109,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   }, [optionsModalIsOpen]);
 
   return (
-    <div className="relative text-sm rounded-md w-[97%] min-h-6 px-4 py-8 text-white bg-primary bg-backgroundColor/25 border border-primary">
+    <div className="relative text-sm rounded-2xl w-[97%] min-h-6 px-4 py-8 text-white bg-primary bg-backgroundColor/25 border border-primary">
       <div className="flex text-sm w-full border-b pb-1 border-white justify-between">
         <div className="flex gap-2">
           <h1>ORDER ID :</h1>
@@ -139,7 +139,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
       </div>
 
       {/* Other Order Details */}
-      <div className="flex items-center flex-nowrap pt-1 w-full justify-between">
+      <div className="flex items-center  flex-nowrap pt-1 w-full justify-between">
         <div className="flex flex-nowrap items-center justify-center gap-2">
         <p>{new Date(order.createdAt!).toLocaleString("en-EG", { timeZone: "Africa/Cairo" })}</p>
         </div>
@@ -150,7 +150,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
           <p>{order.total} LE</p>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <p>{order.city}</p>
+          <p>{order.state}</p>
         </div>
       </div>
 
@@ -158,21 +158,21 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
       {isModalOpen && (
         <div 
         onClick={()=>setIsModalOpen(false)}
-        className="fixed inset-0 text-primary bg-black bg-opacity-50 flex justify-center items-center z-50">
+        className="fixed inset-0 text-primary bg-black bg-opacity-50 flex justify-center  items-center z-50">
           <div 
           onClick={(e) => e.stopPropagation()}
-          className="bg-white p-6  shadow-lg w-4/5 md:w-1/3 text-center">
+          className="bg-white p-6 rounded-2xl shadow-lg w-4/5 md:w-1/3 text-center">
             <h2 className="text-lg font-bold mb-4">CONFIRM DELETION</h2>
             <p className="mb-6">Are you sure you want to delete your account? This action cannot be undone.</p>
             <div className="flex justify-around">
               <button
-                className="px-4 py-2  text-primary border-[1px] border-primary  "
+                className="px-4 py-2 rounded-2xl text-primary border-[1px] border-primary  "
                 onClick={deleteOrder}
               >
                 Yes, Delete
               </button>
               <button
-                className="px-4 py-2 text-white bg-primary "
+                className="px-4 py-2 rounded-2xl text-white bg-accent "
                 onClick={() => setIsModalOpen(false)}
               >
                 Cancel
@@ -188,7 +188,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
     <div
         onClick={(e) => e.stopPropagation()} 
 
-    className="bg-white  p-6 shadow-lg w-[90%] max-w-3xl text-center">
+    className="bg-white rounded-2xl p-6 shadow-lg w-[90%] max-w-3xl text-center">
       <div className="flex mb-2 w-full items-center justify-end">
         <span className="hover:cursor-pointer" onClick={()=>setDetailsModal(false)}>x</span>
       </div>

@@ -149,7 +149,7 @@ const ProductVariant = ({
             </button>
           </div>
         ))}
-        <button onClick={addSize} className="underline text-primary">
+        <button onClick={addSize} className="underline text-accent">
           Add Size
         </button>
       </div>

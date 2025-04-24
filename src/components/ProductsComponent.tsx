@@ -124,12 +124,12 @@ const ProductsComponent = ({ product, setProducts }: { product: Product; setProd
   }, [optionsModalIsOpen]);
 
   return (
-    <div className="relative w-[97%] min-h-2 px-2 py-1 text-primary bg-backgroundColor/25 border border-primary">
+    <div className="relative rounded-2xl w-[97%] min-h-2 px-2 py-1 text-primary bg-backgroundColor/25 border-2 border-primary">
       <div onClick={() => setDetailsModal(true)} className='flex w-full hover:cursor-pointer items-start text-primary mr-28'>
         <div className='flex pb-2 w-full justify-between items-start text-primary'>
           <div className='relative w-[60px] h-[70px] md:w-[100px] md:h-[120px]'>
 
-            <Image fill alt={product.title} src={product.variations[0].images[0]}></Image>
+            <Image className="rounded-2xl" fill alt={product.title} src={product.variations[0].images[0]}></Image>
           </div>
           <h2 className={` text-lg`}>{product.title}</h2>
           <p className='text-[12px] lg:text-lg'>{`${product.price.local} LE`}</p>

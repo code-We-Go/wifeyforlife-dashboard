@@ -83,7 +83,7 @@ const CategoriesPage = () => {
         {/* Pagination */}
         <div className="flex items-center gap-4 mt-4">
           <button
-            className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-accent text-white rounded disabled:opacity-50"
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
             disabled={page === 1}
           >
@@ -91,7 +91,7 @@ const CategoriesPage = () => {
           </button>
           <span className="text-lg">Page {page} of {totalPages}</span>
           <button
-            className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-accent text-white rounded disabled:opacity-50"
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={page === totalPages}
           >
