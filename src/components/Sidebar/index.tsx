@@ -11,7 +11,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes } from "react-icons/gi";
 import { LiaShippingFastSolid } from "react-icons/lia";
-import { Berkishire } from "@/app/layout";
+import Berkishire from "@/app/layout";
 
 
 
@@ -435,7 +435,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
         <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
           {/* <!-- Sidebar Menu --> */}
-          <nav className={`${Berkishire.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
+          <nav className={`${Berkishire} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
             {menuGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
                 <h3 className="mb-4 ml-4  text-sm font-semibold text-white">
