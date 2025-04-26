@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CgDetailsMore } from "react-icons/cg";
 import Swal from "sweetalert2";
 import { IoMenuSharp } from "react-icons/io5";
+import CartItemSmall from "./CartItemSmall";
 
 
 const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dispatch<React.SetStateAction<IOrder[]>> }) => {
@@ -197,8 +198,14 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
       {/* Order Info */}
       <div className="text-left  space-y-2">
         <p><strong>Order ID:</strong> {order._id || "N/A"}</p>
+
         <p><strong>Email:</strong> {order.email}</p>
         <p><strong>Customer:</strong> {order.firstName} {order.lastName}</p>
+        <p><strong>Cart:</strong></p>
+     
+      <div className="flex flex-col gap-2">
+        {order.cart?.map((item,index) => <CartItemSmall key={index} item={item} wishListBool={false}/>)}
+        </div>
         <p><strong>Phone:</strong> {order.phone || "N/A"}</p>
         <p><strong>Address:</strong> {order.address}, {order.city}, {order.state}, {order.country}</p>
         <p><strong>Postal Code:</strong> {order.postalZip || "N/A"}</p>

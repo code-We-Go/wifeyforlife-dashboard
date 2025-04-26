@@ -69,6 +69,7 @@
    productId: string,
    productName: string,
    price: number,
+   size: string
    quantity: number,
    imageUrl: string,
    color: string
