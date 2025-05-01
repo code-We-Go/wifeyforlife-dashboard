@@ -23,7 +23,7 @@ const UploadProductsImagesButton = ({
     <div>
       <UploadButton
         className="bg-primary text-white h-16 px-2 py-1 border-primary !important"
-        endpoint="imageUploader"
+        endpoint="mediaUploader"
         onClientUploadComplete={(res) => {
           // Check if multiple files were uploaded
           console.log("Files: ", res);

@@ -22,7 +22,7 @@ const UploadCollectionImageButton = ({
   return (
     <div className="text-white">
 <UploadButton
-  endpoint="imageUploader"
+  endpoint="mediaUploader"
   onClientUploadComplete={(res) => {
     deleteValue(imageUrl)
     console.log("Files: ", res);

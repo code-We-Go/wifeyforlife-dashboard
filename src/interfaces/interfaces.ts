@@ -3,7 +3,12 @@
  export interface Variant {
    color: string;
    sizes:Size[]
-   images:string[];
+   images:media[];
+ }
+ export type media={
+    url:string;
+    type:string;
+    
  }
   export type price={
    local:number;
