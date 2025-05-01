@@ -43,7 +43,7 @@ const CollectionProducts = ({collection,collectionProducts, setCollectionProduct
                         onChange={() => handleCheckboxChange(product._id)}
                     />
                     <Image 
-                        src={product.variations[0].images[0]} 
+                        src={product.variations[0].images[0].url} 
                         alt={product.title} 
                         width={50} 
                         height={80} 

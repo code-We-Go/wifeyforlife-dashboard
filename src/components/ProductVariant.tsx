@@ -1,6 +1,6 @@
 "use client";
 
-import { Variant, Product } from "@/interfaces/interfaces";
+import { Variant, Product, media } from "@/interfaces/interfaces";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import UploadProductsImagesButton from "./UploadProductImagesButton";
@@ -20,9 +20,9 @@ const ProductVariant = ({
   updateVariant: (index: number, field: string, value: any) => Promise<void>;
   onVariantChange: (index: number, field: string, value: any) => void;
 }) => {
-  const [imagesUrl, setImagesUrl] = useState<string[]>(variant.images);
+  const [imagesUrl, setImagesUrl] = useState<media[]>(variant.images || []);
   const ItemTypes = {
-    IMAGE: "image",
+    MEDIA: "media", // Changed to reflect both images and videos
   };
   const [sizes, setSizes] = useState<{ name: string; stock: number }[]>(variant.sizes || []);
 
@@ -34,16 +34,17 @@ const ProductVariant = ({
     updateVariant(index, "sizes", sizes);
   }, [sizes]);
 
-  // Handle image deletion
-  async function deleteProductImage(value: string, variantIndex: number) {
+  // Handle media deletion
+  async function deleteProductImage(url: string) {
     try {
-      const res = await axios.delete("/api/uploadthing", { data: { url: value } });
+      const res = await axios.delete("/api/uploadthing", { data: { url } });
       if (res.status === 200) {
-        const imagesAfterDelete = product.variations[variantIndex].images.filter((image) => image !== value);
-        updateVariant(variantIndex, "images", imagesAfterDelete);
+        const imagesAfterDelete = imagesUrl.filter((media) => media.url !== url);
+        setImagesUrl(imagesAfterDelete);
+        updateVariant(index, "images", imagesAfterDelete);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting media:", err);
     }
   }
 
@@ -64,25 +65,28 @@ const ProductVariant = ({
   const removeSize = (sizeIndex: number) => {
     setSizes(sizes.filter((_, i) => i !== sizeIndex));
   };
-  const moveImage = (fromIndex: number, toIndex: number) => {
+
+  // Handle drag-and-drop for media
+  const moveMedia = (fromIndex: number, toIndex: number) => {
     const updatedImages = [...imagesUrl];
-    const [movedImage] = updatedImages.splice(fromIndex, 1);
-    updatedImages.splice(toIndex, 0, movedImage);
+    const [movedMedia] = updatedImages.splice(fromIndex, 1);
+    updatedImages.splice(toIndex, 0, movedMedia);
     setImagesUrl(updatedImages);
     updateVariant(index, "images", updatedImages); // Sync with parent state
   };
-  // Drag-and-drop image item
-  const ImageItem = ({ image, index }: { image: string; index: number }) => {
+
+  // Drag-and-drop media item
+  const MediaItem = ({ media, index }: { media: media; index: number }) => {
     const [, drag] = useDrag({
-      type: ItemTypes.IMAGE,
+      type: ItemTypes.MEDIA,
       item: { index },
     });
 
     const [, drop] = useDrop({
-      accept: ItemTypes.IMAGE,
+      accept: ItemTypes.MEDIA,
       hover: (item: { index: number }) => {
         if (item.index !== index) {
-          moveImage(item.index, index);
+          moveMedia(item.index, index);
           item.index = index;
         }
       },
@@ -97,15 +101,21 @@ const ProductVariant = ({
         className="relative w-28 h-34 cursor-move"
       >
         <span
-          onClick={() => {
-            deleteProductImage(image, index);
-            setImagesUrl(imagesUrl.filter((img) => img !== image)); // Update local state
-          }}
+          onClick={() => deleteProductImage(media.url)}
           className="rounded-sm z-30 w-4 h-4 bg-red-500 absolute top-2 text-center flex justify-center items-center p-2 cursor-pointer text-white left-2"
         >
           x
         </span>
-        <Image fill alt={product.title} src={image} />
+        {media.type === "image" ? (
+          <Image fill alt={product.title} src={media.url} className="object-cover" />
+        ) : (
+          <video
+            src={media.url}
+            className="w-full h-full object-cover"
+            controls
+            muted
+          />
+        )}
       </div>
     );
   };
@@ -113,7 +123,7 @@ const ProductVariant = ({
   return (
     <div key={index} className="border p-4 mt-4">
       <h3 className="font-semibold">Variant {index + 1}</h3>
-      
+
       {/* Color Input */}
       <div>
         <label className="block font-semibold">Color:</label>
@@ -141,7 +151,7 @@ const ProductVariant = ({
               type="number"
               placeholder="Stock"
               value={size.stock}
-              onChange={(e) => updateSize(i, "stock", parseInt(e.target.value))}
+              onChange={(e) => updateSize(i, "stock", parseInt(e.target.value) || 0)}
               className="border p-2 w-1/2"
             />
             <button className="text-red-500" onClick={() => removeSize(i)}>
@@ -154,19 +164,19 @@ const ProductVariant = ({
         </button>
       </div>
 
-      {/* Images Section */}
+      {/* Media Section */}
       <div>
-        <label className="block font-semibold">Images:</label>
-        <div className="flex gap-2 ">
-         <div className="flex flex-nowrap gap-2 max-w-[90%] scrollbar-hidden overflow-x-scroll">
-           {imagesUrl.map((image, i) => (
-            <ImageItem key={i} image={image} index={i} />
-          ))}
+        <label className="block font-semibold">Media:</label>
+        <div className="flex gap-2">
+          <div className="flex flex-nowrap gap-2 max-w-[90%] scrollbar-hidden overflow-x-scroll">
+            {imagesUrl.map((media, i) => (
+              <MediaItem key={i} media={media} index={i} />
+            ))}
           </div>
-        <UploadProductsImagesButton
-          imagesUrl={imagesUrl}
-          setImagesUrl={setImagesUrl}
-        />
+          <UploadProductsImagesButton
+            imagesUrl={imagesUrl}
+            setImagesUrl={setImagesUrl}
+          />
         </div>
       </div>
     </div>

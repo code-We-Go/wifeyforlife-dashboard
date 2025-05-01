@@ -1,10 +1,10 @@
-import { Size } from '@/interfaces/interfaces';
+import { media, Size ,mediaType} from '@/interfaces/interfaces';
 import mongoose, { Schema, Document } from 'mongoose';
 
 // Define the Variant interface
 export interface Variant {
   color: string;
-  images: string[];
+  images: media[];
   stock: number;
   sizes: Size[];
 }
@@ -27,6 +27,10 @@ const sizeSchema=new Schema<Size>({
   name:{type:String,required:true},
   stock:{type:Number,required:true}
 })
+const mediaSchema=new Schema<media>({
+  url:{type:String,required:true},
+  type:{type:String ,enum :["image" ,"video"],required:true}
+})
 // Define the Variant schema
 const VariantSchema = new Schema<Variant>({
   color: { type: String, required: true },
@@ -41,10 +45,10 @@ const VariantSchema = new Schema<Variant>({
     }
   },
   images: { 
-    type: [String], 
+    type: [mediaSchema], 
     required: true,
     validate: {
-      validator: function(v: string[]) {
+      validator: function(v: media[]) {
         return v.length > 0;
       },
       message: 'At least one image is required'

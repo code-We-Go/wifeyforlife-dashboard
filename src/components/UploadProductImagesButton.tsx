@@ -3,13 +3,14 @@
 import { UploadButton } from "../utils/uploadthing";
 import axios from "axios";
 import React from "react";
+import { media } from "@/interfaces/interfaces";
 
 const UploadProductsImagesButton = ({
   setImagesUrl,
   imagesUrl,
 }: {
-  setImagesUrl: React.Dispatch<React.SetStateAction<any[]>>;
-  imagesUrl: string[];
+  setImagesUrl: React.Dispatch<React.SetStateAction<media[]>>;
+  imagesUrl: media[];
 }) => {
   const deleteValue = async (value: string) => {
     await axios.delete("/api/uploadthing", {
@@ -28,13 +29,20 @@ const UploadProductsImagesButton = ({
           // Check if multiple files were uploaded
           console.log("Files: ", res);
 
-          // Assuming res is an array of uploaded files
-          const newUrls = res.map((file) => file.url);
+          // Map uploaded files to media objects
+          const newMedia = res.map((file) => {
+            // Determine type based on file type or extension
+            const isVideo = file.type.startsWith("video/") || file.url.match(/\.(mp4|webm|ogg)$/i);
+            return {
+              url: file.url,
+              type: isVideo ? "video" : "image",
+            } as media;
+          });
 
-          // Append the new URLs to the existing imagesUrl
-          setImagesUrl((prevUrls) => [...prevUrls, ...newUrls]);
+          // Append new media to existing imagesUrl
+          setImagesUrl((prevUrls) => [...prevUrls, ...newMedia]);
 
-          console.log("Updated image URLs:", imagesUrl);
+          console.log("Updated media URLs:", imagesUrl);
 
           alert("Upload Completed");
         }}

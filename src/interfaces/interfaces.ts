@@ -7,9 +7,10 @@
  }
  export type media={
     url:string;
-    type:string;
+    type:mediaType;
     
  }
+ export type mediaType= "image" | "video" 
   export type price={
    local:number;
   }
