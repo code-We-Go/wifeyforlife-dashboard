@@ -53,34 +53,69 @@ export async function PUT(request:Request){
 }
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    if(searchParams.get("page") !== null){
-        const paga = searchParams.get("page")!
-        const page = parseInt(paga);
+    const pageParam = searchParams.get("page");
+    const search = searchParams.get("search") || "";
+    const orderDate = searchParams.get("orderDate");
 
-        const limit = 10;
-        const skip = (page - 1) * limit;
+    console.log("Search params:", { search, orderDate }); // Debug log
+
+    const limit = 10;
+    const page = pageParam ? parseInt(pageParam) : 1;
+    const skip = (page - 1) * limit;
+
+    // Build filter
+    const filter: any = {};
+    if (search) {
+        // Search by order ID, customer name, email, and phone (case-insensitive)
+        const searchRegex = new RegExp(search, 'i');
+        filter.$or = [
+            { firstName: searchRegex },
+            { lastName: searchRegex },
+            { email: searchRegex },
+            { phone: searchRegex }
+        ];
+
+        // Handle _id search separately
         try {
-            const orders = await ordersModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-            const totalOrders = await ordersModel.countDocuments();
-    
-            return NextResponse.json({
-                data: orders,
-                total: totalOrders,
-                currentPage: page,
-                totalPages: Math.ceil(totalOrders / limit),
-            }, { status: 200 });
+            const mongoose = require('mongoose');
+            if (mongoose.Types.ObjectId.isValid(search)) {
+                filter.$or.push({ _id: new mongoose.Types.ObjectId(search) });
+            }
         } catch (error) {
-            return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+            console.log("Invalid ObjectId format:", search);
         }
+
+        console.log("Search filter:", filter); // Debug log
     }
-    else{
-        try {
-            const orders = await ordersModel.find().sort({ createdAt: -1 });
-            console.log('orders'+orders.length);
-            return NextResponse.json({ data: orders }, { status: 200 });
-        } catch (error) {
-            return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
-        }
+    if (orderDate) {
+        const startOfDay = new Date(orderDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(orderDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        filter.createdAt = {
+            $gte: startOfDay,
+            $lte: endOfDay
+        };
+        console.log("Date filter:", filter.createdAt); // Debug log
     }
 
+    try {
+        const orders = await ordersModel.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+        const totalOrders = await ordersModel.countDocuments(filter);
+
+        console.log("Found orders:", orders.length); // Debug log
+
+        return NextResponse.json({
+            data: orders,
+            total: totalOrders,
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit),
+        }, { status: 200 });
+    } catch (error) {
+        console.error("Error fetching orders:", error); // Debug log
+        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+    }
 }

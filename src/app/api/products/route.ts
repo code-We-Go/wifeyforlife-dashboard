@@ -66,25 +66,36 @@ export async function PUT(request:Request){
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
+    const search = searchParams.get("search") || "";
     const limit = 10;
     const skip = (page - 1) * limit;
 
     try {
-        const products = await productsModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-        const totalProducts = await productsModel.countDocuments();
-        console.log({
-            'Total Products in Database': totalProducts,
-            'Current Page Number': page,
-            'Products Per Page': limit,
-            'Products Skipped': skip,
-            'Products Retrieved in this Query': products.length,
-            'Pagination Details': {
-                'Current Page': page,
-                'Total Pages': Math.ceil(totalProducts / limit),
-                'Products Per Page Limit': limit,
-                'Number of Products Skipped': skip
-            }
-        });
+        // Create search query
+        const searchQuery = search 
+            ? { title: { $regex: search, $options: 'i' } } // Case-insensitive search
+            : {};
+
+        // First get total count with search filter
+        const totalProducts = await productsModel.countDocuments(searchQuery);
+        
+        // Then get paginated products with search filter and proper sorting
+        const products = await productsModel.find(searchQuery)
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        console.log(`Pagination details:
+            Page: ${page}
+            Search: ${search}
+            Skip: ${skip}
+            Limit: ${limit}
+            Total Products: ${totalProducts}
+            Products in this query: ${products.length}
+            First product ID: ${products[0]?._id}
+            Last product ID: ${products[products.length - 1]?._id}
+        `);
 
         return NextResponse.json({
             data: products,
@@ -93,6 +104,7 @@ export async function GET(req: Request) {
             totalPages: Math.ceil(totalProducts / limit),
         }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+        console.error("Error fetching products:", error);
+        return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
     }
 }
