@@ -3,10 +3,11 @@ import { fetchFile } from '@ffmpeg/util';
 
 const ffmpeg = new FFmpeg();
 
-export const compressVideo = async (file: File): Promise<File> => {
+export const compressVideo = async (file: File, onProgress?: (progress: number) => void): Promise<File> => {
   try {
     // If video is already small enough, return original
     if (file.size <= 20 * 1024 * 1024) { // 20MB
+      onProgress?.(100);
       return file;
     }
 
@@ -52,6 +53,7 @@ export const compressVideo = async (file: File): Promise<File> => {
     });
 
     const chunks: Blob[] = [];
+    let progress = 0;
 
     // Start recording
     mediaRecorder.start();
@@ -66,12 +68,20 @@ export const compressVideo = async (file: File): Promise<File> => {
       // Draw current frame
       ctx.drawImage(video, 0, 0, width, height);
       
+      // Update progress
+      progress = Math.min(100, (video.currentTime / video.duration) * 100);
+      onProgress?.(progress);
+      
       // Schedule next frame
       requestAnimationFrame(processFrame);
     };
 
     // Start processing frames
-    video.play();
+    video.muted = true; // Ensure video is muted during compression
+    video.playsInline = true; // Prevent fullscreen playback
+    video.play().catch(error => {
+      console.error('Error playing video during compression:', error);
+    });
     processFrame();
 
     // Handle data available
@@ -113,6 +123,7 @@ export const compressVideo = async (file: File): Promise<File> => {
       dimensions: { width, height }
     });
 
+    onProgress?.(100);
     return compressedFile;
   } catch (error) {
     console.error('Error compressing video:', error);

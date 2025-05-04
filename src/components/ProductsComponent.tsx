@@ -129,7 +129,7 @@ const ProductsComponent = ({ product, setProducts }: { product: Product; setProd
         <div className='flex pb-2 w-full justify-between items-start text-primary'>
           <div className='relative w-[60px] h-[70px] md:w-[100px] md:h-[120px]'>
 
-            <Image className="rounded-2xl" fill alt={product.title} src={product.variations[0].images[0].url}></Image>
+            <Image className="rounded-2xl" fill alt={product.title} src={product.variations[0]?.images[0]?.url}></Image>
           </div>
           <h2 className={` text-lg`}>{product.title}</h2>
           <p className='text-[12px] lg:text-lg'>{`${product.price.local} LE`}</p>

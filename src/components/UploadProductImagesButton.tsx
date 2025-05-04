@@ -15,6 +15,7 @@ const UploadProductsImagesButton = ({
   imagesUrl: media[];
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState<number | null>(null);
 
   const deleteValue = async (value: string) => {
     await axios.delete("/api/uploadthing", {
@@ -26,6 +27,7 @@ const UploadProductsImagesButton = ({
 
   const handleUpload = async (files: File[]) => {
     setIsUploading(true);
+    setCompressionProgress(0);
     try {
       console.log('Starting upload process with files:', files.map(f => ({
         name: f.name,
@@ -41,7 +43,9 @@ const UploadProductsImagesButton = ({
               return await compressImage(file);
             } else if (file.type.startsWith('video/')) {
               console.log('Compressing video:', file.name);
-              const compressed = await compressVideo(file);
+              const compressed = await compressVideo(file, (progress) => {
+                setCompressionProgress(progress);
+              });
               console.log('Video compression result:', {
                 originalSize: file.size,
                 compressedSize: compressed.size,
@@ -70,11 +74,12 @@ const UploadProductsImagesButton = ({
       return files;
     } finally {
       setIsUploading(false);
+      setCompressionProgress(null);
     }
   };
 
   return (
-    <div>
+    <div className="relative">
       <UploadButton
         className="bg-primary text-white h-16 px-2 py-1 border-primary !important"
         endpoint="mediaUploader"
@@ -101,6 +106,24 @@ const UploadProductsImagesButton = ({
           alert(`ERROR! ${error.message}`);
         }}
       />
+      {(isUploading || compressionProgress !== null) && (
+        <div className="w-screen h-screen fixed inset top-0 left-0  flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded-lg">
+            <div className="text-center mb-2">
+              {compressionProgress !== null ? "Compressing video..." : "Uploading..."}
+            </div>
+            <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${compressionProgress || 0}%` }}
+              />
+            </div>
+            <div className="text-center mt-2">
+              {compressionProgress !== null ? `${compressionProgress.toFixed(0)}%` : "Please wait..."}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
