@@ -23,7 +23,8 @@ const ProductsPage = () => {
         }
       };
       fetchproducts();
-    }, [page,setProducts]);
+    }, [page]);
+
   return (
         <DefaultLayout>
     

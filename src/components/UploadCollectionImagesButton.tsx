@@ -7,7 +7,7 @@ import { media } from "@/interfaces/interfaces";
 import { compressImage } from "@/utils/imageCompression";
 import { compressVideo } from "@/utils/videoCompression";
 
-const UploadProductsImagesButton = ({
+const UploadCollectionImagesButton = ({
   setImagesUrl,
   imagesUrl,
 }: {
@@ -27,43 +27,16 @@ const UploadProductsImagesButton = ({
   const handleUpload = async (files: File[]) => {
     setIsUploading(true);
     try {
-      console.log('Starting upload process with files:', files.map(f => ({
-        name: f.name,
-        type: f.type,
-        size: f.size
-      })));
-
       const compressedFiles = await Promise.all(
         files.map(async (file) => {
-          try {
-            if (file.type.startsWith('image/')) {
-              console.log('Compressing image:', file.name);
-              return await compressImage(file);
-            } else if (file.type.startsWith('video/')) {
-              console.log('Compressing video:', file.name);
-              const compressed = await compressVideo(file);
-              console.log('Video compression result:', {
-                originalSize: file.size,
-                compressedSize: compressed.size,
-                type: compressed.type,
-                name: compressed.name
-              });
-              return compressed;
-            }
-            return file;
-          } catch (error) {
-            console.error(`Error compressing ${file.name}:`, error);
-            return file;
+          if (file.type.startsWith('image/')) {
+            return await compressImage(file);
+          } else if (file.type.startsWith('video/')) {
+            return await compressVideo(file);
           }
+          return file;
         })
       );
-
-      console.log('Compressed files ready for upload:', compressedFiles.map(f => ({
-        name: f.name,
-        type: f.type,
-        size: f.size
-      })));
-
       return compressedFiles;
     } catch (error) {
       console.error('Error during compression:', error);
@@ -80,24 +53,28 @@ const UploadProductsImagesButton = ({
         endpoint="mediaUploader"
         onBeforeUploadBegin={handleUpload}
         onClientUploadComplete={(res) => {
-          console.log("Uploaded Files: ", res);
+          // Check if multiple files were uploaded
+          console.log("Files: ", res);
 
+          // Map uploaded files to media objects
           const newMedia = res.map((file) => {
-            const isVideo = file.type.startsWith("video/") || 
-                          file.url.match(/\.(mp4|webm|ogg)$/i) ||
-                          file.name.match(/\.(mp4|webm|ogg)$/i);
+            // Determine type based on file type or extension
+            const isVideo = file.type.startsWith("video/") || file.url.match(/\.(mp4|webm|ogg)$/i);
             return {
               url: file.url,
               type: isVideo ? "video" : "image",
             } as media;
           });
 
+          // Append new media to existing imagesUrl
           setImagesUrl((prevUrls) => [...prevUrls, ...newMedia]);
+
           console.log("Updated media URLs:", imagesUrl);
+
           alert("Upload Completed");
         }}
         onUploadError={(error: Error) => {
-          console.error("Upload error:", error);
+          // Handle upload error
           alert(`ERROR! ${error.message}`);
         }}
       />
@@ -105,4 +82,4 @@ const UploadProductsImagesButton = ({
   );
 };
 
-export default UploadProductsImagesButton;
+export default UploadCollectionImagesButton; 

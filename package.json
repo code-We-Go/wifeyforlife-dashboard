@@ -9,11 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@heroicons/react": "^2.2.0",
     "@material-tailwind/react": "^2.1.10",
     "@uploadthing/react": "^7.3.0",
     "apexcharts": "^4.5.0",
     "axios": "^1.7.9",
+    "browser-image-compression": "^2.0.2",
     "flatpickr": "^4.6.13",
     "jsvectormap": "^1.6.0",
     "mongodb": "^6.13.0",

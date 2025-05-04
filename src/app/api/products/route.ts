@@ -72,6 +72,19 @@ export async function GET(req: Request) {
     try {
         const products = await productsModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
         const totalProducts = await productsModel.countDocuments();
+        console.log({
+            'Total Products in Database': totalProducts,
+            'Current Page Number': page,
+            'Products Per Page': limit,
+            'Products Skipped': skip,
+            'Products Retrieved in this Query': products.length,
+            'Pagination Details': {
+                'Current Page': page,
+                'Total Pages': Math.ceil(totalProducts / limit),
+                'Products Per Page Limit': limit,
+                'Number of Products Skipped': skip
+            }
+        });
 
         return NextResponse.json({
             data: products,
