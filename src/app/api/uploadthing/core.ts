@@ -12,7 +12,7 @@ export const ourFileRouter = {
   //   { image: { maxFileCount:10,maxFileSize: "256MB" } },
   // )
   mediaUploader: f({
-    image: { maxFileSize: "4MB", maxFileCount: 10 },
+    image: { maxFileSize: "16MB", maxFileCount: 10 },
     video: { maxFileSize: "256MB", maxFileCount: 1 },
   })
     // Set permissions and file types for this FileRoute
