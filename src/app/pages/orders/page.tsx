@@ -15,18 +15,18 @@ const OrdersPage = () => {
 
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
-    try {
+      try {
       const params = new URLSearchParams({ page: String(page) });
       if (search) params.append('search', search);
       if (orderDate) params.append('orderDate', orderDate);
       const res = await axios.get(`/api/orders?${params.toString()}`);
-      setOrders(res.data.data);
-      setTotalPages(res.data.totalPages);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
+        setOrders(res.data.data);
+        setTotalPages(res.data.totalPages);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
     } finally {
       setIsLoading(false);
-    }
+      }
   }, [page, search, orderDate]);
 
   useEffect(() => {

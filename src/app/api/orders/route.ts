@@ -59,9 +59,9 @@ export async function GET(req: Request) {
 
     console.log("Search params:", { search, orderDate }); // Debug log
 
-    const limit = 10;
+        const limit = 10;
     const page = pageParam ? parseInt(pageParam) : 1;
-    const skip = (page - 1) * limit;
+        const skip = (page - 1) * limit;
 
     // Build filter
     const filter: any = {};
@@ -107,15 +107,15 @@ export async function GET(req: Request) {
         const totalOrders = await ordersModel.countDocuments(filter);
 
         console.log("Found orders:", orders.length); // Debug log
-
-        return NextResponse.json({
-            data: orders,
-            total: totalOrders,
-            currentPage: page,
-            totalPages: Math.ceil(totalOrders / limit),
-        }, { status: 200 });
-    } catch (error) {
+    
+            return NextResponse.json({
+                data: orders,
+                total: totalOrders,
+                currentPage: page,
+                totalPages: Math.ceil(totalOrders / limit),
+            }, { status: 200 });
+        } catch (error) {
         console.error("Error fetching orders:", error); // Debug log
-        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
-    }
+            return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+        }
 }

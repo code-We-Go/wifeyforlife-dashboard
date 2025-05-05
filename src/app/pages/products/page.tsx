@@ -28,10 +28,12 @@ const ProductsPage = () => {
     }, [page, searchQuery]);
 
     useEffect(() => {
-      // Reset to first page when search query changes
-      setPage(1);
+      // Only reset to first page when search query changes
+      if (searchQuery) {
+        setPage(1);
+      }
       fetchProducts();
-    }, [fetchProducts]);
+    }, [fetchProducts, searchQuery]);
 
     const handlePageChange = (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
