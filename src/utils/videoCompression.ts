@@ -1,8 +1,3 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile } from '@ffmpeg/util';
-
-const ffmpeg = new FFmpeg();
-
 export const compressVideo = async (file: File, onProgress?: (progress: number) => void): Promise<File> => {
   try {
     // If video is already small enough, return original
