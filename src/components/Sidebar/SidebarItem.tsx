@@ -1,17 +1,33 @@
 import React from "react";
 import Link from "next/link";
 import SidebarDropdown from "@/components/Sidebar/SidebarDropdown";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Berkishire } from "@/app/lib/fonts";
 
 const SidebarItem = ({ item, pageName, setPageName }: any) => {
-  const handleClick = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleClick = async (e: React.MouseEvent) => {
+    if (item.label === "LOGOUT") {
+      e.preventDefault();
+      try {
+        const response = await fetch("/api/auth/logout", {
+          method: "POST",
+        });
+        if (response.ok) {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+      return;
+    }
+
     const updatedPageName =
       pageName !== item.label.toLowerCase() ? item.label.toLowerCase() : "";
     return setPageName(updatedPageName);
   };
-
-  const pathname = usePathname();
 
   const isActive = (item: any) => {
     if (item.route === pathname) return true;
@@ -69,4 +85,3 @@ const SidebarItem = ({ item, pageName, setPageName }: any) => {
 };
 
 export default SidebarItem;
-2
