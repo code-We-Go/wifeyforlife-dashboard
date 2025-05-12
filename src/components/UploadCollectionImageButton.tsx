@@ -24,15 +24,19 @@ const UploadCollectionImageButton = ({
 <UploadButton
   endpoint="mediaUploader"
   onClientUploadComplete={(res) => {
-    deleteValue(imageUrl)
-    console.log("Files: ", res);
-    const newUrl = res[0].ufsUrl;
-    updateImageUrl(newUrl);
-
-    console.log("Updated image URLs:", imageUrl);
-    alert("Upload Completed");
+    if (res && res.length > 0) {
+      deleteValue(imageUrl);
+      console.log("Files: ", res);
+      const newUrl = res[0].url;
+      updateImageUrl(newUrl);
+      console.log("Updated image URLs:", imageUrl);
+      alert("Upload Completed");
+    } else {
+      alert("No files were uploaded");
+    }
   }}
   onUploadError={(error: Error) => {
+    console.error("Upload error:", error);
     alert(`ERROR! ${error.message}`);
   }}
   appearance={{

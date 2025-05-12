@@ -67,41 +67,31 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const search = searchParams.get("search") || "";
-    const limit = 10;
-    const skip = (page - 1) * limit;
+    const all = searchParams.get("all") === "true";
+    const limit = all ? 0 : 10; // If all is true, don't limit the results
+    const skip = all ? 0 : (page - 1) * limit;
 
     try {
         // Create search query
         const searchQuery = search 
-            ? { title: { $regex: search, $options: 'i' } } // Case-insensitive search
+            ? { title: { $regex: search, $options: 'i' } }
             : {};
 
         // First get total count with search filter
         const totalProducts = await productsModel.countDocuments(searchQuery);
         
-        // Then get paginated products with search filter and proper sorting
+        // Then get products with search filter and proper sorting
         const products = await productsModel.find(searchQuery)
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit)
             .lean();
 
-        console.log(`Pagination details:
-            Page: ${page}
-            Search: ${search}
-            Skip: ${skip}
-            Limit: ${limit}
-            Total Products: ${totalProducts}
-            Products in this query: ${products.length}
-            First product ID: ${products[0]?._id}
-            Last product ID: ${products[products.length - 1]?._id}
-        `);
-
         return NextResponse.json({
             data: products,
             total: totalProducts,
             currentPage: page,
-            totalPages: Math.ceil(totalProducts / limit),
+            totalPages: all ? 1 : Math.ceil(totalProducts / limit),
         }, { status: 200 });
     } catch (error) {
         console.error("Error fetching products:", error);
