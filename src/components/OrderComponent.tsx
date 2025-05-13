@@ -64,6 +64,20 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   const [isDetailsModalOpen, setDetailsModal] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Add effect to handle body scroll when modals are open
+  useEffect(() => {
+    if (isModalOpen || isDetailsModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isModalOpen, isDetailsModalOpen]);
+
   const deleteOrder = async () => {
     setIsModalOpen(false);
     try {
@@ -182,6 +196,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
           </div>
         </div>
       )}
+      
   {isDetailsModalOpen  && (
   <div 
   onClick={()=>setDetailsModal(false)}
