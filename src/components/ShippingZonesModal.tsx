@@ -92,7 +92,7 @@ const ShippingZoneModal = ({ type, zone, closeModal, refreshZones }: Props) => {
 
             <button
               onClick={type === 'edit' ? handleSave : addNewZone}
-              className="bg-blue-600 text-white px-4 py-2 rounded mr-2 mt-4"
+              className="bg-primary text-white px-4 py-2 rounded mr-2 mt-4"
             >
               {type === 'edit' ? 'Save Changes' : 'Add Zone'}
             </button>

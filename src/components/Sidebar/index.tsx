@@ -97,17 +97,17 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "USERS",
+        label: "Users",
         route: "/pages/users",
       },
       {
         icon: <LiaShippingFastSolid />,
-        label: "SHIPPING",
+        label: "Shipping",
         route: "/pages/shipping",
       },
       {
         icon: <FiLogOut />,
-        label: "LOGOUT",
+        label: "Logout",
         route: "/api/auth/logout",
       },
     ],

@@ -159,7 +159,7 @@ const [collectionProducts, setCollectionProducts] = useState(collection?.product
             <button 
               onClick={type === 'edit' ? handleSave : addNewCollection} 
               disabled={loading} 
-              className="bg-blue-600 text-white px-4 py-2 rounded mr-2 mt-4">
+              className="bg-primary text-white px-4 py-2 rounded mr-2 mt-4">
               {loading ? 'Processing...' : type === 'edit' ? 'Save Changes' : 'Add Collection'}
             </button>
           </>

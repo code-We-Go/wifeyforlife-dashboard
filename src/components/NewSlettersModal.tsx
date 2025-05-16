@@ -74,7 +74,7 @@ const addNewNewsletters =async()=>{
               onChange={(e) => setNumber(e.target.value)}
               className="w-full border px-3 py-2 rounded mb-4"
             />
-            <button onClick={handleSave} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded mr-2">
+            <button onClick={handleSave} disabled={loading} className="bg-primary text-white px-4 py-2 rounded mr-2">
               Save
             </button>
           </>
@@ -92,7 +92,7 @@ const addNewNewsletters =async()=>{
               onChange={(e) => setNumber(e.target.value)}
               className="w-full border px-3 py-2 rounded mb-4"
             />
-        <button onClick={addNewNewsletters} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded mr-2">
+        <button onClick={addNewNewsletters} disabled={loading} className="bg-primary text-white px-4 py-2 rounded mr-2">
           Add
         </button>
       </> :(
