@@ -188,9 +188,9 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
   <label className="block font-semibold">Compare Price:</label>
   <input
     type="number"
-    value={product.comparePrice || ''}
+    value={product.comparedPrice || ''}
     onChange={(e) => {
-      updateFeild("comparePrice", parseFloat(e.target.value));
+      updateFeild("comparedPrice", parseFloat(e.target.value));
     }}
     className="border p-2 w-full"
   />

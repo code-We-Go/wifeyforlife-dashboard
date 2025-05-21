@@ -18,7 +18,7 @@ export interface Product extends Document {
   price: {
     local: number;
   };
-  comparePrice: number
+  comparedPrice: number
   productDimensions: string[];
   productDetails: string[];
   productCare: string[];
@@ -70,7 +70,7 @@ const ProductSchema = new Schema<Product>({
       min: 0 
     }
   },
-  comparePrice: { 
+  comparedPrice: { 
     type: Number, 
     required: false,
     min: 0 

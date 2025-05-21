@@ -39,7 +39,7 @@ export type mediaType= "image" | "video"
     title: string;
     description: string;
     price: price;
-    comparePrice?: number;
+    comparedPrice?: number;
     categoryID: string;
     season: string;
     variations: Variant[];
