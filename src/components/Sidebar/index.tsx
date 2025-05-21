@@ -13,9 +13,7 @@ import { GiClothes } from "react-icons/gi";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { Berkishire } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
-
-
-
+import { RiCoupon3Line } from "react-icons/ri";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -76,6 +74,11 @@ const menuGroups = [
         icon: <BsCollection />,
         label: "Collections",
         route: "/pages/collections",
+      },
+      {
+        icon: <RiCoupon3Line />,
+        label: "Discounts",
+        route: "/discounts",
       },
       {
         icon: (
