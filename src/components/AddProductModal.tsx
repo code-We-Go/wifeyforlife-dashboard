@@ -29,6 +29,7 @@ const AddProductModal = ({
     title: "",
     description: "",
     price: { local: 0 },
+    comparePrice: 0,
     variations: [],
     categoryID: "",
     season: "all",
@@ -194,6 +195,17 @@ setCategoryID(res.data.data[0]._id)
                 className="border p-2 w-full"
               />
               {errors.localPrice && <p className="text-red-500 text-sm">{errors.localPrice}</p>}
+            </div>
+
+            {/* Compare Price */}
+            <div>
+              <label className="block font-semibold">Compare Price:</label>
+              <input
+                type="number"
+                value={productState.comparePrice}
+                onChange={(e) => updateField("comparePrice", parseFloat(e.target.value))}
+                className="border p-2 w-full"
+              />
             </div>
 
             {/* Product Variants */}

@@ -1,31 +1,29 @@
-
-  
- export interface Variant {
-   color: string;
-   sizes:Size[]
-   images:media[];
+export interface Variant {
+  color: string;
+  sizes:Size[]
+  images:media[];
+}
+export type media={
+   url:string;
+   type:mediaType;
+   
  }
- export type media={
-    url:string;
-    type:mediaType;
-    
+export type mediaType= "image" | "video" 
+ export type price={
+  local:number;
  }
- export type mediaType= "image" | "video" 
-  export type price={
-   local:number;
-  }
-  export interface Category {
-      _id: string;
-      categoryName:string;
-      description:string;
+ export interface Category {
+     _id: string;
+     categoryName:string;
+     description:string;
 
-  }
-  export interface Collection {
-    _id: string;
-    collectionName:string;
-    description:string;
-    imageURL:string;
-    products:string[];
+ }
+ export interface Collection {
+   _id: string;
+   collectionName:string;
+   description:string;
+   imageURL:string;
+   products:string[];
 
 }
 // export interface SubCollection {
@@ -41,6 +39,7 @@
     title: string;
     description: string;
     price: price;
+    comparePrice?: number;
     categoryID: string;
     season: string;
     variations: Variant[];

@@ -134,7 +134,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
               </div>
             {/* collections */}
             <div>
-              <label className="block font-semibold">Collection:</label>
+              <label className="block font-semibold">Category:</label>
               <select
                 value={productState.categoryID}
                 onChange={(e) => updateFeild("categoryID", e.target.value)}
@@ -178,6 +178,19 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
         local: parseFloat(e.target.value)
       };
       updateFeild("price", newPrice);
+    }}
+    className="border p-2 w-full"
+  />
+</div>
+
+{/* Compare Price */}
+<div> 
+  <label className="block font-semibold">Compare Price:</label>
+  <input
+    type="number"
+    value={product.comparePrice || ''}
+    onChange={(e) => {
+      updateFeild("comparePrice", parseFloat(e.target.value));
     }}
     className="border p-2 w-full"
   />
