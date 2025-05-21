@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Discount } from '@/types/discount';
 import Link from 'next/link';
+import DefaultLayout from '@/components/Layouts/DefaultLayout';
 
 export default function DiscountsPage() {
   const [discounts, setDiscounts] = useState<Discount[]>([]);
@@ -53,6 +54,7 @@ export default function DiscountsPage() {
   }
 
   return (
+    <DefaultLayout>
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Discounts</h1>
@@ -71,9 +73,9 @@ export default function DiscountsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Code
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Name
-              </th>
+              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Application
               </th>
@@ -99,9 +101,9 @@ export default function DiscountsPage() {
                     {discount.code}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                {/* <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{discount.name}</div>
-                </td>
+                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{discount.applicationType}</div>
                 </td>
@@ -148,6 +150,7 @@ export default function DiscountsPage() {
         </table>
       </div>
     </div>
+    </DefaultLayout>
   );
 }
 

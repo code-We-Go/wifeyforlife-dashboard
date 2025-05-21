@@ -1,5 +1,9 @@
 import DiscountForm from '../components/DiscountForm';
-
+import DefaultLayout from '@/components/Layouts/DefaultLayout';
 export default function NewDiscountPage() {
-  return <DiscountForm params={{ id: 'new' }} />;
+  return (
+    <DefaultLayout>
+      <DiscountForm params={{ id: 'new' }} />
+    </DefaultLayout>
+  );
 } 
