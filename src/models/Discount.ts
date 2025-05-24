@@ -24,29 +24,31 @@ const discountSchema = new Schema<Discount>({
   },
   calculationType: {
     type: String,
-    enum: ['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_SHIPPING', 'BUY_X_GET_Y'],
+    enum: ['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_SHIPPING'],
+    // enum: ['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_SHIPPING', 'BUY_X_GET_Y'],
     required: true,
   },
   value: {
     type: Number,
     required: function(this: Discount) {
-      return this.calculationType !== 'FREE_SHIPPING' && this.calculationType !== 'BUY_X_GET_Y';
+      // return this.calculationType !== 'FREE_SHIPPING' && this.calculationType !== 'BUY_X_GET_Y';
+      return this.calculationType !== 'FREE_SHIPPING' ;
     },
   },
-  buyXGetYDetails: {
-    buyQuantity: {
-      type: Number,
-      required: function(this: Discount) {
-        return this.calculationType === 'BUY_X_GET_Y';
-      },
-    },
-    getQuantity: {
-      type: Number,
-      required: function(this: Discount) {
-        return this.calculationType === 'BUY_X_GET_Y';
-      },
-    },
-  },
+  // buyXGetYDetails: {
+  //   buyQuantity: {
+  //     type: Number,
+  //     required: function(this: Discount) {
+  //       return this.calculationType === 'BUY_X_GET_Y';
+  //     },
+  //   },
+  //   getQuantity: {
+  //     type: Number,
+  //     required: function(this: Discount) {
+  //       return this.calculationType === 'BUY_X_GET_Y';
+  //     },
+  //   },
+  // },
   conditions: {
     minimumOrderAmount: Number,
     productIds: [String],
