@@ -114,8 +114,8 @@ export default function DiscountsPage() {
                   <div className="text-sm text-gray-900">
                     {discount.calculationType === 'PERCENTAGE' && `${discount.value}%`}
                     {discount.calculationType === 'FIXED_AMOUNT' && discount.value}
-                    {discount.calculationType === 'BUY_X_GET_Y' && 
-                      `Buy ${discount.buyXGetYDetails?.buyQuantity} Get ${discount.buyXGetYDetails?.getQuantity}`}
+                    {/* {discount.calculationType === 'BUY_X_GET_Y' && 
+                      `Buy ${discount.buyXGetYDetails?.buyQuantity} Get ${discount.buyXGetYDetails?.getQuantity}`} */}
                     {discount.calculationType === 'FREE_SHIPPING' && 'Free Shipping'}
                   </div>
                 </td>
