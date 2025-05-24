@@ -258,42 +258,44 @@ export default function DiscountForm({ params }: DiscountFormProps) {
               <option value="PERCENTAGE">Percentage</option>
               <option value="FIXED_AMOUNT">Fixed Amount</option>
               <option value="FREE_SHIPPING">Free Shipping</option>
-              <option value="BUY_X_GET_Y">Buy X Get Y</option>
+              {/* <option value="BUY_X_GET_Y">Buy X Get Y</option> */}
             </select>
           </div>
 
-          {formData.calculationType === 'BUY_X_GET_Y' ? (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Buy Quantity
-                </label>
-                <input
-                  type="number"
-                  name="buyXGetYDetails.buyQuantity"
-                  value={formData.buyXGetYDetails?.buyQuantity || ''}
-                  onChange={handleChange}
-                  required
-                  min="1"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Get Quantity
-                </label>
-                <input
-                  type="number"
-                  name="buyXGetYDetails.getQuantity"
-                  value={formData.buyXGetYDetails?.getQuantity || ''}
-                  onChange={handleChange}
-                  required
-                  min="1"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-            </>
-          ) : formData.calculationType !== 'FREE_SHIPPING' ? (
+          {
+          // formData.calculationType === 'BUY_X_GET_Y' ? (
+          //   <>
+          //     <div>
+          //       <label className="block text-sm font-medium text-gray-700">
+          //         Buy Quantity
+          //       </label>
+          //       <input
+          //         type="number"
+          //         name="buyXGetYDetails.buyQuantity"
+          //         value={formData.buyXGetYDetails?.buyQuantity || ''}
+          //         onChange={handleChange}
+          //         required
+          //         min="1"
+          //         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          //       />
+          //     </div>
+          //     <div>
+          //       <label className="block text-sm font-medium text-gray-700">
+          //         Get Quantity
+          //       </label>
+          //       <input
+          //         type="number"
+          //         name="buyXGetYDetails.getQuantity"
+          //         value={formData.buyXGetYDetails?.getQuantity || ''}
+          //         onChange={handleChange}
+          //         required
+          //         min="1"
+          //         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          //       />
+          //     </div>
+          //   </>
+          // ) : 
+          formData.calculationType !== 'FREE_SHIPPING' ? (
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Value {formData.calculationType === 'PERCENTAGE' ? '(%)' : ''}
@@ -398,7 +400,7 @@ export default function DiscountForm({ params }: DiscountFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-accent disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Save Discount'}
           </button>

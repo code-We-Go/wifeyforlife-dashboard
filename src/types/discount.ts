@@ -4,7 +4,7 @@ export type DiscountCalculationType =
   | 'PERCENTAGE'
   | 'FIXED_AMOUNT'
   | 'FREE_SHIPPING'
-  | 'BUY_X_GET_Y';
+  // | 'BUY_X_GET_Y';
 
 export type CustomerTag = 'VIP' | 'LOYAL' | 'NEW';
 
