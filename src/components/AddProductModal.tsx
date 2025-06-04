@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Image from "next/image";
 import ProductVariant from "./ProductVariant";
+import CheckboxOne from "./Checkboxes/CheckboxOne";
 
 const AddProductModal = ({
   isModalOpen,
@@ -17,13 +18,12 @@ const AddProductModal = ({
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const updateVariant = async (index: number, field: string, value: any) => {
-        // Create a copy of the product with the updated variant
         const updatedVariations = [...productState.variations];
         updatedVariations[index] = {
           ...updatedVariations[index],
           [field]: value,
         };
-        setProduct((prev)=>({...prev,variations:updatedVariations}))
+        setProduct((prev) => ({ ...prev, variations: updatedVariations }));
     };
   const [productState, setProduct] = useState<AddProductType>({
     title: "",
@@ -36,6 +36,8 @@ const AddProductModal = ({
     productDimensions: [],
     productDetails: [],
     productCare: [],
+    featured: false,
+    ratings: 0
   });
 
   const [errors, setErrors] = useState<any>({}); // For validation errors
@@ -119,6 +121,19 @@ setCategoryID(res.data.data[0]._id)
     setProduct((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Update the variant structure when adding a new variant
+  const addNewVariant = () => {
+    updateField("variations", [
+      ...productState.variations,
+      {
+        name: "",
+        attributeName: "",
+        attributes: [],
+        images: []
+      }
+    ]);
+  };
+
   return (
     isModalOpen && (
       <div onClick={() => setModalOpen(false)} className="fixed inset-0 lg:pl-72.5 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -148,6 +163,16 @@ setCategoryID(res.data.data[0]._id)
                 className="border p-2 w-full"
               />
               {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+            </div>
+            <div>
+              <label className="block font-semibold">Featured:</label>
+                      <input
+                type="checkbox"
+                checked={productState.featured}
+                onChange={(e) => updateField("featured", e.target.checked)}
+                className="border p-2 w-full"
+              />
+              {errors.featured && <p className="text-red-500 text-sm">{errors.featured}</p>}
             </div>
             {/* collections */}
             <div>
@@ -215,7 +240,18 @@ setCategoryID(res.data.data[0]._id)
                 <ProductVariant key={index} index={index} product={{...productState,"_id":""}} variant={variant} updateVariant={updateVariant} onVariantChange={updateVariant} />
               ))}
               {errors.variations && <p className="text-red-500 text-sm">{errors.variations}</p>}
-              <button onClick={() => updateField("variations", [...productState.variations, { color: "", size:"",stock: 0, featured: false, images: [] }])} className="underline text-primary px-4 py-2">
+              <button 
+                onClick={() => updateField("variations", [
+                  ...productState.variations, 
+                  {
+                    name: "",
+                    attributeName: "",
+                    attributes: [],
+                    images: []
+                  }
+                ])} 
+                className="underline text-accent px-4 py-2"
+              >
                 Add Variant
               </button>
             </div>

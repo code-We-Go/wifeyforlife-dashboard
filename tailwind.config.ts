@@ -21,11 +21,12 @@ const config: Config = {
     },
     extend: {
       colors: {
-        primary:"#113C6F",
-        accent:"#E6AEAD",
-        primaryLight:"#FCF0F2",
+        primary:"#D32333",
+        accent:"#12665C",
+        primaryLight:"#FFB6C7",
         // primary:"#2C5694",
-        secondary:"#1b3d6d",
+        secondary:"#12665C",
+        saga:"#81C8BB",
 
         backgroundColor:"#F7F8F4",
         yellowBGC:"#F0EA9B",

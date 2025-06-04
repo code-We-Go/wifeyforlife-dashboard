@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import productsModel, { Product } from '../../models/productsModel'; // Adjust path to your model
+import productsModel from '../../models/productsModel'; // Adjust path to your model
 import { ConnectDB } from '@/config/db'; // Adjust path to your DB connection utility
 
 interface ResponseData {

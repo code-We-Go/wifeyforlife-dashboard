@@ -2,13 +2,14 @@ import { ApexOptions } from "apexcharts";
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
+import { thirdFont } from "@/app/lib/fonts";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
 const options: ApexOptions = {
-  colors: ["#113C6F"],
+  colors: ["#D32333"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     type: "bar",
@@ -117,7 +118,7 @@ const ChartTwo: React.FC = () => {
     <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-6">
       <div className="mb-4 justify-between gap-4 sm:flex">
         <div>
-          <h4 className="text-xl font-semibold text-black dark:text-white">
+          <h4 className={`${thirdFont.className} text-primary text-2xl tracking-normal font-semibold  dark:text-white`}>
             Profit this week
           </h4>
         </div>

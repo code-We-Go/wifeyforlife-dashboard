@@ -1,6 +1,6 @@
 "use client";
 
-import { Variant, Product, media } from "@/interfaces/interfaces";
+import { Variant, Product, media, attribute } from "@/interfaces/interfaces";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import UploadProductsImagesButton from "./UploadProductImagesButton";
@@ -21,18 +21,18 @@ const ProductVariant = ({
   onVariantChange: (index: number, field: string, value: any) => void;
 }) => {
   const [imagesUrl, setImagesUrl] = useState<media[]>(variant.images || []);
+  const [attributes, setAttributes] = useState<attribute[]>(variant.attributes || []);
   const ItemTypes = {
-    MEDIA: "media", // Changed to reflect both images and videos
+    MEDIA: "media",
   };
-  const [sizes, setSizes] = useState<{ name: string; stock: number }[]>(variant.sizes || []);
 
   useEffect(() => {
     updateVariant(index, "images", imagesUrl);
   }, [imagesUrl]);
 
   useEffect(() => {
-    updateVariant(index, "sizes", sizes);
-  }, [sizes]);
+    updateVariant(index, "attributes", attributes);
+  }, [attributes]);
 
   // Handle media deletion
   async function deleteProductImage(url: string) {
@@ -48,22 +48,22 @@ const ProductVariant = ({
     }
   }
 
-  // Handle adding a new size
-  const addSize = () => {
-    setSizes([...sizes, { name: "", stock: 0 }]);
+  // Handle adding a new attribute
+  const addAttribute = () => {
+    setAttributes([...attributes, { name: "", stock: 0 }]);
   };
 
-  // Handle updating a size name or stock
-  const updateSize = (index: number, field: "name" | "stock", value: string | number) => {
-    const updatedSizes = sizes.map((size, i) =>
-      i === index ? { ...size, [field]: value } : size
+  // Handle updating an attribute
+  const updateAttribute = (attrIndex: number, field: "name" | "stock", value: string | number) => {
+    const updatedAttributes = attributes.map((attr, i) =>
+      i === attrIndex ? { ...attr, [field]: value } : attr
     );
-    setSizes(updatedSizes);
+    setAttributes(updatedAttributes);
   };
 
-  // Handle removing a size
-  const removeSize = (sizeIndex: number) => {
-    setSizes(sizes.filter((_, i) => i !== sizeIndex));
+  // Handle removing an attribute
+  const removeAttribute = (attrIndex: number) => {
+    setAttributes(attributes.filter((_, i) => i !== attrIndex));
   };
 
   // Handle drag-and-drop for media
@@ -72,7 +72,7 @@ const ProductVariant = ({
     const [movedMedia] = updatedImages.splice(fromIndex, 1);
     updatedImages.splice(toIndex, 0, movedMedia);
     setImagesUrl(updatedImages);
-    updateVariant(index, "images", updatedImages); // Sync with parent state
+    updateVariant(index, "images", updatedImages);
   };
 
   // Drag-and-drop media item
@@ -123,45 +123,63 @@ const ProductVariant = ({
 
   return (
     <div key={index} className="border p-4 mt-4">
-      <h3 className="font-semibold">Variant {index + 1}</h3>
+      <h3 className="font-semibold mb-4">Variant {index + 1}</h3>
 
-      {/* Color Input */}
-      <div>
-        <label className="block font-semibold">Color:</label>
+      {/* Variant Name */}
+      <div className="mb-4">
+        <label className="block font-semibold">Variant Name:</label>
         <input
           type="text"
-          value={variant.color}
-          onChange={(e) => onVariantChange(index, "color", e.target.value)}
+          value={variant.name}
+          onChange={(e) => onVariantChange(index, "name", e.target.value)}
           className="border p-2 w-full"
+          placeholder="e.g., Default Variant"
         />
       </div>
 
-      {/* Sizes Section */}
-      <div>
-        <label className="block font-semibold">Sizes:</label>
-        {sizes.map((size, i) => (
-          <div key={i} className="flex items-center gap-2 mb-2">
-            <input
-              type="text"
-              placeholder="Size"
-              value={size.name}
-              onChange={(e) => updateSize(i, "name", e.target.value)}
-              className="border p-2 w-1/2"
-            />
-            <input
-              type="number"
-              placeholder="Stock"
-              value={size.stock}
-              onChange={(e) => updateSize(i, "stock", parseInt(e.target.value) || 0)}
-              className="border p-2 w-1/2"
-            />
-            <button className="text-red-500" onClick={() => removeSize(i)}>
-              ✖
+      {/* Attribute Name */}
+      <div className="mb-4">
+        <label className="block font-semibold">Attribute Name:</label>
+        <input
+          type="text"
+          value={variant.attributeName}
+          onChange={(e) => onVariantChange(index, "attributeName", e.target.value)}
+          className="border p-2 w-full"
+          placeholder="e.g., Color or Size"
+        />
+      </div>
+
+      {/* Attributes */}
+      <div className="mb-4">
+        <label className="block font-semibold">Attributes:</label>
+        {attributes.map((attr, attrIndex) => (
+          <div key={attrIndex} className="flex items-center gap-2 mb-2">
+            <div className="flex-1 flex gap-2">
+              <input
+                type="text"
+                placeholder="Attribute Name"
+                value={attr.name}
+                onChange={(e) => updateAttribute(attrIndex, "name", e.target.value)}
+                className="border p-2 flex-1"
+              />
+              <input
+                type="number"
+                placeholder="Stock"
+                value={attr.stock}
+                onChange={(e) => updateAttribute(attrIndex, "stock", parseInt(e.target.value) || 0)}
+                className="border p-2 w-24"
+              />
+            </div>
+            <button
+              onClick={() => removeAttribute(attrIndex)}
+              className="text-red-500"
+            >
+              ×
             </button>
           </div>
         ))}
-        <button onClick={addSize} className="underline text-accent">
-          Add Size
+        <button onClick={addAttribute} className="underline text-primary px-4 py-2">
+          Add Attribute
         </button>
       </div>
 

@@ -3,6 +3,7 @@
 import { ApexOptions } from "apexcharts";
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { thirdFont } from "@/app/lib/fonts";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
@@ -15,14 +16,14 @@ const options: ApexOptions = {
     position: "top",
     horizontalAlign: "left",
   },
-  colors: ["#113C6F"],
+  colors: ["#D32333"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     height: 335,
     type: "area",
     dropShadow: {
       enabled: true,
-      color: "#113C6F",
+      color: "#D32333",
       top: 10,
       blur: 4,
       left: 0,
@@ -72,7 +73,7 @@ const options: ApexOptions = {
   markers: {
     size: 4,
     colors: "#fff",
-    strokeColors: ["#113C6F"],
+    strokeColors: ["#D32333"],
     strokeWidth: 3,
     strokeOpacity: 0.9,
     strokeDashArray: 0,
@@ -164,7 +165,7 @@ const ChartOne: React.FC = () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
             </span>
             <div className="w-full">
-              <p className={`font-semibold text-primary`}>Monthly sales</p>
+              <p className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-primary`}>Monthly sales</p>
             </div>
           </div>
         </div>

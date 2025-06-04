@@ -4,7 +4,7 @@ import Image from 'next/image'
 import React, { useContext, useState } from 'react'
 // import { cartContext } from '@/context/cartContext'
 // import { wishListContext } from '@/context/wishListContext'
-import { Berkishire } from '../app/lib/fonts'
+import { lifeyFont } from '../app/lib/fonts'
 
 
 const CartItemSmall = ({item,wishListBool}:{item:CartItem,wishListBool:boolean}) => {
@@ -105,7 +105,7 @@ const CartItemSmall = ({item,wishListBool}:{item:CartItem,wishListBool:boolean})
     
         <div className='flex w-full flex-col gap-2 justify-between '>
          <div>
-         <h3 className={`${Berkishire.className} font-semibold text-lg w-full `}>{item.productName}</h3>
+         <h3 className={`${lifeyFont.className} font-semibold text-lg w-full `}>{item.productName}</h3>
           </div> 
           <div className='flex w-full  font-semibold text-xs  justify-between'> 
             <h3 className=''>COLOR : {item.color}</h3>

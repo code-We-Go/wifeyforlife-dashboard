@@ -11,7 +11,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes } from "react-icons/gi";
 import { LiaShippingFastSolid } from "react-icons/lia";
-import { Berkishire } from "@/app/lib/fonts";
+import { lifeyFont, thirdFont } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
 import { RiCoupon3Line } from "react-icons/ri";
 
@@ -134,7 +134,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <Image
               width={176}
               height={32}
-              src={"/images/mamilk/mamilkWhiteLogo.svg"}
+              src={"/logo/WifeyforLifeyPrimaryLogowithSloganCream.png"}
               alt="Logo"
               priority
             />
@@ -164,10 +164,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
         <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
           {/* <!-- Sidebar Menu --> */}
-          <nav className={`${Berkishire.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
+          <nav className={`${thirdFont.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
             {menuGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
-                <h3 className="mb-4 ml-4  text-sm font-semibold text-white">
+                <h3 className="mb-4 ml-4  text-2xl font-semibold text-white">
                   {group.name}
                 </h3>
 

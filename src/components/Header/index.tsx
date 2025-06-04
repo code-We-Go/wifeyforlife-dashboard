@@ -60,7 +60,7 @@ const Header = (props: {
             <Image
               width={120}
               height={120}
-              src={"/images/mamilk/mamilkWhiteLogo.svg"}
+              src={"/logo/WifeyforLifeyPrimaryLogowithSloganCream.png"}
               alt="Logo"
             />
           </Link>

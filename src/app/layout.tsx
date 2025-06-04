@@ -1,9 +1,9 @@
 import "jsvectormap/dist/jsvectormap.css";
 import "flatpickr/dist/flatpickr.min.css";
 import "@/css/style.css";
-import { Baskerville } from "@/app/lib/fonts";
 import React from "react";
 import ClientWrapper from "@/components/Wrapper";
+import { wifeyFont } from "./lib/fonts";
 
 export default function RootLayout({
   children,
@@ -13,11 +13,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>MAMILK</title>
+        <title>Wifey For Lifey</title>
       </head>
       <body
         suppressHydrationWarning={true}
-        className={`${Baskerville.className} antialiased`}
+        className={`$${wifeyFont.className} antialiased`}
       >
         <ClientWrapper>{children}</ClientWrapper>
       </body>

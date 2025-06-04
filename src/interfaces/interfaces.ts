@@ -1,89 +1,94 @@
 export interface Variant {
+  name:string;
+  attributeName:string;
+  attributes: attribute[]; // e.g., [{ name: "Color", value: "Black" }, { name: "Capacity", value: "2L" }]
+  images: media[];
+}
+export type attribute= {
+
+  name: string;
+  
+  stock: number;
+
+};
+export type media = {
+  url: string;
+  type: mediaType;
+};
+export type mediaType = "image" | "video";
+
+export type price = {
+  local: number;
+};
+export interface Category {
+  _id: string;
+  categoryName: string;
+  description: string;
+  imageURL: string;
+}
+export interface Collection {
+  _id: string;
+  collectionName: string;
+  description: string;
+  imageURL: string;
+  products?: string[];
+}
+export interface SubCategory {
+  _id: string;
+  SubCategoryName: string;
+  products: string[];
+  imageUrl: string;
+  collectionID: string;
+  description: string;
+}
+
+export interface Product {
+  _id: string;
+  title: string;
+  description: string;
+  price: price;
+  comparedPrice: number;
+  categoryID: string;
+  variations: Variant[];
+  productDimensions: string[];
+  productDetails: string[];
+  productCare: string[];
+  season: string;
+  featured: boolean;
+  ratings: number;
+}
+
+export type AddProductType = Omit<Product, "_id">;
+
+export interface Newsletters {
+  name: string;
+  number: string;
+  _id: string;
+}
+
+export interface ImageVariant {
+  image: string;
   color: string;
-  sizes:Size[]
-  images:media[];
 }
-export type media={
-   url:string;
-   type:mediaType;
-   
- }
-export type mediaType= "image" | "video" 
- export type price={
-  local:number;
- }
- export interface Category {
-     _id: string;
-     categoryName:string;
-     description:string;
-
- }
- export interface Collection {
-   _id: string;
-   collectionName:string;
-   description:string;
-   imageURL:string;
-   products:string[];
-
+export interface Size {
+  //   type:string;
+  name: string;
+  stock: number;
 }
-// export interface SubCollection {
-//   _id: string;
-//   subCollectionName:string;
-//   products :string[];
-//   imageUrl:string;
-//   collectionID:string;
-//   description:string;
-// }
- export interface Product {
-    _id: string;
-    title: string;
-    description: string;
-    price: price;
-    comparedPrice?: number;
-    categoryID: string;
-    season: string;
-    variations: Variant[];
-    productDimensions:string[];
-      productDetails:string[];
-      productCare:string[];
-  }
+export interface CartItem {
+  productId: string;
+  productName: string;
+  price: number;
+  attributes:attribute
+  variant:Variant
+  quantity: number;
+  imageUrl: string;
+  collections?: string[];
+}
 
-  export type AddProductType = Omit<Product, '_id'>;
+export type FeaturedProduct = Omit<CartItem, "id" | "quantity">;
 
-  export interface Newsletters{
-   name:string;
-   number:string;
-   _id:string;
-  }
-
-
-  export interface ImageVariant
-  {
-     image:string;
-     color:string 
-  }
-  export interface Size
-  {
-   //   type:string;
-     name:string
-     stock:number 
-  }
-  export interface CartItem 
-  {
-   id:number;
-   productId: string,
-   productName: string,
-   price: number,
-   size: string
-   quantity: number,
-   imageUrl: string,
-   color: string
-
-  }
-
-  export type FeaturedProduct = Omit<CartItem, 'id' | 'quantity'>;
-
-//   export interface FeaturedProduct 
+//   export interface FeaturedProduct
 //   {
 //    productId: string,
 //    productName: string,
@@ -91,53 +96,48 @@ export type mediaType= "image" | "video"
 //    imageUrl: string,
 //    color:string
 //   }
-  export interface User {
-   email:string;
-   userId:string;
-   userCountry:string;
-   firstName:string;
-   lastName:string;
-   title:string;
-   phoneNumber:string;
-   address:string;
-   // phoneCode:string;
-   dob:string;
-  }
-export interface IOrder {
-    _id:string;
-    email: string;
-    orderID?: string;
-    country?: string;
-    firstName?: string;
-    lastName?: string;
-    address?: string;
-    apartment?: string;
-    postalZip?: string;
-    city?: string;
-    state?: string;
-    phone?: string;
-    cash?: boolean;
-    cart?: CartItem[]; // Assuming CartItem interface exists
-    subTotal?: number;
-    total?: number;
-    currency?: string;
-    status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
-    payment?: "pending" | "failed" | "confirmed";
-    billingCountry?: string;
-    billingFirstName?: string;
-    billingState?: string;
-    billingLastName?: string;
-    billingAddress?: string;
-    billingApartment?: string;
-    billingPostalZip?: string;
-    billingCity?: string;
-    billingPhone?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+export interface User {
+  email: string;
+  userId: string;
+  userCountry: string;
+  firstName: string;
+  lastName: string;
+  title: string;
+  phoneNumber: string;
+  address: string;
+  deviceType: string;
+  // phoneCode:string;
+  dob: string;
 }
-
-export interface ShippingZone {
+export interface IOrder {
   _id: string;
-  zone_name: string;
-  zone_rate: number;
+  email: string;
+  orderID?: string;
+  country?: string;
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  apartment?: string;
+  postalZip?: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  cash?: boolean;
+  cart?: CartItem[]; // Assuming CartItem interface exists
+  subTotal?: number;
+  total?: number;
+  currency?: string;
+  status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  payment?: "pending" | "failed" | "confirmed";
+  billingCountry?: string;
+  billingFirstName?: string;
+  billingState?: string;
+  billingLastName?: string;
+  billingAddress?: string;
+  billingApartment?: string;
+  billingPostalZip?: string;
+  billingCity?: string;
+  billingPhone?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
