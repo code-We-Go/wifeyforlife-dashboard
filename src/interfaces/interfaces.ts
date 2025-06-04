@@ -141,3 +141,8 @@ export interface IOrder {
   createdAt?: Date;
   updatedAt?: Date;
 }
+export interface ShippingZone {
+  _id: string;
+  zone_name:string,
+  zone_rate: number;
+}

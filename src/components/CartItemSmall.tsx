@@ -108,8 +108,8 @@ const CartItemSmall = ({item,wishListBool}:{item:CartItem,wishListBool:boolean})
          <h3 className={`${lifeyFont.className} font-semibold text-lg w-full `}>{item.productName}</h3>
           </div> 
           <div className='flex w-full  font-semibold text-xs  justify-between'> 
-            <h3 className=''>COLOR : {item.color}</h3>
-            <h3 className=''>SIZE : {item.size}</h3>
+            <h3 className=''> Variant : {item.variant.name}</h3>
+            <h3 className=''>{item.variant.attributeName} : {item.attributes.name}</h3>
 
           </div>
     
