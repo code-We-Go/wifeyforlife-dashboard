@@ -10,7 +10,7 @@ const CategoriesPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [modalType, setModalType] = useState<'edit' | 'delete' | 'add' | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category>({ _id: '', categoryName: '',description:"" });
+  const [selectedCategory, setSelectedCategory] = useState<Category>({ _id: '', categoryName: '',description:"",imageURL:"" });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -27,7 +27,7 @@ const CategoriesPage = () => {
 
   const openModal = (type: 'edit' | 'delete' | 'add', category?: Category) => {
     setModalType(type);
-    setSelectedCategory(category || { _id: '', categoryName: '',description:""});
+    setSelectedCategory(category || { _id: '', categoryName: '',description:"",imageURL:""});
   };
 
   return (
