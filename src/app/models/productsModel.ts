@@ -46,10 +46,14 @@ const priceSchema = new Schema<price>({
 });
 
 // Define the Product schema
-const ProductSchema = new Schema<Product>({
+// const ProductSchema = new Schema<Product>({
+const ProductSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  categoryID: { type: String, required: true },
+  subCategoryID: { type: Schema.Types.ObjectId, required: true ,
+    ref: 'subCategories'
+  },
+  
   season: { type: String, required: false },
   price: { type: priceSchema, required: true },
   comparedPrice: { type: Number, required: false, min: 0 },

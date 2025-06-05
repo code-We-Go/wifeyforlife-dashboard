@@ -1,6 +1,6 @@
 "use client";
 
-import { AddProductType, Category, Product } from "@/interfaces/interfaces";
+import { AddProductType, Category, Product, SubCategory } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -31,7 +31,7 @@ const AddProductModal = ({
     price: { local: 0 },
     comparedPrice: 0,
     variations: [],
-    categoryID: "",
+    subCategoryID: "",
     season: "all",
     productDimensions: [],
     productDetails: [],
@@ -41,7 +41,10 @@ const AddProductModal = ({
   });
 
   const [errors, setErrors] = useState<any>({}); // For validation errors
-const [categoryID,setCategoryID]=useState<string>(); 
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+
   // Validation function
   const validate = () => {
     const newErrors: any = {};
@@ -49,29 +52,42 @@ const [categoryID,setCategoryID]=useState<string>();
     if (!productState.description) newErrors.description = "Description is required";
     if (productState.price.local <= 0) newErrors.localPrice = "Local price must be greater than 0";
     if (productState.variations.length === 0) newErrors.variations = "At least one variation is required";
+    if (!productState.subCategoryID) newErrors.subCategory = "Subcategory is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const [categoris,setCategories]=useState<Category[]>([])
-  
-useEffect(() => {
-  const fetchCategories = async()=>  {
-    try{
-      const res = await axios('/api/categories')
-      if(res.status===200){
-        setCategories(res.data.data)
-setCategoryID(res.data.data[0]._id)
-        updateField('categoryID', res.data.data[0]._id)
+
+  useEffect(() => {
+    const fetchCategories = async() => {
+      try {
+        const res = await axios('/api/categories')
+        if(res.status === 200) {
+          setCategories(res.data.data)
+        }
+      } catch(err) {
+        console.error(err)
+      }
+    }
+    fetchCategories()
+  }, [])
+
+  const fetchSubCategories = async (categoryId: string) => {
+    try {
+      const res = await axios(`/api/subcategories?categoryID=${categoryId}`)
+      if(res.status === 200) {
+        setSubCategories(res.data.data)
+      }
+    } catch(err) {
+      console.error(err)
     }
   }
-  catch(err){
-    console.error(err)
-  }
-  }
 
-  fetchCategories()
-}, [])
-
+  const handleCategoryChange = async (categoryId: string) => {
+    setSelectedCategory(categoryId)
+    await fetchSubCategories(categoryId)
+    // Reset subcategory when category changes
+    setProduct(prev => ({...prev, subCategoryID: ""}))
+  }
 
   // Create Product Function
   const addProduct = async () => {
@@ -82,19 +98,17 @@ setCategoryID(res.data.data[0]._id)
       if (res.status === 200) {
           Swal.fire({
               background: "#FFFFF",
-
-          color: "black",
-          toast: false,
-          iconColor: "#473728",
-          position: "bottom-right",
-          text: "PRODUCT HAS BEEN ADDED",
-          showConfirmButton: false,
-          timer: 2000,
-          customClass: {
-            popup: "no-rounded-corners small-popup",
-          },
-        });
-        console.log('res' +JSON.stringify(res.data.data));
+              color: "black",
+              toast: false,
+              iconColor: "#473728",
+              position: "bottom-right",
+              text: "PRODUCT HAS BEEN ADDED",
+              showConfirmButton: false,
+              timer: 2000,
+              customClass: {
+                popup: "no-rounded-corners small-popup",
+              },
+            });
         setProducts((prev) => [...prev, res.data.data]);
         setModalOpen(false); // Close modal on success
       }
@@ -164,30 +178,51 @@ setCategoryID(res.data.data[0]._id)
               />
               {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
             </div>
-            <div>
-              <label className="block font-semibold">Featured:</label>
-                      <input
-                type="checkbox"
-                checked={productState.featured}
-                onChange={(e) => updateField("featured", e.target.checked)}
-                className="border p-2 w-full"
-              />
-              {errors.featured && <p className="text-red-500 text-sm">{errors.featured}</p>}
-            </div>
-            {/* collections */}
+            
+            <label className="block font-semibold">Featured:</label>
+            <input
+              type="checkbox"
+              checked={productState.featured}
+              onChange={(e) => updateField("featured", e.target.checked)}
+              className="border p-2"
+            />
+            {errors.featured && <p className="text-red-500 text-sm">{errors.featured}</p>}
+            
+            {/* Category and Subcategory */}
             <div>
               <label className="block font-semibold">Category:</label>
               <select
-                value={categoryID}
-                onChange={(e) => setCategoryID(e.target.value)}
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="border p-2 w-full"
               >
-                {categoris.map((category,index) => <option key={index} value={category._id}>{category.categoryName}</option>)}
-                </select>
-              {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>}
+                <option value="">Select a category</option>
+                {categories.map((category,index) => (
+                  <option key={index} value={category._id}>{category.categoryName}</option>
+                ))}
+              </select>
+              {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
             </div>
+
             <div>
-            <label className="block font-semibold">Season:</label>
+              <label className="block font-semibold">Subcategory:</label>
+              <select
+                value={productState.subCategoryID}
+                onChange={(e) => updateField("subCategoryID", e.target.value)}
+                className="border p-2 w-full"
+                disabled={!selectedCategory}
+              >
+                <option value="">Select a subcategory</option>
+                {subCategories.map((subCategory,index) => (
+                  <option key={index} value={subCategory._id}>{subCategory.SubCategoryName}</option>
+                ))}
+              </select>
+              {errors.subCategory && <p className="text-red-500 text-sm">{errors.subCategory}</p>}
+            </div>
+
+            {/* collections */}
+            <div>
+              <label className="block font-semibold">Season:</label>
               <div className="flex gap-4">
               <div className='flex gap-2'>
                 <label className="block font-semibold">Summer</label>

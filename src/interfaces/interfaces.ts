@@ -1,15 +1,14 @@
+import mongoose from "mongoose";
+
 export interface Variant {
   name:string;
   attributeName:string;
   attributes: attribute[]; // e.g., [{ name: "Color", value: "Black" }, { name: "Capacity", value: "2L" }]
   images: media[];
 }
-export type attribute= {
-
+export type attribute = {
   name: string;
-  
   stock: number;
-
 };
 export type media = {
   url: string;
@@ -36,9 +35,9 @@ export interface Collection {
 export interface SubCategory {
   _id: string;
   SubCategoryName: string;
-  products: string[];
-  imageUrl: string;
-  collectionID: string;
+  
+ categoryID:string
+  
   description: string;
 }
 
@@ -48,7 +47,8 @@ export interface Product {
   description: string;
   price: price;
   comparedPrice: number;
-  categoryID: string;
+  // subCategoryID: mongoose.Types.ObjectId;
+  subCategoryID: string;
   variations: Variant[];
   productDimensions: string[];
   productDetails: string[];

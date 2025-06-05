@@ -47,7 +47,8 @@ const ProductsPage = () => {
 
   return (
     <DefaultLayout>
-      <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-start items-center gap-4 bg-backgroundColor">
+      <div className="px-1  overflow-hidden justify-between md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col  items-center gap-4 bg-backgroundColor">
+      <div className='flex flex-col items-center w-full h-full space-y-4'>
         <div className='w-[97%] flex flex-col-reverse md:flex-row justify-between items-center gap-4'>
         <div className="w-full md:w-64">
             <input
@@ -66,13 +67,6 @@ const ProductsPage = () => {
           
   
         </div>
-        
-        <AddProductModal 
-          isModalOpen={addModalisOpen} 
-          setModalOpen={setAddModalisOpen} 
-          setProducts={setProducts} 
-        />
-
         {isLoading ? (
           <div>Loading...</div>
         ) : products.length > 0 ? (
@@ -86,6 +80,14 @@ const ProductsPage = () => {
         ) : (
           <h1>No products found</h1>
         )}
+        </div>
+        <AddProductModal 
+          isModalOpen={addModalisOpen} 
+          setModalOpen={setAddModalisOpen} 
+          setProducts={setProducts} 
+        />
+
+
 
         {/* Pagination Controls */}
         <div className="flex items-center gap-4 mt-4">

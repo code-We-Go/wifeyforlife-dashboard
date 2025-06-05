@@ -28,9 +28,10 @@ const config: Config = {
         secondary:"#12665C",
         saga:"#81C8BB",
 
-        backgroundColor:"#F7F8F4",
+        backgroundColor:"#FBF3E0",
         yellowBGC:"#F0EA9B",
         babyBlue:"#D8DFE2",
+        creamey:"#FBF3E0",
         current: "currentColor",
         transparent: "transparent",
         white: "#FFFFFF",

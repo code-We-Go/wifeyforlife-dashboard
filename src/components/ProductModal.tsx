@@ -1,4 +1,4 @@
-import { Category, Collection, Product } from '@/interfaces/interfaces';
+import { Category, Collection, Product, SubCategory } from '@/interfaces/interfaces';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Swal from "sweetalert2";
@@ -12,23 +12,48 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
 }) => {
     const [productState,setProduct]=useState<Product>(product)
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-     const [categories,setCategoried]=useState<Category[]>([])
+    const [categories,setCategories]=useState<Category[]>([])
+    const [subCategories,setSubCategories]=useState<SubCategory[]>([])
+    const [selectedCategory,setSelectedCategory]=useState<string>('')
 
    useEffect(() => {
      const fetchCategories = async()=>  {
        try{
          const res = await axios('/api/categories')
          if(res.status===200){
-           setCategoried(res.data.data)
-         
+           setCategories(res.data.data)
+           // Find the category ID for the current product's subcategory
+           const subCategoryRes = await axios(`/api/subcategories/${product.subCategoryID}`)
+           if(subCategoryRes.status === 200) {
+             setSelectedCategory(subCategoryRes.data.data.categoryID)
+             fetchSubCategories(subCategoryRes.data.data.categoryID)
+           }
+         }
+       }
+       catch(err){
+         console.error(err)
        }
      }
-     catch(err){
+     fetchCategories()
+   }, [product.subCategoryID])
+
+   const fetchSubCategories = async (categoryId: string) => {
+     try {
+       const res = await axios(`/api/subcategories?categoryID=${categoryId}`)
+       if(res.status === 200) {
+         setSubCategories(res.data.data)
+       }
+     } catch(err) {
        console.error(err)
      }
-     }
-     fetchCategories()
-   }, [])
+   }
+
+   const handleCategoryChange = async (categoryId: string) => {
+     setSelectedCategory(categoryId)
+     await fetchSubCategories(categoryId)
+     // Reset subcategory when category changes
+     setProduct(prev => ({...prev, subCategoryID: ''}))
+   }
   
     const updateFeild = async(field:string,value:any)=>{
         setProducts((prevProducts) =>
@@ -96,7 +121,7 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
         <div onClick={() => setDetailsModal(false)}
          className="fixed inset-0 lg:pl-72.5 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div onClick={(e) => e.stopPropagation()} 
-          className="bg-white rounded-2xl max-lg:mt-16  max-h-[90vh] overflow-y-scroll p-6 shadow-lg w-[90%] text-center">
+          className="bg-white text-gray-600 rounded-2xl max-lg:mt-16  max-h-[90vh] overflow-y-scroll p-6 shadow-lg w-[90%] text-center">
             <h2 className="text-lg font-bold mb-4">PRODUCT DETAILS</h2>
 
             {/* Product Info */}
@@ -132,17 +157,43 @@ const ProductModal = ({isDetailsModalOpen,product,setProducts,setDetailsModal}:{
                   className="border p-2 w-full"
                 />
               </div>
+              <div className="flex gap-2">
+              <label className="block font-semibold">Featured:</label>
+                      <input
+                type="checkbox"
+                checked={productState.featured}
+                onChange={(e) => updateFeild("featured", e.target.checked)}
+                className="border p-2"
+              />
+            </div>
             {/* collections */}
             <div>
               <label className="block font-semibold">Category:</label>
               <select
-                value={productState.categoryID}
-                onChange={(e) => updateFeild("categoryID", e.target.value)}
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="border p-2 w-full"
               >
-                {categories.map((category,index) => <option key={index} value={category._id}>{category.categoryName}</option>)}
-                </select>
-              {/* {errors.collection && <p className="text-red-500 text-sm">{errors.collection}</p>} */}
+                <option value="">Select a category</option>
+                {categories.map((category,index) => (
+                  <option key={index} value={category._id}>{category.categoryName}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold">Subcategory:</label>
+              <select
+                value={productState.subCategoryID}
+                onChange={(e) => updateFeild("subCategoryID", e.target.value)}
+                className="border p-2 w-full"
+                disabled={!selectedCategory}
+              >
+                <option value="">Select a subcategory</option>
+                {subCategories.map((subCategory,index) => (
+                  <option key={index} value={subCategory._id}>{subCategory.SubCategoryName}</option>
+                ))}
+              </select>
             </div>
             <div>
             <label className="block font-semibold">Season:</label>
