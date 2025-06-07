@@ -1,15 +1,16 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
-const categoriesShcema =mongoose.Schema({
-    categoryName:{
-        type:String,
-        required:true,
-    },
-    description:{type:String,
-        required:false
-    },
-    });
+const categoriesSchema = new mongoose.Schema({
+  categoryName: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+});
+console.log('Registering CategoryModel');
+const categoriesModel =
+  mongoose.models.categories || mongoose.model("categories", categoriesSchema);
 
-    const categoriesModel= mongoose.models.categories || mongoose.model('categories', categoriesShcema)
-
-    export default categoriesModel;
+export default categoriesModel;

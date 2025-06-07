@@ -1,24 +1,18 @@
-import { SchemaTypes } from "mongoose";
+import mongoose from "mongoose";
+import path from "path";
 
-const { default: mongoose } = require("mongoose");
+const subCategorySchema = new mongoose.Schema({
+  subCategoryName: { type: String, required: true },
+  categoryID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "categories",
+    // path: path.join(__dirname, "categoriesModel"),
+  },
+  description: { type: String },
+});
+console.log("Registering subCategoryModel");
+const subCategoryModel =
+  mongoose.models.subCategories ||
+  mongoose.model("subCategories", subCategorySchema);
 
-const Schema =mongoose.Schema({
-    subCategoryName:{
-        type:String,
-        required:true
-    },
-    CategoryID:{type:mongoose.Schema.Types.ObjectId,
-        ref:"categories"
-    },
-
-
-    description:{
-        type:String,
-    },
-
-
-    });
-
-    const subCategoriesModel= mongoose.models.subCategories || mongoose.model('subCategories', Schema)
-
-    export default subCategoriesModel;
+export default subCategoryModel;

@@ -1,11 +1,28 @@
 import mongoose from "mongoose";
 
 export interface Variant {
-  name:string;
-  attributeName:string;
+  name: string;
+  attributeName: string;
   attributes: attribute[]; // e.g., [{ name: "Color", value: "Black" }, { name: "Capacity", value: "2L" }]
   images: media[];
 }
+
+export interface Category {
+  _id: string;
+  categoryName: string;
+  description: string;
+  __v?: number; // optional if included in response
+}
+
+export interface SubCategory {
+  _id: string;
+  subCategoryName: string;
+  description: string;
+  categoryID: Category; // now a full object
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type attribute = {
   name: string;
   stock: number;
@@ -34,11 +51,11 @@ export interface Collection {
 }
 export interface SubCategory {
   _id: string;
-  SubCategoryName: string;
-  
- categoryID:string
-  
+  subCategoryName: string;
   description: string;
+  categoryID: Category; // now a full object
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Product {
@@ -48,7 +65,7 @@ export interface Product {
   price: price;
   comparedPrice: number;
   // subCategoryID: mongoose.Types.ObjectId;
-  subCategoryID: string;
+  subCategoryID: SubCategory; // now a full object
   variations: Variant[];
   productDimensions: string[];
   productDetails: string[];
@@ -79,8 +96,8 @@ export interface CartItem {
   productId: string;
   productName: string;
   price: number;
-  attributes:attribute
-  variant:Variant
+  attributes: attribute;
+  variant: Variant;
   quantity: number;
   imageUrl: string;
   collections?: string[];
@@ -143,6 +160,6 @@ export interface IOrder {
 }
 export interface ShippingZone {
   _id: string;
-  zone_name:string,
+  zone_name: string;
   zone_rate: number;
 }

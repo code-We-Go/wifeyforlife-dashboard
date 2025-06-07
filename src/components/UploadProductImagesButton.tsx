@@ -81,7 +81,7 @@ const UploadProductsImagesButton = ({
   return (
     <div className="relative">
       <UploadButton
-        className="bg-primary text-white h-16 px-2 py-1 border-primary !important"
+        className="bg-secondary text-white h-16 px-2 py-1 border-secondary !important"
         endpoint="mediaUploader"
         onBeforeUploadBegin={handleUpload}
         onClientUploadComplete={(res) => {

@@ -4,6 +4,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import OrderComponent from './OrderComponent';
 import Link from 'next/link';
+import { thirdFont } from '@/app/lib/fonts';
 
 const RecentOrders = () => {
     const [orders, setOrders] = useState<IOrder[]>([]);
@@ -20,8 +21,8 @@ const RecentOrders = () => {
       }, []); 
   
   return (
-    <div className=' h-auto col-span-12 bg-white flex flex-col gap-3 md:gap-6 justify-start items-center  w-full border py-4 border-primary'>
-      <h2 className=' font-semibold text-xl md:text-2xl text-primary'>Recent Orders</h2>
+    <div className=' h-auto col-span-12 bg-white flex flex-col gap-3 md:gap-6 justify-start items-center  w-full  py-4 '>
+      <h2 className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-secondary`}>Recent Orders</h2>
       <div className=' flex flex-col  h-auto w-full    gap-4  items-center  '>
 
       {orders.length > 0 ? (
@@ -38,7 +39,7 @@ const RecentOrders = () => {
 
       </div>
       <Link className='mb-6' href={'/pages/orders'}>
-      <h2 className='text-primary underline'>VIEW ALL</h2>
+      <h2 className='text-secondary underline'>VIEW ALL</h2>
       </Link>
 
       </div>

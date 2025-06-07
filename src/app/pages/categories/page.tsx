@@ -1,22 +1,30 @@
-'use client'
-import CategoryModal from '@/components/CategoryModal';
-import DefaultLayout from '@/components/Layouts/DefaultLayout';
-import { Category, SubCategory } from '@/interfaces/interfaces';
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+"use client";
+import { thirdFont } from "@/app/lib/fonts";
+import CategoryModal from "@/components/CategoryModal";
+import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import { Category, SubCategory } from "@/interfaces/interfaces";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [modalType, setModalType] = useState<'edit' | 'delete' | 'add' | 'addSub' | 'editSub' | 'deleteSub' | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category>({ _id: '', categoryName: '', description: "", imageURL: "" });
-  const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory>({ 
-    _id: '', 
-    SubCategoryName: '', 
-    description: '',
-    categoryID: ''
+  const [modalType, setModalType] = useState<
+    "edit" | "delete" | "add" | "addSub" | "editSub" | "deleteSub" | null
+  >(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category>({
+    _id: "",
+    categoryName: "",
+    description: "",
+    imageURL: "",
+  });
+  const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory>({
+    _id: "",
+    subCategoryName: "",
+    description: "",
+    categoryID: {} as Category,
   });
 
   useEffect(() => {
@@ -24,7 +32,7 @@ const CategoriesPage = () => {
       try {
         const [categoriesRes, subCategoriesRes] = await Promise.all([
           axios.get(`/api/categories`),
-          axios.get(`/api/subcategories`)
+          axios.get(`/api/subcategories`),
         ]);
         setCategories(categoriesRes.data.data);
         setSubCategories(subCategoriesRes.data.data);
@@ -35,7 +43,11 @@ const CategoriesPage = () => {
     fetchData();
   }, [page]);
 
-  const openModal = (type: 'edit' | 'delete' | 'add' | 'addSub' | 'editSub' | 'deleteSub', category?: Category, subCategory?: SubCategory) => {
+  const openModal = (
+    type: "edit" | "delete" | "add" | "addSub" | "editSub" | "deleteSub",
+    category?: Category,
+    subCategory?: SubCategory,
+  ) => {
     setModalType(type);
     if (category) {
       setSelectedCategory(category);
@@ -47,40 +59,52 @@ const CategoriesPage = () => {
 
   return (
     <DefaultLayout>
-      <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-start items-center gap-4 bg-backgroundColor">
-        <div className="text-primary w-[97%] flex justify-between">
-          <h3 className='hover:cursor-pointer' onClick={() => openModal('add')}>ADD NEW CATEGORY</h3>
-          <h3 className='hover:cursor-pointer' onClick={() => openModal('addSub')}>ADD NEW SUBCATEGORY</h3>
+      <div className="flex h-auto min-h-screen w-full flex-col items-center justify-start gap-4 overflow-hidden bg-backgroundColor px-1 py-2 md:px-2 md:py-4">
+        <div className="flex w-[97%] justify-between text-primary">
+          <button
+              className="border-[1px] rounded-2xl bg-secondary px-4 py-2 text-sm text-creamey"
+              onClick={() => openModal("add")}>
+            ADD NEW CATEGORY
+          </button>
+          <button
+                          className="border-[1px] rounded-2xl bg-secondary text-sm px-4 py-2 text-creamey"
+
+            onClick={() => openModal("addSub")}
+          >
+            ADD NEW SUBCATEGORY
+          </button>
         </div>
 
         {/* Categories Table */}
         {categories.length > 0 && (
-          <div className="w-[97%]">
-            <h2 className="text-xl font-semibold mb-4">Categories</h2>
-            <table className="w-full text-left border border-gray-300 rounded">
-              <thead className="bg-gray-100 text-sm">
+          <div className="w-[97%] text-center pt-10">
+            <h2 className={`${thirdFont.className} text-secondary mb-4 text-3xl font-semibold`}>Categories</h2>
+            <table className="w-full rounded border border-gray-300 text-left">
+              <thead className="bg-secondary text-creamey text-sm">
                 <tr>
-                  <th className="p-2 border">#</th>
-                  <th className="p-2 border">Category Name</th>
-                  <th className="p-2 border">Description</th>
-                  <th className="p-2 border">Actions</th>
+                  <th className="border p-2">#</th>
+                  <th className="border p-2">Category Name</th>
+                  <th className="border p-2">Description</th>
+                  <th className="border p-2">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white">
                 {categories.map((category, index) => (
-                  <tr key={category._id} className="hover:bg-gray-50 text-sm">
-                    <td className="p-2 border">{(page - 1) * 10 + index + 1}</td>
-                    <td className="p-2 border">{category.categoryName}</td>
-                    <td className="p-2 border">{category.description}</td>
-                    <td className="p-2 border space-x-2">
+                  <tr key={category._id} className="text-sm hover:bg-gray-50">
+                    <td className="border p-2">
+                      {(page - 1) * 10 + index + 1}
+                    </td>
+                    <td className="border p-2">{category.categoryName}</td>
+                    <td className="border p-2">{category.description}</td>
+                    <td className="space-x-2 border p-2">
                       <button
-                        onClick={() => openModal('edit', category)}
+                        onClick={() => openModal("edit", category)}
                         className="text-blue-600 underline"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => openModal('delete', category)}
+                        onClick={() => openModal("delete", category)}
                         className="text-red-600 underline"
                       >
                         Delete
@@ -95,36 +119,49 @@ const CategoriesPage = () => {
 
         {/* Subcategories Table */}
         {subCategories.length > 0 && (
-          <div className="w-[97%] mt-8">
-            <h2 className="text-xl font-semibold mb-4">Subcategories</h2>
-            <table className="w-full text-left border border-gray-300 rounded">
-              <thead className="bg-gray-100 text-sm">
+          <div className="mt-8 w-[97%] text-center">
+            <h2 className={`${thirdFont.className} text-secondary mb-4 text-3xl font-semibold`}>Subcategories</h2>
+            <table className="w-full rounded border border-gray-300 text-left">
+              <thead className="bg-secondary text-creamey text-sm">
                 <tr>
-                  <th className="p-2 border">#</th>
-                  <th className="p-2 border">Subcategory Name</th>
-                  <th className="p-2 border">Description</th>
-                  <th className="p-2 border">Category</th>
-                  <th className="p-2 border">Actions</th>
+                  <th className="border p-2">#</th>
+                  <th className="border p-2">Subcategory Name</th>
+                  <th className="border p-2">Description</th>
+                  <th className="border p-2">Category</th>
+                  <th className="border p-2">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white">
                 {subCategories.map((subCategory, index) => (
-                  <tr key={subCategory._id} className="hover:bg-gray-50 text-sm">
-                    <td className="p-2 border">{(page - 1) * 10 + index + 1}</td>
-                    <td className="p-2 border">{subCategory.SubCategoryName}</td>
-                    <td className="p-2 border">{subCategory.description}</td>
-                    <td className="p-2 border">
-                      {categories.find(cat => cat._id === subCategory.categoryID)?.categoryName || 'N/A'}
+                  <tr
+                    key={subCategory._id}
+                    className="text-sm hover:bg-gray-50"
+                  >
+                    <td className="border p-2">
+                      {(page - 1) * 10 + index + 1}
                     </td>
-                    <td className="p-2 border space-x-2">
+                    <td className="border p-2">
+                      {subCategory.subCategoryName}
+                    </td>
+                    <td className="border p-2">{subCategory.description}</td>
+                    <td className="border p-2">
+                      {categories.find(
+                        (cat) => cat._id === subCategory.categoryID._id,
+                      )?.categoryName || "N/A"}
+                    </td>
+                    <td className="space-x-2 border p-2">
                       <button
-                        onClick={() => openModal('editSub', undefined, subCategory)}
+                        onClick={() =>
+                          openModal("editSub", undefined, subCategory)
+                        }
                         className="text-blue-600 underline"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => openModal('deleteSub', undefined, subCategory)}
+                        onClick={() =>
+                          openModal("deleteSub", undefined, subCategory)
+                        }
                         className="text-red-600 underline"
                       >
                         Delete
@@ -138,17 +175,19 @@ const CategoriesPage = () => {
         )}
 
         {/* Pagination */}
-        <div className="flex items-center gap-4 mt-4">
+        <div className="mt-4 flex items-center gap-4">
           <button
-            className="px-4 py-2 bg-accent text-white rounded disabled:opacity-50"
+            className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
             disabled={page === 1}
           >
             Previous
           </button>
-          <span className="text-lg">Page {page} of {totalPages}</span>
+          <span className="text-lg">
+            Page {page} of {totalPages}
+          </span>
           <button
-            className="px-4 py-2 bg-accent text-white rounded disabled:opacity-50"
+            className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={page === totalPages}
           >
@@ -169,7 +208,7 @@ const CategoriesPage = () => {
             refreshData={() => {
               Promise.all([
                 axios.get(`/api/categories?page=${page}`),
-                axios.get(`/api/subcategories?page=${page}`)
+                axios.get(`/api/subcategories?page=${page}`),
               ]).then(([categoriesRes, subCategoriesRes]) => {
                 setCategories(categoriesRes.data.data);
                 setSubCategories(subCategoriesRes.data.data);

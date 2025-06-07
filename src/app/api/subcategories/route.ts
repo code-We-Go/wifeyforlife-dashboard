@@ -1,37 +1,94 @@
-import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import subCategoryModel from "@/app/models/subCategoryModel";
+import { ConnectDB } from "@/config/db";
+import mongoose from "mongoose";
+const loadDB = async () => {
+  await ConnectDB();
+};
 
-export async function GET() {
-  
-  try {
-    const { db } = await connectToDatabase();
-    const subcategories = await db.collection('subcategories').find({}).toArray();
-    return NextResponse.json({ data: subcategories });
-  } catch (error) {
-    console.error('Error fetching subcategories:', error);
-    return NextResponse.json({ error: 'Failed to fetch subcategories' }, { status: 500 });
+loadDB();
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const categoryID = searchParams.get("categoryID");
+  const subCategoryID = searchParams.get("subCategoryID");
+
+  if (categoryID) {
+    try {
+      // Convert the categoryID to ObjectId
+      const categoryObjectId = new mongoose.Types.ObjectId(categoryID);
+      
+      // Query using the ObjectId
+      const res = await subCategoryModel.find({
+        categoryID: categoryObjectId
+      });
+      console.log("subcategories", res);
+      return NextResponse.json({ data: res }, { status: 200 });
+    } catch (error) {
+      console.error("Error:", error);
+      return NextResponse.json(
+        { error: "Invalid category ID format" },
+        { status: 400 }
+      );
+    }
+  } else if (subCategoryID) {
+    try {
+      const subcategory = await subCategoryModel.findById(subCategoryID);
+      if (!subcategory) {
+        return NextResponse.json(
+          { error: "Subcategory not found" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ data: subcategory });
+    } catch (error) {
+      console.error("Error fetching subcategory:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch subcategory with subCategoryID" },
+        { status: 500 }
+      );
+    }
   }
+else{
+  try {
+    const subCategories = await subCategoryModel.find().populate({
+          path: "categoryID",
+          model: "categories", // Explicitly specify the model
+        });
+        console.log("subCategories", subCategories);
+        return NextResponse.json({ data: subCategories }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching subcategories:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch subcategories" },
+      { status: 500 },
+    );
+  }
+}
 }
 
 export async function POST(request: Request) {
   try {
     const { db } = await connectToDatabase();
     const body = await request.json();
-    
-    const result = await db.collection('subcategories').insertOne({
+
+    const result = await subCategoryModel.create({
       ...body,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
-    return NextResponse.json({ 
-      message: 'Subcategory created successfully',
-      data: { _id: result.insertedId, ...body }
+    return NextResponse.json({
+      message: "Subcategory created successfully",
+      data: { _id: result.insertedId, ...body },
     });
   } catch (error) {
-    console.error('Error creating subcategory:', error);
-    return NextResponse.json({ error: 'Failed to create subcategory' }, { status: 500 });
+    console.error("Error creating subcategory:", error);
+    return NextResponse.json(
+      { error: "Failed to create subcategory" },
+      { status: 500 },
+    );
   }
 }
 
@@ -39,34 +96,43 @@ export async function PUT(request: Request) {
   try {
     const { db } = await connectToDatabase();
     const { searchParams } = new URL(request.url);
-    const subCategoryID = searchParams.get('subCategoryID');
-    
+    const subCategoryID = searchParams.get("subCategoryID");
+
     if (!subCategoryID) {
-      return NextResponse.json({ error: 'Subcategory ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Subcategory ID is required" },
+        { status: 400 },
+      );
     }
 
     const body = await request.json();
-    const result = await db.collection('subcategories').updateOne(
+    const result = await db.collection("subcategories").updateOne(
       { _id: new ObjectId(subCategoryID) },
-      { 
+      {
         $set: {
           ...body,
-          updatedAt: new Date()
-        }
-      }
+          updatedAt: new Date(),
+        },
+      },
     );
 
     if (result.matchedCount === 0) {
-      return NextResponse.json({ error: 'Subcategory not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Subcategory not found" },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json({ 
-      message: 'Subcategory updated successfully',
-      data: { _id: subCategoryID, ...body }
+    return NextResponse.json({
+      message: "Subcategory updated successfully",
+      data: { _id: subCategoryID, ...body },
     });
   } catch (error) {
-    console.error('Error updating subcategory:', error);
-    return NextResponse.json({ error: 'Failed to update subcategory' }, { status: 500 });
+    console.error("Error updating subcategory:", error);
+    return NextResponse.json(
+      { error: "Failed to update subcategory" },
+      { status: 500 },
+    );
   }
 }
 
@@ -77,20 +143,29 @@ export async function DELETE(request: Request) {
     const { subCategoryID } = body;
 
     if (!subCategoryID) {
-      return NextResponse.json({ error: 'Subcategory ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Subcategory ID is required" },
+        { status: 400 },
+      );
     }
 
-    const result = await db.collection('subcategories').deleteOne({
-      _id: new ObjectId(subCategoryID)
+    const result = await db.collection("subcategories").deleteOne({
+      _id: new ObjectId(subCategoryID),
     });
 
     if (result.deletedCount === 0) {
-      return NextResponse.json({ error: 'Subcategory not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Subcategory not found" },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json({ message: 'Subcategory deleted successfully' });
+    return NextResponse.json({ message: "Subcategory deleted successfully" });
   } catch (error) {
-    console.error('Error deleting subcategory:', error);
-    return NextResponse.json({ error: 'Failed to delete subcategory' }, { status: 500 });
+    console.error("Error deleting subcategory:", error);
+    return NextResponse.json(
+      { error: "Failed to delete subcategory" },
+      { status: 500 },
+    );
   }
-} 
+}

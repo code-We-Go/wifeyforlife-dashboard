@@ -178,7 +178,7 @@ const ProductVariant = ({
             </button>
           </div>
         ))}
-        <button onClick={addAttribute} className="underline text-primary px-4 py-2">
+        <button onClick={addAttribute} className="underline text-secondary px-4 py-2">
           Add Attribute
         </button>
       </div>

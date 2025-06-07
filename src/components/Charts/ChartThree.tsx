@@ -2,6 +2,7 @@ import { ApexOptions } from "apexcharts";
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import axios from "axios";
+import { thirdFont } from "@/app/lib/fonts";
 interface Visit {
   deviceType: string; 
   countryCode:string;// e.g., 'desktop', 'tablet', 'mobile', 'other'
@@ -105,7 +106,7 @@ const [duration,setDuration]= useState("thisWeek")
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-6">
       <div className="mb-3 justify-between gap-4 sm:flex">
         <div>
-          <h5 className="text-xl font-semibold text-black dark:text-white">
+          <h5 className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-secondary dark:text-white`}>
             Visitors Analytics
           </h5>
         </div>

@@ -1,11 +1,23 @@
 // models/product.ts
 import mongoose, { Schema, Document } from "mongoose";
-import { Product, Variant, attribute, media, mediaType, price } from "@/interfaces/interfaces" ;
+import {
+  Product,
+  Variant,
+  attribute,
+  media,
+  mediaType,
+  price,
+} from "@/interfaces/interfaces";
+import path from "path";
 
 // Define the media schema
 const mediaSchema = new Schema<media>({
   url: { type: String, required: true },
-  type: { type: String, enum: ["image", "video"] as mediaType[], required: true },
+  type: {
+    type: String,
+    enum: ["image", "video"] as mediaType[],
+    required: true,
+  },
 });
 
 // Define the attribute schema (replacing sizeSchema)
@@ -50,10 +62,12 @@ const priceSchema = new Schema<price>({
 const ProductSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  subCategoryID: { type: Schema.Types.ObjectId, required: true ,
-    ref: 'subCategories'
+  subCategoryID: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "subCategories",
   },
-  
+
   season: { type: String, required: false },
   price: { type: priceSchema, required: true },
   comparedPrice: { type: Number, required: false, min: 0 },
@@ -75,5 +89,7 @@ const ProductSchema = new Schema({
 });
 
 // Create and export the Product model
-const productsModel = mongoose.models.products || mongoose.model<Product>("products", ProductSchema);
+const productsModel =
+  mongoose.models.products ||
+  mongoose.model<Product>("products", ProductSchema);
 export default productsModel;
