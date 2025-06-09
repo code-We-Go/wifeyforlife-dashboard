@@ -64,6 +64,7 @@ const Header = (props: {
               alt="Logo"
             />
           </Link>
+          <div></div>
         </div>
 
         <div className="flex items-center gap-3 2xsm:gap-7">

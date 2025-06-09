@@ -3,6 +3,7 @@ import Link from "next/link";
 import SidebarDropdown from "@/components/Sidebar/SidebarDropdown";
 import { usePathname, useRouter } from "next/navigation";
 import { lifeyFont, thirdFont } from "@/app/lib/fonts";
+import axios from "axios";
 
 const SidebarItem = ({ item, pageName, setPageName }: any) => {
   const router = useRouter();
@@ -11,17 +12,15 @@ const SidebarItem = ({ item, pageName, setPageName }: any) => {
   const handleClick = async (e: React.MouseEvent) => {
     if (item.label === "LOGOUT") {
       e.preventDefault();
-      try {
-        const response = await fetch("/api/auth/logout", {
-          method: "POST",
-        });
-        if (response.ok) {
-          router.push("/login");
+        try {
+          await axios.post('/api/auth/logout');
+          // Force a hard navigation to login page
+          window.location.href = '/login';
+        } catch (error) {
+          console.error('Logout error:', error);
         }
-      } catch (error) {
-        console.error("Logout failed:", error);
-      }
-      return;
+         
+
     }
 
     const updatedPageName =

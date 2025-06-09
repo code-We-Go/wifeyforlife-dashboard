@@ -24,8 +24,8 @@ export default function DefaultLayout({
           {/* <!-- ===== Header End ===== --> */}
 
           {/* <!-- ===== Main Content Start ===== --> */}
-          <main>
-            <div className="mx-auto bg-backgroundColor max-w-screen-2xl ">
+          <main className="bg-creamey">
+            <div className="mx-auto bg-creamey max-w-screen-2xl ">
               {children}
             </div>
           </main>

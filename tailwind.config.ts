@@ -10,6 +10,7 @@ const config: Config = {
   ],
   darkMode: "class",
   theme: {
+    backgroundImage: {pattern1 : 'url(/patterns/patternCreamey.png)'},
     fontFamily: {
       satoshi: ["Satoshi", "sans-serif"],
     },

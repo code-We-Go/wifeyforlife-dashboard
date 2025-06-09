@@ -115,7 +115,7 @@ const ChartTwo: React.FC = () => {
   }, [week]); // fetch data again when 'week' state changes
   
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-6">
+    <div className="col-span-12 rounded-2xl border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-6">
       <div className="mb-4 justify-between gap-4 sm:flex">
         <div>
           <h4 className={`${thirdFont.className} text-secondary text-2xl tracking-normal font-semibold  dark:text-white`}>
