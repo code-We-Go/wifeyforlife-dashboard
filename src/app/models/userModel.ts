@@ -3,8 +3,14 @@ import bcrypt from "bcryptjs";
 
 // Define the User interface
 export interface IUser extends Document {
+  _id: string;
   username: string;
+  email: string;
   password: string;
+  role: "admin" | "moderator" | "customer";
+  subscription: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -18,11 +24,29 @@ const UserSchema = new Schema<IUser>(
       trim: true,
       minlength: 3
     },
+    email: {
+      type: String,
+      required: false,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email address']
+    },
     password: { 
       type: String, 
       required: true,
       minlength: 6
-    }
+    },
+    role: {
+      type: String,
+      default: "customer",
+      required: false,
+    },
+    subscription: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
   },
   { timestamps: true }
 );
