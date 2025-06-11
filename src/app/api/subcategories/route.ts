@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import subCategoryModel from "@/app/models/subCategoryModel";
 import { ConnectDB } from "@/config/db";
 import mongoose from "mongoose";
+import categoriesModel from "@/app/models/categoriesModel";
 const loadDB = async () => {
   await ConnectDB();
 };
@@ -13,6 +14,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const categoryID = searchParams.get("categoryID");
   const subCategoryID = searchParams.get("subCategoryID");
+  console.log("Registering categoriesModel"+categoriesModel)
 
   if (categoryID) {
     try {
@@ -56,7 +58,7 @@ else{
           path: "categoryID",
           model: "categories", // Explicitly specify the model
         });
-        console.log("subCategories", subCategories);
+        console.log("subCategories", subCategories,"categories" ,);
         return NextResponse.json({ data: subCategories }, { status: 200 });
   } catch (error) {
     console.error("Error fetching subcategories:", error);

@@ -1,4 +1,5 @@
 import categoriesModel from "@/app/models/categoriesModel";
+import subCategoryModel from "@/app/models/subCategoryModel";
 import { ConnectDB } from "@/config/db";
 import { NextResponse } from "next/server";
 
@@ -7,6 +8,8 @@ const loadDB = async () => {
 };
 
 loadDB();
+console.log("Registering subCategoryModel"+subCategoryModel)
+
 export async function POST (req: Request, res: Response){
     console.log('working');
     try {
