@@ -7,7 +7,7 @@ export function setToken(token: string) {
   cookies().set('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 30 * 60, // 30 minutes
   });
 }

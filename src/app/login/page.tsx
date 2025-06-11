@@ -27,7 +27,8 @@ export default function LoginPage() {
         // Use router.push for client-side navigation
         router.push('/');
       }
-    } catch (error: any) {
+    } 
+    catch (error: any) {
       setError(error.response?.data?.error || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
