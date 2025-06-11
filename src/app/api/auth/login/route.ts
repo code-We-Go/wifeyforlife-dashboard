@@ -42,10 +42,12 @@ export async function POST(request: Request) {
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
       path: '/',
       maxAge: 30 * 60 // 30 minutes
     });
+
+    return response;
 
     return response;
   } catch (error) {
