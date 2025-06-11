@@ -28,10 +28,9 @@ export function middleware(request: NextRequest) {
   }
 
   // If trying to access public route with token
-  // if (isPublicRoute && token) {
-  //   // return NextResponse.redirect(new URL('/', request.url));
-  //   console.log('Skipping redirect for testing, token:', token);
-  //   return NextResponse.next();  }
+  if (isPublicRoute && token) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 
   // Protect homepage (/) if no token
   if (path === '/' && !token) {

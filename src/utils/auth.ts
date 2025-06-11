@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { Router } from 'next/router';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -14,13 +13,7 @@ export function setToken(token: string) {
 }
 
 export function removeToken() {
-  try{
-    cookies().delete('token');
-  }
-  catch(e){
-    console.log("erorr in deleting token" + e)
-  }
-
+  cookies().delete('token');
 }
 
 export function getToken() {
