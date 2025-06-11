@@ -10,6 +10,7 @@ import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes } from "react-icons/gi";
+import { BiMailSend } from "react-icons/bi";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { lifeyFont, thirdFont } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
@@ -104,6 +105,12 @@ const menuGroups = [
         route: "/pages/users",
       },
       {
+        icon:<BiMailSend />
+        ,
+        label: "Newsletters",
+        route: "/pages/newsletters",
+      },
+      {
         icon: <LiaShippingFastSolid />,
         label: "Shipping",
         route: "/pages/shipping",
@@ -167,11 +174,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <nav className={`${thirdFont.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
             {menuGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
-                <h3 className="mb-4 ml-4  text-2xl font-semibold text-white">
-                  {group.name}
-                </h3>
+ 
 
-                <ul className="mb-6 flex flex-col gap-1.5">
+                <ul className="mb-6 flex flex-col gap-2">
                   {group.menuItems.map((menuItem, menuIndex) => (
                     <SidebarItem
                       key={menuIndex}

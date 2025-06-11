@@ -9,7 +9,7 @@ import categoriesModel from "@/app/models/categoriesModel";
 const loadDB = async () => {
   await ConnectDB();
 };
-console.log("subCategoryModel registered:", subCategoryModel);
+console.log("subCategoryModel + categoriesModel registered:", subCategoryModel ,categoriesModel);
 loadDB();
 export async function POST(req: Request, res: Response) {
   console.log("working");

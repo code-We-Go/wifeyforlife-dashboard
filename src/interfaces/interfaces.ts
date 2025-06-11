@@ -78,8 +78,7 @@ export interface Product {
 export type AddProductType = Omit<Product, "_id">;
 
 export interface Newsletters {
-  name: string;
-  number: string;
+  email: string;
   _id: string;
 }
 

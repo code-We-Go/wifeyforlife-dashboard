@@ -10,14 +10,14 @@ interface Props {
 }
 
 const NewSlettersModal = ({ type, newSletter, closeModal, refreshNewsletters }: Props) => {
-  const [name, setName] = useState(newSletter.name);
-  const [number, setNumber] = useState(newSletter.number);
+  const [email, setName] = useState(newSletter.email);
+  // const [number, setNumber] = useState(newSletter.number);
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await axios.put(`/api/newSletters?newSletterID=${newSletter._id}`, {"name": name,number:number });
+      await axios.put(`/api/newSletters?newSletterID=${newSletter._id}`, {"email": email });
       refreshNewsletters();
       closeModal();
     } catch (err) {
@@ -29,7 +29,7 @@ const NewSlettersModal = ({ type, newSletter, closeModal, refreshNewsletters }: 
 const addNewNewsletters =async()=>{
     setLoading(true);
     try {
-      await axios.post(`/api/newSletters`, { "name": name,number:number });
+      await axios.post(`/api/newSletters`, { "email": email });
       refreshNewsletters();
       closeModal();
     } catch (err) {
@@ -64,16 +64,11 @@ const addNewNewsletters =async()=>{
           <>
             <input
               type="text"
-              value={name}
+              value={email}
               onChange={(e) => setName(e.target.value)}
               className="w-full border px-3 py-2 rounded mb-4"
             />
-            <input
-              type="text"
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              className="w-full border px-3 py-2 rounded mb-4"
-            />
+
             <button onClick={handleSave} disabled={loading} className="bg-primary text-white px-4 py-2 rounded mr-2">
               Save
             </button>
@@ -82,22 +77,22 @@ const addNewNewsletters =async()=>{
         <>
         <input
           type="text"
-          value={name}
+          value={email}
           onChange={(e) => setName(e.target.value)}
           className="w-full border px-3 py-2 rounded mb-4"
         />
-                    <input
+                    {/* <input
               type="text"
-              value={number}
+              value={}
               onChange={(e) => setNumber(e.target.value)}
               className="w-full border px-3 py-2 rounded mb-4"
-            />
+            /> */}
         <button onClick={addNewNewsletters} disabled={loading} className="bg-primary text-white px-4 py-2 rounded mr-2">
           Add
         </button>
       </> :(
           <>
-            <p>Are you sure you want to delete <strong>{newSletter.name}</strong>?</p>
+            <p>Are you sure you want to delete <strong>{newSletter.email}</strong>?</p>
             <button onClick={handleDelete} disabled={loading} className="bg-red-600 text-white px-4 py-2 rounded mt-4">
               Delete
             </button>
