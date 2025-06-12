@@ -21,6 +21,8 @@ export default function LoginPage() {
       const response = await axios.post('/api/auth/login', {
         username,
         password
+      }, {
+        withCredentials: true
       });
 
       if (response.status === 200) {

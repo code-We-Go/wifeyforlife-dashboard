@@ -44,7 +44,8 @@ export async function POST(request: Request) {
       secure: true,
       sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 60  // 30 minutes
+      maxAge: 30 * 60,  // 30 minutes
+      domain: process.env.NEXT_PUBLIC_DOMAIN || undefined
     });
 
     return response;
