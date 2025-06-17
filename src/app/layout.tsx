@@ -17,7 +17,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning={true}
-        className={`$${wifeyFont.className}  antialiased`}
+        className={`$${wifeyFont.className} bg-creamey  antialiased`}
       >
         <ClientWrapper>{children}</ClientWrapper>
       </body>

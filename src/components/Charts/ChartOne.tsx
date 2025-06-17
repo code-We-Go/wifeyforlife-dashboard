@@ -118,6 +118,7 @@ const ChartOne: React.FC = () => {
 
         if (response.ok) {
           const orders = result.data;
+          console.log("orders"+orders)
 
           // Prepare last 11 months' labels
           const now = new Date();

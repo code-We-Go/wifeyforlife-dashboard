@@ -1,19 +1,38 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 // Define the Cart Item schema
-const CartItemSchema = new Schema({
+
+const attributeSchema = new Schema({
+    name: { type: String, required: true },
+    stock: { type: Number, required: true },
+  }, { _id: false });
+  
+  const mediaSchema = new Schema({
+    url: { type: String, required: true },
+    type: { type: String, default: 'image' }, // Optional if you're supporting videos etc.
+  }, { _id: false });
+  
+  const variantSchema = new Schema({
+    name: { type: String, required: true },
+    attributeName: { type: String, required: true },
+    attributes: { type: [attributeSchema], required: true },
+    images: { type: [mediaSchema], default: [] },
+  }, { _id: false });
+  
+  const CartItemSchema = new Schema({
     productId: { type: String, required: true },
     productName: { type: String, required: true },
-    size:{ type: String, required: true },
-    color: { type: String, required: true },
-    imageUrl: { type: String, required: true },
-    quantity: { type: Number, required: true },
     price: { type: Number, required: true },
-});
+    quantity: { type: Number, required: true },
+    imageUrl: { type: String, required: true },
+    attributes: { type: attributeSchema, required: false },
+    variant: { type: variantSchema, required: false },
+    collections: [{ type: String }], // optional
+  });
 
 // Define the Order schema
 const OrderSchema = new Schema(
-    { email:{type: String, required: true}
+    { email:{type: String, required: false}
         ,country: { type: String, required: false },
         firstName: { type: String, required: false },
         lastName: { type: String, required: false },

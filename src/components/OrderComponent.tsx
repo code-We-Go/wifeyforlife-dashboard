@@ -124,7 +124,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
   }, [optionsModalIsOpen]);
 
   return (
-    <div className="relative text-sm rounded-2xl w-[97%] min-h-6 px-4 py-8 text-white bg-primary bg-backgroundColor/25 border border-primary">
+    <div className="relative text-sm rounded-2xl w-[97%] min-h-6 px-4 py-8 text-creamey bg-secondary bg-backgroundColor/25 border border-secondary">
       <div className="flex text-sm w-full border-b pb-1 border-white justify-between">
         <div className="flex gap-2">
           <h1>ORDER ID :</h1>
@@ -204,7 +204,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
     <div
         onClick={(e) => e.stopPropagation()} 
 
-    className="bg-white rounded-2xl p-6 shadow-lg w-[90%] max-w-3xl text-center">
+    className="bg-creamey h-[95%] overflow-y-scroll rounded-2xl p-6 shadow-lg w-[90%] max-w-3xl text-secondary text-center">
       <div className="flex mb-2 w-full items-center justify-end">
         <span className="hover:cursor-pointer" onClick={()=>setDetailsModal(false)}>x</span>
       </div>
@@ -231,7 +231,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
         {/* Status Dropdown */}
         <label className="block font-semibold mt-4">Status:</label>
         <select
-          className="border p-2 w-full"
+          className="border p-2 bg-creamey w-full"
           value={status}
           onChange={(e) =>{ 
 
@@ -248,7 +248,7 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
         {/* Payment Dropdown */}
         <label className="block font-semibold mt-4">Payment:</label>
         <select
-          className="border p-2 w-full"
+          className="border bg-creamey p-2 w-full"
           value={payment}
           onChange={(e) =>{ 
             const newPayment = e.target.value as "pending"| "failed"| "confirmed";

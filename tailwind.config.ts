@@ -30,8 +30,8 @@ const config: Config = {
         saga:"#81C8BB",
 
         backgroundColor:"#FBF3E0",
-        yellowBGC:"#F0EA9B",
-        babyBlue:"#D8DFE2",
+        yellowBGC:"#FBF3E0",
+        babyBlue:"#FBF3E0",
         creamey:"#FBF3E0",
         current: "currentColor",
         transparent: "transparent",
