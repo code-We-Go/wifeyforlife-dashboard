@@ -55,6 +55,7 @@ const VariantSchema = new Schema<Variant>({
 // Define the price schema
 const priceSchema = new Schema<price>({
   local: { type: Number, required: true, min: 0 },
+  global: { type: Number, required: false, min: 0 ,default:0 },
 });
 
 // Define the Product schema

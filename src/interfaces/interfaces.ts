@@ -35,6 +35,7 @@ export type mediaType = "image" | "video";
 
 export type price = {
   local: number;
+  global:number;
 };
 export interface Category {
   _id: string;
