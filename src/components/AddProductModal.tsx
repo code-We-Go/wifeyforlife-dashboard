@@ -30,6 +30,7 @@ const AddProductModal = ({
     };
     setProduct((prev) => ({ ...prev, variations: updatedVariations }));
   };
+  // testtest test
   const [productState, setProduct] = useState<AddProductType>({
     title: "",
     description: "",
