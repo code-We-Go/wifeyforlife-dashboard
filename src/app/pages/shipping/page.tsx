@@ -12,7 +12,10 @@ const ShippingZonesPage = () => {
   const [selectedZone, setSelectedZone] = useState<ShippingZone>({
     _id: '',
     zone_name: '',
-    zone_rate: 0,
+    zone_rate: { local: 0, global: 0 },
+    localGlobal: 'local',
+    states: [],
+    countries: [],
   });
 
   useEffect(() => {
@@ -30,7 +33,7 @@ const ShippingZonesPage = () => {
   const openModal = (type: 'edit' | 'delete' | 'add', zone?: ShippingZone) => {
     setModalType(type);
     setSelectedZone(
-      zone || { _id: '', zone_name: '', zone_rate: 0 }
+      zone || { _id: '', zone_name: '', zone_rate: { local: 0, global: 0 }, localGlobal: 'local', states: [], countries: [] }
     );
   };
 
@@ -49,7 +52,9 @@ const ShippingZonesPage = () => {
               <tr>
                 <th className="p-2 border">#</th>
                 <th className="p-2 border">Zone Name</th>
-                <th className="p-2 border">Zone Rate</th>
+                <th className="p-2 border">Zone Type</th>
+                <th className="p-2 border">Local Rate</th>
+                <th className="p-2 border">Global Rate</th>
                 <th className="p-2 border">Actions</th>
               </tr>
             </thead>
@@ -58,7 +63,14 @@ const ShippingZonesPage = () => {
                 <tr key={zone._id} className="hover:bg-gray-50 text-sm">
                   <td className="p-2 border">{index + 1}</td>
                   <td className="p-2 border">{zone.zone_name}</td>
-                  <td className="p-2 border">{zone.zone_rate}</td>
+                  <td className="p-2 border">{zone.localGlobal}</td>
+                  <td className="p-2 border">{zone.zone_rate?.local ?? '-'}</td>
+                  <td className="p-2 border">{zone.zone_rate?.global ?? '-'}</td>
+                  {/* <td className="p-2 border">
+                    {zone.localGlobal === 'local'
+                      ? (zone.states?.join(', ') || '-')
+                      : (zone.countries?.join(', ') || '-')}
+                  </td> */}
                   <td className="p-2 border space-x-2">
                     <button
                       onClick={() => openModal('edit', zone)}

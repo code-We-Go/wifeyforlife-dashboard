@@ -11,6 +11,8 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes } from "react-icons/gi";
 import { BiMailSend } from "react-icons/bi";
+import { MdPlaylistPlay } from "react-icons/md";
+import { CiVideoOn } from "react-icons/ci";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { lifeyFont, thirdFont } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
@@ -60,6 +62,19 @@ const menuGroups = [
         icon: <GoPackage />,
         label: "Orders",
         route: "/pages/orders",
+      },
+      {
+        icon: <MdPlaylistPlay />
+        ,
+        label: "Playslists",
+        route: "/pages/playlists",
+      },
+      {
+        icon:<CiVideoOn />
+
+        ,
+        label: "Videos",
+        route: "/pages/videos",
       },
       {
         icon: <BsHandbag />,

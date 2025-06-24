@@ -259,6 +259,8 @@ const OrderComponent = ({ order,setOrders }: { order: IOrder,setOrders:React.Dis
             <option key={payment} value={payment}>{payment}</option>
           ))}
         </select>
+        <p><strong>Sub-Total:</strong> {order.subTotal?.toFixed(2)} LE</p>
+        <p><strong>Shipping:</strong> {order.shipping?.toFixed(2)} LE</p>
         <p><strong>Total:</strong> {order.total?.toFixed(2)} LE</p>
         <p><strong>Created At:</strong> {new Date(order.createdAt!).toLocaleString("en-EG", { timeZone: "Africa/Cairo" })}</p>
       </div>

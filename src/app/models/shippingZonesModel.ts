@@ -9,7 +9,9 @@ const priceSchema = new Schema<price>({
 const ShippingZonesSchema = new mongoose.Schema({
   zone_name: { type: String, required: true },
   zone_rate: { type: priceSchema, required: true },
-  localGlobal :{type : String ,enum :["global","local"]}
+  localGlobal: { type: String, enum: ["global", "local"] },
+  states: [{ type: String }], // array of state IDs
+  countries: [{ type: String }], // array of country IDs
 }, { timestamps: true });
 const shippingZonesModel = mongoose.models.shipping_zones || mongoose.model('shipping_zones', ShippingZonesSchema);
 export default shippingZonesModel

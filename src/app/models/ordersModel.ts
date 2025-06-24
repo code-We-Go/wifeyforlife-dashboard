@@ -47,6 +47,7 @@ const OrderSchema = new Schema(
             type: [CartItemSchema],required:false // Array of cart items
         },
         subTotal: { type: Number, required: false}, 
+        shipping: { type: Number, required: false}, 
         total: { type: Number, required: false}, 
         currency: { type: String, required: false}, 
         status: {

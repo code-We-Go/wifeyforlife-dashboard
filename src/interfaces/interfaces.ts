@@ -1,4 +1,31 @@
 import mongoose from "mongoose";
+// types/Video.ts
+export interface Video {
+  _id?: string;
+  title: string;
+  description?: string;
+  url: string;
+  thumbnailUrl: string;
+  isPublic: { type: Boolean, default: true },
+
+ 
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// types/Playlist.ts
+export interface Playlist {
+  _id?: string;
+  title: string;
+  description?: string;
+  videos: Video[] | string[]; // Can be full Video objects or just IDs
+  thumbnailUrl: string;
+  isPublic: boolean;
+  category?: string;
+  tags?: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface Variant {
   name: string;
@@ -142,6 +169,7 @@ export interface IOrder {
   cash?: boolean;
   cart?: CartItem[]; // Assuming CartItem interface exists
   subTotal?: number;
+  shipping:number;
   total?: number;
   currency?: string;
   status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
@@ -161,5 +189,11 @@ export interface IOrder {
 export interface ShippingZone {
   _id: string;
   zone_name: string;
-  zone_rate: number;
+  zone_rate: {
+    local: number;
+    global: number;
+  };
+  localGlobal: "local" | "global";
+  states?: string[];
+  countries?: string[];
 }
