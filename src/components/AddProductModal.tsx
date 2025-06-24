@@ -33,7 +33,7 @@ const AddProductModal = ({
   const [productState, setProduct] = useState<AddProductType>({
     title: "",
     description: "",
-    price: { local: 0 },
+    price: { local: 0 ,global:0},
     comparedPrice: 0,
     variations: [],
     subCategoryID: {
