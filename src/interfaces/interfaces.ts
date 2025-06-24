@@ -6,7 +6,7 @@ export interface Video {
   description?: string;
   url: string;
   thumbnailUrl: string;
-  isPublic: { type: Boolean, default: true },
+  isPublic: boolean,
 
  
   createdAt: Date;
