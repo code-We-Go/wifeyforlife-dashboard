@@ -64,7 +64,7 @@ const PlaylistsPage = () => {
             </div>
             <div className="flex w-full justify-end text-primary underline md:w-auto">
               <button
-                className="hover:cursor-pointer rounded-2xl px-4 bg-primary text-creamey py-2 text-sm"
+                className="hover:cursor-pointer rounded-md px-4 bg-primary text-creamey py-2 text-sm"
                 onClick={() => setAddModalisOpen(true)}
               >
                 ADD NEW PLAYLIST

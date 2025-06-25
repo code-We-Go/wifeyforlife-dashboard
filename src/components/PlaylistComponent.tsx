@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Playlist, Video } from "@/interfaces/interfaces";
 import axios from "axios";
 import Image from "next/image";
+import { UploadButton } from "@/utils/uploadthing";
 
 interface PlaylistComponentProps {
   playlist: Playlist;
@@ -19,8 +20,31 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
     category: playlist.category || "",
     tags: playlist.tags || [],
     isPublic: playlist.isPublic,
-    videos: playlist.videos,
+    videos: Array.isArray(playlist.videos)
+      ? playlist.videos.map((v) => (typeof v === "object" && v !== null ? v._id : v))
+      : [],
   });
+  const [availableVideos, setAvailableVideos] = useState<Video[]>([]);
+  const [isLoadingVideos, setIsLoadingVideos] = useState(false);
+
+  useEffect(() => {
+    if (isEditing) {
+      fetchAvailableVideos();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing]);
+
+  const fetchAvailableVideos = async () => {
+    setIsLoadingVideos(true);
+    try {
+      const response = await axios.get("/api/videos?all=true");
+      setAvailableVideos(response.data.data);
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+    } finally {
+      setIsLoadingVideos(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -77,12 +101,28 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
     return [];
   };
 
+  const handleVideoSelection = (videoId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      videos: (prev.videos as string[]).includes(videoId)
+        ? (prev.videos as string[]).filter((id) => id !== videoId)
+        : [...(prev.videos as string[]), videoId]
+    }));
+  };
+
   if (isEditing) {
     return (
-      <div className="bg-white rounded-2xl-lg shadow-md p-6 mb-4">
+     <div
+     onClick={()=>setIsEditing(false)}
+     className="fixed md:pl-72.5 bg-black/30 inset-0 w-full h-full flex justify-center items-center">
+
+      
+      <div 
+      onClick={(e)=>e.stopPropagation() }
+      className="bg-white max-h-[90vh] overflow-y-scroll rounded-2xl shadow-md p-6 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-creamey/90 mb-2">
+            <label className="block text-sm font-medium text-secondary mb-2">
               Title
             </label>
             <input
@@ -95,7 +135,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-creamey/90 mb-2">
+            <label className="block text-sm font-medium text-secondary mb-2">
               Category
             </label>
             <input
@@ -108,7 +148,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-creamey/90 mb-2">
+            <label className="block text-sm font-medium text-secondary mb-2">
               Description
             </label>
             <textarea
@@ -133,17 +173,35 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             />
           </div> */}
 
+          {/* Thumbnail upload and preview */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-creamey/90 mb-2">
-              Thumbnail URL
+            <label className="block text-sm font-medium text-secondary mb-2">
+              Thumbnail Image
             </label>
-            <input
-              type="url"
-              name="thumbnailUrl"
-              value={formData.thumbnailUrl}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-2xl-md focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="flex flex-col gap-2">
+
+              {formData.thumbnailUrl && (
+                <Image
+                width={80}
+                height={60}
+                  src={formData.thumbnailUrl}
+                  alt="Thumbnail Preview"
+                  className=" w-40 h-30 object-cover rounded border border-gray-300 mt-2"
+                />
+              )}
+                            <UploadButton
+                            className="bg-primary flex w-fit px-2 rounded-2xl"
+                endpoint="mediaUploader"
+                onClientUploadComplete={(res) => {
+                  if (res && res.length > 0) {
+                    setFormData(prev => ({ ...prev, thumbnailUrl: res[0].url }));
+                  }
+                }}
+                onUploadError={(error) => {
+                  alert(`ERROR! ${error.message}`);
+                }}
+              />
+            </div>
           </div>
 
           <div className="md:col-span-2 flex items-center">
@@ -154,26 +212,66 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
               onChange={handleInputChange}
               className="mr-2"
             />
-            <label className="text-sm font-medium text-creamey/90">
+            <label className="text-sm font-medium text-secondary">
               Public Playlist
             </label>
+          </div>
+
+          {/* Video selection UI */}
+          <div className="md:col-span-2 mt-4">
+            <label className="block text-sm font-medium text-secondary mb-2">
+              Select Videos ({formData.videos.length} selected)
+            </label>
+            {isLoadingVideos ? (
+              <div className="text-center py-4">Loading videos...</div>
+            ) : availableVideos.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2">
+                {availableVideos.map((video) => (
+                  <div
+                    key={video._id}
+                    className={`flex items-center space-x-2 p-2 rounded cursor-pointer ${
+                      (formData.videos as string[]).includes(video._id || "")
+                        ? "bg-primary/10 border border-primary"
+                        : "bg-gray-50 hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleVideoSelection(video._id || "")}
+                  >
+                    <input
+                      type="checkbox"
+                      onClick={(e)=>e.stopPropagation()}
+                      checked={(formData.videos as string[]).includes(video._id || "")}
+                      onChange={() => handleVideoSelection(video._id || "")}
+                      className="mr-2"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 truncate">{video.title}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                No videos available. Please create some videos first.
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex justify-end space-x-2 mt-4">
           <button
             onClick={() => setIsEditing(false)}
-            className="px-4 py-2 text-creamey/90 border border-gray-300 rounded-2xl-md hover:bg-gray-50"
+            className="px-4 py-2 text-primary border border-primary rounded-2xl hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-primary text-white rounded-2xl-md hover:bg-primary/90"
+            className="px-4 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90"
           >
             Save
           </button>
         </div>
+      </div>
       </div>
     );
   }

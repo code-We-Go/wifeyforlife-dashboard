@@ -21,7 +21,7 @@ const RecentOrders = () => {
       }, []); 
   
   return (
-    <div className=' h-auto col-span-12  bg-creamey flex flex-col gap-3 rounded-2xl md:gap-6 justify-start items-center  w-full  py-4 '>
+    <div className=' h-auto col-span-12  bg-white flex flex-col gap-3 rounded-2xl md:gap-6 justify-start items-center  w-full  py-4 '>
       <h2 className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-secondary`}>Recent Orders</h2>
       <div className=' flex flex-col  h-auto w-full    gap-4  items-center  '>
 
