@@ -4,6 +4,7 @@ import { Playlist, Video } from "@/interfaces/interfaces";
 import axios from "axios";
 import Image from "next/image";
 import { UploadButton } from "@/utils/uploadthing";
+import { useDrag, useDrop } from "react-dnd";
 
 interface PlaylistComponentProps {
   playlist: Playlist;
@@ -109,6 +110,67 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
         ? (prev.videos as string[]).filter((id) => id !== videoId)
         : [...(prev.videos as string[]), videoId]
     }));
+  };
+
+  // Drag-and-drop item type
+  const ItemTypes = { VIDEO: "video" };
+
+  // Helper to get selected video objects in order
+  const selectedVideoObjects = (formData.videos as string[])
+    .map((id) => availableVideos.find((v) => v._id === id))
+    .filter(Boolean) as Video[];
+
+  // Drag-and-drop logic for selected videos
+  const moveVideo = (from: number, to: number) => {
+    setFormData((prev) => {
+      const updated = [...(prev.videos as string[])];
+      const [removed] = updated.splice(from, 1);
+      updated.splice(to, 0, removed);
+      return { ...prev, videos: updated };
+    });
+  };
+
+  const DraggableVideo = ({ video, index }: { video: Video; index: number }) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    const [, drop] = useDrop({
+      accept: ItemTypes.VIDEO,
+      hover(item: { index: number }) {
+        if (item.index !== index) {
+          moveVideo(item.index, index);
+          item.index = index;
+        }
+      },
+    });
+    const [{ isDragging }, drag] = useDrag({
+      type: ItemTypes.VIDEO,
+      item: { index },
+      collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+    });
+    drag(drop(ref));
+    return (
+      <div
+        ref={ref}
+        className={`flex items-center space-x-2 p-2 rounded bg-white border border-gray-200 cursor-move mb-1 ${isDragging ? "opacity-50" : ""}`}
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+      >
+        <input
+          type="checkbox"
+          checked={true}
+          onChange={() => handleVideoSelection(video._id || "")}
+          className="mr-2"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-gray-900 truncate">{video.title}</p>
+        </div>
+        <button
+          type="button"
+          className="text-xs text-red-500 ml-2"
+          onClick={() => handleVideoSelection(video._id || "")}
+        >
+          Remove
+        </button>
+      </div>
+    );
   };
 
   if (isEditing) {
@@ -233,6 +295,15 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             <label className="block text-sm font-medium text-secondary mb-2">
               Select Videos ({formData.videos.length} selected)
             </label>
+            {/* Drag-and-drop list for selected videos */}
+            {selectedVideoObjects.length > 0 && (
+              <div className="mb-4 max-h-40 overflow-y-auto border border-primary/30 rounded-md p-2 bg-primary/5">
+                {selectedVideoObjects.map((video, idx) => (
+                  <DraggableVideo key={video._id} video={video} index={idx} />
+                ))}
+              </div>
+            )}
+            {/* Available videos grid for selection */}
             {isLoadingVideos ? (
               <div className="text-center py-4">Loading videos...</div>
             ) : availableVideos.length > 0 ? (
