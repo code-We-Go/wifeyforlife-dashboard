@@ -20,6 +20,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
     tags: [] as string[],
     isPublic: true,
     videos: [] as string[],
+    featured: false,
   });
   const [availableVideos, setAvailableVideos] = useState<Video[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +84,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
         tags: [],
         isPublic: true,
         videos: [],
+        featured: false,
       });
     } catch (error) {
       console.error("Error creating playlist:", error);
@@ -203,6 +205,16 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
             />
             <label className="text-sm font-medium text-gray-700">
               Public Playlist
+            </label>
+            <input
+              type="checkbox"
+              name="featured"
+              checked={formData.featured}
+              onChange={handleInputChange}
+              className="ml-6 mr-2"
+            />
+            <label className="text-sm font-medium text-gray-700">
+              Featured
             </label>
           </div>
 

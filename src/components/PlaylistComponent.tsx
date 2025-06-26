@@ -23,6 +23,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
     videos: Array.isArray(playlist.videos)
       ? playlist.videos.map((v) => (typeof v === "object" && v !== null ? v._id : v))
       : [],
+    featured: typeof playlist.featured === 'boolean' ? playlist.featured : false,
   });
   const [availableVideos, setAvailableVideos] = useState<Video[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
@@ -119,7 +120,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
       
       <div 
       onClick={(e)=>e.stopPropagation() }
-      className="bg-white max-h-[90vh] overflow-y-scroll rounded-2xl shadow-md p-6 mb-4">
+      className="bg-white max-h-[90vh] overflow-y-scroll rounded-md shadow-md p-6 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-secondary mb-2">
@@ -130,7 +131,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
               name="title"
               value={formData.title}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-2xl-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           
@@ -143,7 +144,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
               name="category"
               value={formData.category}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-2xl-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -156,7 +157,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-2xl-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 {/* 
@@ -169,7 +170,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
               name="tags"
               value={formData.tags.join(", ")}
               onChange={handleTagsChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-2xl-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div> */}
 
@@ -190,7 +191,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
                 />
               )}
                             <UploadButton
-                            className="bg-primary flex w-fit px-2 rounded-2xl"
+                            className="bg-primary flex w-fit px-2 rounded-md"
                 endpoint="mediaUploader"
                 onClientUploadComplete={(res) => {
                   if (res && res.length > 0) {
@@ -214,6 +215,16 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             />
             <label className="text-sm font-medium text-secondary">
               Public Playlist
+            </label>
+            <input
+              type="checkbox"
+              name="featured"
+              checked={formData.featured}
+              onChange={handleInputChange}
+              className="ml-6 mr-2"
+            />
+            <label className="text-sm font-medium text-secondary">
+              Featured
             </label>
           </div>
 
@@ -260,13 +271,13 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
         <div className="flex justify-end space-x-2 mt-4">
           <button
             onClick={() => setIsEditing(false)}
-            className="px-4 py-2 text-primary border border-primary rounded-2xl hover:bg-gray-50"
+            className="px-4 py-2 text-primary border border-primary rounded-md hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90"
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
           >
             Save
           </button>
@@ -277,16 +288,16 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
   }
 
   return (
-    <div className="bg-secondary text-creamey rounded-2xl w-full shadow-md p-6 mb-4">
+    <div className="bg-secondary text-creamey rounded-md w-full shadow-md p-6 mb-4">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative w-full md:w-48 h-32 flex-shrink-0">
           <Image
             src={playlist.thumbnailUrl}
             alt={playlist.title}
             fill
-            className="object-cover rounded-2xl"
+            className="object-cover rounded-md"
           />
-          <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded-2xl">
+          <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded-md">
             {getVideoCount()} videos
           </div>
         </div>
@@ -297,14 +308,14 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             <div className="flex space-x-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-3 py-1 text-sm bg-creamey text-primary rounded-2xl hover:bg-creamey/90"
+                className="px-3 py-1 text-sm bg-creamey text-primary rounded-md hover:bg-creamey/90"
               >
                 Edit
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-3 py-1 text-sm bg-red-500 text-white rounded-2xl hover:bg-red-600 disabled:opacity-50"
+                className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
@@ -330,9 +341,15 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
               <span className="font-medium text-creamey/90">Videos:</span>
               <span className="ml-1 text-creamey/90">{getVideoCount()}</span>
             </div>
-            <div>
+            {/* <div>
               <span className="font-medium text-creamey/90">Tags:</span>
               <span className="ml-1 text-creamey/90">{playlist.tags?.length || 0} tags</span>
+            </div> */}
+            <div>
+              <span className="font-medium text-creamey/90">Featured:</span>
+              <span className={`ml-1 ${playlist.featured ? "text-green-600" : "text-yellow-600"}`}>
+                {playlist.featured ? "Yes" : "No"}
+              </span>
             </div>
           </div>
 
@@ -343,7 +360,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
                 {playlist.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-2 py-1 bg-gray-100 text-creamey/90 text-xs rounded-2xl"
+                    className="px-2 py-1 bg-gray-100 text-creamey/90 text-xs rounded-md"
                   >
                     {tag}
                   </span>
@@ -352,18 +369,18 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             </div>
           )}
 
-          {getVideos().length > 0 && (
+          {/* {getVideos().length > 0 && (
             <div className="mt-4">
               <h4 className="text-sm font-medium text-creamey/90 mb-2">Videos in this playlist:</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {getVideos().slice(0, 6).map((video, index) => (
-                  <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-2xl">
+                  <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
                     <div className="relative w-12 h-8 flex-shrink-0">
                       <Image
                         src={video.thumbnailUrl}
                         alt={video.title}
                         fill
-                        className="object-cover rounded-2xl"
+                        className="object-cover rounded-md"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -373,7 +390,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
                   </div>
                 ))}
                 {getVideos().length > 6 && (
-                  <div className="flex items-center justify-center p-2 bg-gray-50 rounded-2xl">
+                  <div className="flex items-center justify-center p-2 bg-gray-50 rounded-md">
                     <span className="text-xs text-gray-500">
                       +{getVideos().length - 6} more videos
                     </span>
@@ -381,7 +398,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
                 )}
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="mt-2 text-xs text-creamey/80">
             Created: {new Date(playlist.createdAt).toLocaleDateString()}

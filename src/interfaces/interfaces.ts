@@ -23,6 +23,7 @@ export interface Playlist {
   isPublic: boolean;
   category?: string;
   tags?: string[];
+  featured?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
