@@ -111,7 +111,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
           <div className="grid grid-cols-1  gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Video URL 
+                VDO ID 
               </label>
               <input
                 type="url"
@@ -126,7 +126,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
 
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Tags (comma-separated)
             </label>
@@ -138,7 +138,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
               placeholder="tag1, tag2, tag3"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -171,7 +171,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
             </div>
           </div>
 
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               type="checkbox"
               name="isPublic"
@@ -182,7 +182,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
             <label className="text-sm font-medium text-gray-700">
               Public
             </label>
-          </div>
+          </div> */}
 
           <div className="flex justify-end space-x-2 pt-4">
             <button

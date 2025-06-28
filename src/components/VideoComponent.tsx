@@ -4,6 +4,7 @@ import { Video } from "@/interfaces/interfaces";
 import axios from "axios";
 import Image from "next/image";
 import { thirdFont } from "@/app/lib/fonts";
+import { UploadButton } from "@/utils/uploadthing";
 
 interface VideoComponentProps {
   video: Video;
@@ -69,10 +70,11 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
 
   if (isEditing) {
     return (
-      <div className="bg-white rounded-2xl shadow-md p-6 mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
+    <div className="fixed z-10 md:pl-72.5 inset-0 w-full h-full flex justify-center bg-black/30 items-center">
+    <div className="bg-white max-h-[80vh] overflow-y-scroll border-2 md:w-[50vw]  boder-lovely rounded-2xl shadow-md p-6 mb-4">
+        <div className="grid grid-cols-1 md:col-span-2  gap-4">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-primary/80 mb-2">
               Title
             </label>
             <input
@@ -84,15 +86,15 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
+          {/* <div>
+            <label className="block text-sm font-medium text-primary/80 mb-2">
               Category
             </label>
 
-          </div>
+          </div> */}
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
+            <label className="block text-sm font-medium text-primary/80 mb-2">
               Description
             </label>
             <textarea
@@ -105,8 +107,8 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
-              Video URL
+            <label className="block text-sm font-medium text-primary/80 mb-2">
+              VDO ID
             </label>
             <input
               type="url"
@@ -117,22 +119,22 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
+          {/* <div>
+            <label className="block text-sm font-medium text-primary/80 mb-2">
               Duration (seconds)
             </label>
 
-          </div>
+          </div> */}
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
+          {/* <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-primary/80 mb-2">
               Tags (comma-separated)
             </label>
 
-          </div>
+          </div> */}
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-creamey/80 mb-2">
+            {/* <label className="block text-sm font-medium text-primary/80 mb-2">
               Thumbnail URL
             </label>
             <input
@@ -141,15 +143,45 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
               value={formData.thumbnailUrl}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            /> */}
+            {formData.thumbnailUrl && (
+              <div className="mt-2">
+                <p className="text-xs text-gray-500 mb-2">Current thumbnail:</p>
+                <div className="relative w-32 h-20 border border-gray-300 rounded-lg overflow-hidden">
+                  <Image
+                    src={formData.thumbnailUrl}
+                    alt="Thumbnail preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Or upload an image using the button below
+            </p>
+            <div className="mt-2">
+              <UploadButton
+                className="bg-primary w-fit p-2 rounded-2xl"
+                endpoint="mediaUploader"
+                onClientUploadComplete={(res) => {
+                  if (res && res.length > 0) {
+                    setFormData(prev => ({ ...prev, thumbnailUrl: res[0].url }));
+                  }
+                }}
+                onUploadError={(error: Error) => {
+                  alert(`ERROR! ${error.message}`);
+                }}
+              />
+            </div>
           </div>
 
-          <div className="md:col-span-2 flex items-center">
+          {/* <div className="md:col-span-2 flex items-center">
 
-            <label className="text-sm font-medium text-creamey/80">
+            <label className="text-sm font-medium text-primary/80">
               Published
             </label>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex justify-end space-x-2 mt-4">
@@ -167,11 +199,12 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
           </button>
         </div>
       </div>
+      </div>
     );
   }
-
+else{
   return (
-    <div className="bg-secondary text-creamey rounded-2xl w-full shadow-md p-6 mb-4">
+    <div className="bg-secondary text-primary rounded-2xl w-full shadow-md p-6 mb-4">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative w-full md:w-48 h-32 flex-shrink-0">
           <Image
@@ -209,7 +242,7 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
 
           {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="font-medium text-creamey/80">Category:</span>
+              <span className="font-medium text-primary/80">Category:</span>
             </div>
             <div>
               <span className="font-medium text-creamey/80">Status:</span>
@@ -237,7 +270,9 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
         </div>
       </div>
     </div>
+          
   );
+}
 };
 
 export default VideoComponent; 
