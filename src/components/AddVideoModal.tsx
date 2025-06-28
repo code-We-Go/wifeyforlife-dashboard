@@ -114,7 +114,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
                 VDO ID 
               </label>
               <input
-                type="url"
+                type="text"
                 name="url"
                 value={formData.url}
                 onChange={handleInputChange}
