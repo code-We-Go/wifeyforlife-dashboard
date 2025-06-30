@@ -157,7 +157,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
             </p>
             <div className="mt-2">
               <UploadButton
-              className="bg-primary w-fit p-2 rounded-2xl"
+              className="bg-primary w-fit p-2 text-creamey rounded-2xl"
                 endpoint="mediaUploader"
                 onClientUploadComplete={(res) => {
                   if (res && res.length > 0) {
@@ -171,7 +171,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
             </div>
           </div>
 
-          {/* <div className="flex items-center">
+          <div className="flex items-center">
             <input
               type="checkbox"
               name="isPublic"
@@ -182,7 +182,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
             <label className="text-sm font-medium text-gray-700">
               Public
             </label>
-          </div> */}
+          </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             <button

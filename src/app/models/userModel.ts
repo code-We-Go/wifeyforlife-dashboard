@@ -8,7 +8,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: "admin" | "moderator" | "customer";
-  subscription: boolean;
+  isSubscribed: boolean;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -42,7 +42,7 @@ const UserSchema = new Schema<IUser>(
       default: "customer",
       required: false,
     },
-    subscription: {
+    isSubscribed: {
       type: Boolean,
       default: false,
       required: false,

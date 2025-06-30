@@ -82,7 +82,7 @@ const UsersPage = () => {
                   <td className="p-2 border">{user.username}</td>
                   <td className="p-2 border">{user.email}</td>
                   <td className="p-2 border">{user.role}</td>
-                  <td className="p-2 border">{user.subscription ? 'Yes' : 'No'}</td>
+                  <td className="p-2 border">{user.isSubscribed ? 'Yes' : 'No'}</td>
                   <td className="p-2 border">{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td className="p-2 border space-x-2">
                     <button
@@ -139,7 +139,7 @@ const UsersPage = () => {
                     email: formData.get('email'),
                     password: formData.get('password'),
                     role: formData.get('role'),
-                    subscription: formData.get('subscription') === 'true'
+                    isSubscriped: formData.get('subscription') === 'true'
                   });
                   setModalType(null);
                   // Refresh users list
@@ -224,7 +224,7 @@ const UsersPage = () => {
                     username: formData.get('username'),
                     email: formData.get('email'),
                     role: formData.get('role'),
-                    subscription: formData.get('subscription') === 'true'
+                    isSubscribed: formData.get('subscription') === 'true'
                   });
                   setModalType(null);
                   // Refresh users list
@@ -270,7 +270,7 @@ const UsersPage = () => {
                   <label className="block text-sm font-medium mb-1">Subscription</label>
                   <select
                     name="subscription"
-                    defaultValue={selectedUser.subscription.toString()}
+                    defaultValue={selectedUser.isSubscribed.toString()}
                     className="w-full p-2 border rounded"
                   >
                     <option value="false">No</option>
