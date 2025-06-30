@@ -94,7 +94,7 @@ export async function GET(req: Request) {
         model: "videos",
         select: "title description thumbnailUrl duration isPublished"
       })
-      .sort({ createdAt: -1 })
+      .sort({ order: 1, createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -113,5 +113,28 @@ export async function GET(req: Request) {
       { error: "Failed to fetch playlists" },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { orderedIds } = await request.json();
+    console.log("order"+orderedIds)
+    if (!Array.isArray(orderedIds)) {
+      return NextResponse.json({ error: 'orderedIds must be an array' }, { status: 400 });
+    }
+    // Update each playlist's order field
+    const bulkOps = orderedIds.map((id: string, idx: number) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { order: idx },
+      },
+    }));
+    await playlistModel.bulkWrite(bulkOps);
+    console.log("patch success")
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error: any) {
+    console.error('Error updating playlist order:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 } 

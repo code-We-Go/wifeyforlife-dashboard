@@ -177,7 +177,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
     return (
      <div
      onClick={()=>setIsEditing(false)}
-     className="fixed md:pl-72.5 bg-black/30 inset-0 w-full h-full flex justify-center items-center">
+     className="fixed md:pl-72.5 bg-black/30 inset-0 z-20 w-full h-full flex justify-center items-center">
 
       
       <div 
@@ -393,9 +393,9 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             </div>
           </div>
 
-          {playlist.description && (
+          {/* {playlist.description && (
             <p className="text-creamey/90 mb-2">{playlist.description}</p>
-          )}
+          )} */}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
