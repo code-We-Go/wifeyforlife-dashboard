@@ -17,7 +17,7 @@ export interface Video {
 export interface Playlist {
   _id?: string;
   title: string;
-  description?: string;
+  description?: string[];
   videos: Video[] | string[]; // Can be full Video objects or just IDs
   thumbnailUrl: string;
   isPublic: boolean;

@@ -16,7 +16,11 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
   const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     title: playlist.title,
-    description: playlist.description || "",
+    description: Array.isArray(playlist.description)
+      ? playlist.description
+      : playlist.description
+        ? [playlist.description]
+        : [],
     thumbnailUrl: playlist.thumbnailUrl,
     category: playlist.category || "",
     tags: playlist.tags || [],
@@ -212,29 +216,45 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-secondary mb-2">
-              Description
+              Description Points
             </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md-md focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            {formData.description.map((point, idx) => (
+              <div key={idx} className="flex items-center gap-2 mb-1">
+                <input
+                  type="text"
+                  value={point}
+                  onChange={e => {
+                    const newDesc = [...formData.description];
+                    newDesc[idx] = e.target.value;
+                    setFormData(prev => ({ ...prev, description: newDesc }));
+                  }}
+                  className="flex-1 px-2 py-1 border rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      description: prev.description.filter((_, i) => i !== idx)
+                    }));
+                  }}
+                  className="text-xs text-red-500"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({
+                ...prev,
+                description: [...prev.description, ""]
+              }))}
+              className="mt-2 px-2 py-1 bg-primary text-white rounded"
+            >
+              Add Point
+            </button>
           </div>
-{/* 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-creamey/90 mb-2">
-              Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              name="tags"
-              value={formData.tags.join(", ")}
-              onChange={handleTagsChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md-md focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div> */}
 
           {/* Thumbnail upload and preview */}
           <div className="md:col-span-2">
@@ -393,8 +413,12 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
             </div>
           </div>
 
-          {/* {playlist.description && (
-            <p className="text-creamey/90 mb-2">{playlist.description}</p>
+          {/* {playlist.description && playlist.description.length > 0 && (
+            <ul className="mb-2 list-disc pl-5">
+              {playlist.description.map((point, idx) => (
+                <li key={idx}>{point}</li>
+              ))}
+            </ul>
           )} */}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

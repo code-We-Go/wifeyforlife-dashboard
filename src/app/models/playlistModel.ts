@@ -4,7 +4,7 @@ import { Playlist } from "@/interfaces/interfaces";
 // Define the Playlist schema
 const PlaylistSchema = new Schema({
   title: { type: String, required: true },
-  description: { type: String, required: false },
+  description: { type: [String], required: false },
   category:{type:String,required:false},
   isPublic:{type:Boolean,default:false},
   videos: [{
