@@ -26,8 +26,21 @@ const ProductModal = ({
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>(product.subCategoryID.categoryID._id);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>(product.subCategoryID._id);
+
+  // Reset state when modal opens with a new product
+  useEffect(() => {
+    if (isDetailsModalOpen) {
+      console.log("Modal opened, product:", product);
+      console.log("Product subcategory:", product.subCategoryID);
+      console.log("Product category ID:", product.subCategoryID.categoryID._id);
+      
+      // setSelectedCategory(product.subCategoryID.categoryID._id);
+      setSelectedSubCategory(product.subCategoryID._id);
+      setProduct(product);
+    }
+  }, [isDetailsModalOpen, product]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -35,23 +48,22 @@ const ProductModal = ({
         const res = await axios("/api/categories");
         if (res.status === 200) {
           setCategories(res.data.data);
-          // Find the category ID for the current product's subcategory
-          const subCategoryRes = await axios(
-            `/api/subcategories?subCategoryID=${product.subCategoryID._id}`,
-          );
-          if (subCategoryRes.status === 200) {
-            setSelectedCategory(product.subCategoryID.categoryID._id);
-            fetchSubCategories(product.subCategoryID.categoryID._id);
-
-            setSelectedSubCategory(product.subCategoryID._id);
-          }
+          console.log("Categories loaded:", res.data.data);
+          console.log("Current selected category:", selectedCategory);
+          
+          // Set the selected category and fetch subcategories
+          const categoryId = product.subCategoryID.categoryID._id;
+          console.log("Setting category to:", categoryId);
+          setSelectedCategory(categoryId);
+          await fetchSubCategories(categoryId);
+          setSelectedSubCategory(product.subCategoryID._id);
         }
       } catch (err) {
         console.error(err);
       }
     };
     fetchCategories();
-  }, [product.subCategoryID]);
+  }, []);
 
   const fetchSubCategories = async (categoryId: string) => {
     try {
@@ -85,12 +97,25 @@ const ProductModal = ({
   };
 
   const updateFeild = async (field: string, value: any) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((p) =>
-        p._id === product._id ? { ...p, [field]: value } : p,
-      ),
-    );
-    setProduct((prev) => ({ ...prev, [field]: value }));
+    if (field === "subCategoryID") {
+      // Find the selected subcategory object from the subCategories array
+      const selectedSubCategory = subCategories.find(sub => sub._id === value);
+      if (selectedSubCategory) {
+        setProducts((prevProducts) =>
+          prevProducts.map((p) =>
+            p._id === product._id ? { ...p, [field]: selectedSubCategory } : p,
+          ),
+        );
+        setProduct((prev) => ({ ...prev, [field]: selectedSubCategory }));
+      }
+    } else {
+      setProducts((prevProducts) =>
+        prevProducts.map((p) =>
+          p._id === product._id ? { ...p, [field]: value } : p,
+        ),
+      );
+      setProduct((prev) => ({ ...prev, [field]: value }));
+    }
   };
   // Update Product Function
   const updateProduct = async () => {
@@ -216,6 +241,7 @@ const ProductModal = ({
                   </option>
                 ))}
               </select>
+
             </div>
 
             <div>
@@ -224,7 +250,6 @@ const ProductModal = ({
                 value={productState.subCategoryID._id}
                 onChange={(e) => updateFeild("subCategoryID", e.target.value)}
                 className="w-full border p-2"
-                disabled={!selectedCategory}
               >
                 <option value="">Select a subcategory</option>
                 {subCategories.map((subCategory, index) => (
@@ -233,6 +258,7 @@ const ProductModal = ({
                   </option>
                 ))}
               </select>
+
             </div>
             <div>
               <label className="block font-semibold">Season:</label>
