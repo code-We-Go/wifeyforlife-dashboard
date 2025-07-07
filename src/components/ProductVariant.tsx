@@ -13,12 +13,14 @@ const ProductVariant = ({
   variant,
   updateVariant,
   onVariantChange,
+  onDeleteVariant,
 }: {
   index: number;
   product: Product;
   variant: Variant;
   updateVariant: (index: number, field: string, value: any) => Promise<void>;
   onVariantChange: (index: number, field: string, value: any) => void;
+  onDeleteVariant: (index: number) => void;
 }) => {
   const [imagesUrl, setImagesUrl] = useState<media[]>(variant.images || []);
   const [attributes, setAttributes] = useState<attribute[]>(variant.attributes || []);
@@ -122,7 +124,16 @@ const ProductVariant = ({
   };
 
   return (
-    <div key={index} className="border p-4 mt-4">
+    <div key={index} className="border p-4 mt-4 relative">
+      {/* (x) button to delete variant */}
+      <button
+        onClick={() => onDeleteVariant(index)}
+        className="absolute top-2 right-2 z-40 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600"
+        title="Delete Variant"
+        type="button"
+      >
+        ×
+      </button>
       <h3 className="font-semibold mb-4">Variant {index + 1}</h3>
 
       {/* Variant Name */}

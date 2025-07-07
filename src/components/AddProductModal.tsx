@@ -163,6 +163,12 @@ const AddProductModal = ({
     ]);
   };
 
+  // Add this function to handle variant deletion
+  const deleteVariant = (index: number) => {
+    const updatedVariations = productState.variations.filter((_, i) => i !== index);
+    setProduct((prev) => ({ ...prev, variations: updatedVariations }));
+  };
+
   return (
     isModalOpen && (
       <div
@@ -339,6 +345,7 @@ const AddProductModal = ({
                   variant={variant}
                   updateVariant={updateVariant}
                   onVariantChange={updateVariant}
+                  onDeleteVariant={deleteVariant}
                 />
               ))}
               {errors.variations && (

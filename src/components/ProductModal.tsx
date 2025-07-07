@@ -171,6 +171,18 @@ const ProductModal = ({
       ),
     );
   };
+
+  // Add this function to handle variant deletion
+  const deleteVariant = (index: number) => {
+    const updatedVariations = product.variations.filter((_, i) => i !== index);
+    setProduct((prev) => ({ ...prev, variations: updatedVariations }));
+    setProducts((prevProducts) =>
+      prevProducts.map((p) =>
+        p._id === product._id ? { ...p, variations: updatedVariations } : p
+      )
+    );
+  };
+
   return (
     isDetailsModalOpen && (
       <div
@@ -335,6 +347,7 @@ const ProductModal = ({
                   variant={variant}
                   updateVariant={updateVariant}
                   onVariantChange={updateVariant}
+                  onDeleteVariant={deleteVariant}
                 />
               ))}
               <button
