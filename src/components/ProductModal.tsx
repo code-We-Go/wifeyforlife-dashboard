@@ -26,7 +26,7 @@ const ProductModal = ({
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(product.subCategoryID.categoryID._id);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>(product.subCategoryID._id);
 
   // Reset state when modal opens with a new product
@@ -34,7 +34,6 @@ const ProductModal = ({
     if (isDetailsModalOpen) {
       console.log("Modal opened, product:", product);
       console.log("Product subcategory:", product.subCategoryID);
-      console.log("Product category ID:", product.subCategoryID.categoryID._id);
       
       // setSelectedCategory(product.subCategoryID.categoryID._id);
       setSelectedSubCategory(product.subCategoryID._id);
@@ -52,7 +51,7 @@ const ProductModal = ({
           console.log("Current selected category:", selectedCategory);
           
           // Set the selected category and fetch subcategories
-          const categoryId = product.subCategoryID.categoryID._id;
+          const categoryId = product.subCategoryID?.categoryID?._id;
           console.log("Setting category to:", categoryId);
           setSelectedCategory(categoryId);
           await fetchSubCategories(categoryId);

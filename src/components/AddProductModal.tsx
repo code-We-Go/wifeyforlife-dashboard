@@ -15,12 +15,12 @@ import CheckboxOne from "./Checkboxes/CheckboxOne";
 
 const AddProductModal = ({
   isModalOpen,
-  setProducts,
   setModalOpen,
+  fetchProducts,
 }: {
   isModalOpen: boolean;
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchProducts: () => Promise<void>;
 }) => {
   const updateVariant = async (index: number, field: string, value: any) => {
     const updatedVariations = [...productState.variations];
@@ -124,7 +124,7 @@ const AddProductModal = ({
             popup: "no-rounded-corners small-popup",
           },
         });
-        setProducts((prev) => [...prev, res.data.data]);
+        await fetchProducts();
         setModalOpen(false); // Close modal on success
       }
     } catch (error) {

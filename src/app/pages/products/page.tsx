@@ -92,7 +92,7 @@ const ProductsPage = () => {
         <AddProductModal
           isModalOpen={addModalisOpen}
           setModalOpen={setAddModalisOpen}
-          setProducts={setProducts}
+          fetchProducts={fetchProducts}
         />
 
         {/* Pagination Controls */}
