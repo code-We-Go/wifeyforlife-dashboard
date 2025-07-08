@@ -87,13 +87,13 @@ export async function GET(req: Request) {
         model: "subCategories",
         options: { strictPopulate: false },
         // Handle orphaned subcategories by using match to filter out invalid references
-        match: { _id: { $exists: true } },
+        // match: { _id: { $exists: true } },
         populate: {
           path: "categoryID",
           model: "categories", 
           options: { strictPopulate: false },
           // Handle orphaned categories as well
-          match: { _id: { $exists: true } }
+          // match: { _id: { $exists: true } }
         },
       })
       .sort({ _id: -1 })
@@ -114,7 +114,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       {
-        data: validProducts,
+        data: products,
         total: totalProducts,
         currentPage: page,
         totalPages: all ? 1 : Math.ceil(totalProducts / limit),

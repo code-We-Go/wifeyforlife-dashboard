@@ -27,7 +27,7 @@ const ProductModal = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(product.subCategoryID._id);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
 
   // Reset state when modal opens with a new product
   useEffect(() => {
@@ -36,7 +36,7 @@ const ProductModal = ({
       console.log("Product subcategory:", product.subCategoryID);
       
       // setSelectedCategory(product.subCategoryID.categoryID._id);
-      setSelectedSubCategory(product.subCategoryID._id);
+      setSelectedSubCategory(product.subCategoryID?product.subCategoryID._id:"");
       setProduct(product);
     }
   }, [isDetailsModalOpen, product]);
@@ -55,7 +55,7 @@ const ProductModal = ({
           console.log("Setting category to:", categoryId);
           setSelectedCategory(categoryId);
           await fetchSubCategories(categoryId);
-          setSelectedSubCategory(product.subCategoryID._id);
+          setSelectedSubCategory(product.subCategoryID?product.subCategoryID._id:"");
         }
       } catch (err) {
         console.error(err);
@@ -258,7 +258,7 @@ const ProductModal = ({
             <div>
               <label className="block font-semibold">Subcategory:</label>
               <select
-                value={productState.subCategoryID._id}
+                value={productState.subCategoryID? productState.subCategoryID._id:""}
                 onChange={(e) => updateFeild("subCategoryID", e.target.value)}
                 className="w-full border p-2"
               >
