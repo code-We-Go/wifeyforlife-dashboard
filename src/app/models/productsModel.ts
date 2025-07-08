@@ -67,6 +67,8 @@ const ProductSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "subCategories",
+    options: { strictPopulate: false }
+
   },
 
   season: { type: String, required: false },

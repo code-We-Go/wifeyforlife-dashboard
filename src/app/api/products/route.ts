@@ -85,44 +85,36 @@ export async function GET(req: Request) {
       .populate({
         path: "subCategoryID",
         model: "subCategories",
+        options: { strictPopulate: false },
+        // Handle orphaned subcategories by using match to filter out invalid references
+        match: { _id: { $exists: true } },
         populate: {
           path: "categoryID",
-          model: "categories", // or your actual category model name
+          model: "categories", 
+          options: { strictPopulate: false },
+          // Handle orphaned categories as well
+          match: { _id: { $exists: true } }
         },
       })
       .sort({ _id: -1 })
       .skip(skip)
       .limit(limit);
-    console.log(products[0].subCategoryID);
-    //         const formattedProducts = products.map(product => ({
-    //             _id: product._id,
-    //             title: product.title,
-    //             subCategoryID: product.subCategoryID?._id || null,
-    //             categoryID: product.subCategoryID?.CategoryID?._id || null,
-    //             subCategoryName: product.subCategoryID?.subCategoryName || null,
-    //             categoryName: product.subCategoryID?.CategoryID?.categoryName || null,
-    //             description: product.description || null,
-    //             price: product.price || null,
-    //             variations:product.variations,
-    //             comparedPrice: product.comparedPrice,
-    //   // subCategoryID: mongoose.Types.ObjectId;
-    //   productDimensions: product.productDimensions,
-    //   productDetails: product.productDetails,
-    //   productCare: product.productCare,
-    //   season: product.season,
-    //   featured: product.featured,
-    //   ratings: product.ratings,
 
-    //             createdAt: product.createdAt || null,
-    //             updatedAt: product.updatedAt || null,
-    //             sku: product.sku || null, // Example additional field
-    //             brand: product.brand || null, // Example additional field
-    //             discount: product.discount || null, // Example additional field
-    //             rating: product.rating || null, // Example additional field
-    //         }));
+    // Filter out products with null/undefined subCategoryID after populate
+    const validProducts = products.filter(product => 
+      product.subCategoryID && 
+      product.subCategoryID._id && 
+      product.subCategoryID.categoryID
+    );
+
+    console.log("Valid products count:", validProducts.length);
+    if (validProducts.length > 0) {
+      console.log("Sample product subCategoryID:", validProducts[0].subCategoryID);
+    }
+
     return NextResponse.json(
       {
-        data: products,
+        data: validProducts,
         total: totalProducts,
         currentPage: page,
         totalPages: all ? 1 : Math.ceil(totalProducts / limit),
