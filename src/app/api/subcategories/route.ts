@@ -56,10 +56,17 @@ else{
   try {
     const subCategories = await subCategoryModel.find().populate({
           path: "categoryID",
-          model: "categories", // Explicitly specify the model
+          model: "categories",
+          options: { strictPopulate: false }
         });
-        console.log("subCategories", subCategories,"categories" ,);
-        return NextResponse.json({ data: subCategories }, { status: 200 });
+        
+        const processedSubCategories = subCategories.map(subCat => ({
+          ...subCat.toObject(),
+          categoryID: subCat.categoryID || { categoryName: "Category Deleted" }
+        }));
+        
+        console.log("subCategories", processedSubCategories);
+        return NextResponse.json({ data: processedSubCategories }, { status: 200 });
   } catch (error) {
     console.error("Error fetching subcategories:", error);
     return NextResponse.json(

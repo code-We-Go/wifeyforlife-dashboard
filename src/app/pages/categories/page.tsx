@@ -145,9 +145,11 @@ const CategoriesPage = () => {
                     </td>
                     <td className="border p-2">{subCategory.description}</td>
                     <td className="border p-2">
-                      {categories.find(
-                        (cat) => cat._id === subCategory.categoryID._id,
-                      )?.categoryName || "N/A"}
+                      {subCategory?.categoryID?._id 
+                        ? categories.find(
+                            (cat) => cat._id === subCategory.categoryID._id,
+                          )?.categoryName || "N/A"
+                        : "Category Deleted"}
                     </td>
                     <td className="space-x-2 border p-2">
                       <button
