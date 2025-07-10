@@ -36,8 +36,6 @@ function DraggablePlaylist({ playlist, index, movePlaylist, setPlaylists, childr
 
 const PlaylistsPage = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [addModalisOpen, setAddModalisOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,23 +46,18 @@ const PlaylistsPage = () => {
     setIsLoading(true);
     try {
       const res = await axios.get(
-        `/api/playlists?page=${page}&search=${searchQuery}`,
+        `/api/playlists?search=${searchQuery}`
       );
       console.log("Playlists data:", res.data);
       setPlaylists(res.data.data);
-      setTotalPages(res.data.totalPages);
     } catch (error) {
       console.error("Error fetching playlists:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchQuery]);
+  }, [searchQuery]);
 
   useEffect(() => {
-    // Only reset to first page when search query changes
-    if (searchQuery) {
-      setPage(1);
-    }
     fetchPlaylists();
   }, [fetchPlaylists, searchQuery]);
 
@@ -88,12 +81,6 @@ const PlaylistsPage = () => {
       setPrevOrder(playlists.map((p) => String(p._id)));
     }
   }, [orderChanged, playlists]);
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
-    }
-  };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -168,31 +155,6 @@ const PlaylistsPage = () => {
           setModalOpen={setAddModalisOpen}
           setPlaylists={setPlaylists}
         />
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="mt-4 flex items-center gap-4">
-            <button
-              className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1 || isLoading}
-            >
-              Previous
-            </button>
-
-            <span className="text-lg">
-              Page {page} of {totalPages}
-            </span>
-
-            <button
-              className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages || isLoading}
-            >
-              Next
-            </button>
-          </div>
-        )}
       </div>
       </DndProvider>
     </DefaultLayout>
