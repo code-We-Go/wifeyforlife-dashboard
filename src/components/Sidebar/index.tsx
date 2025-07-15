@@ -9,7 +9,7 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
-import { GiClothes } from "react-icons/gi";
+import { GiClothes, GiThreeFriends } from "react-icons/gi";
 import { BiMailSend } from "react-icons/bi";
 import { MdPlaylistPlay } from "react-icons/md";
 import { CiVideoOn } from "react-icons/ci";
@@ -17,6 +17,8 @@ import { LiaShippingFastSolid } from "react-icons/lia";
 import { lifeyFont, thirdFont } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
 import { RiCoupon3Line } from "react-icons/ri";
+import { TiUserAddOutline } from "react-icons/ti";
+  
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -97,6 +99,12 @@ const menuGroups = [
         route: "/discounts",
       },
       {
+        icon: <GiThreeFriends />
+        ,
+        label: "Packages",
+        route: "/pages/packages",
+      },
+      {
         icon: (
           <svg
             className="fill-current"
@@ -118,6 +126,14 @@ const menuGroups = [
         ),
         label: "Users",
         route: "/pages/users",
+      },
+      {
+        icon: (
+          <TiUserAddOutline />
+
+        ),
+        label: "Subscriptions",
+        route: "/pages/subscriptions",
       },
       {
         icon:<BiMailSend />

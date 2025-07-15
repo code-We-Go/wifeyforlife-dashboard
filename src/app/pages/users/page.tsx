@@ -79,7 +79,28 @@ const UsersPage = () => {
               {users.map((user, index) => (
                 <tr key={index} className="hover:bg-gray-50 text-sm">
                   <td className="p-2 border">{(page - 1) * 10 + index + 1}</td>
-                  <td className="p-2 border">{user.username}</td>
+                  <td className="p-2 border">
+                    <div className="flex items-center gap-2">
+                      {user.imageURL && user.imageURL.trim() !== '' ? (
+                        <img
+                          src={user.imageURL}
+                          alt={user.username}
+                          className="w-8 h-8 rounded-full object-cover border"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-base border">
+                          {user.username
+                            ? user.username
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                            : '?'}
+                        </div>
+                      )}
+                      <span>{user.username}</span>
+                    </div>
+                  </td>
                   <td className="p-2 border">{user.email}</td>
                   <td className="p-2 border">{user.role}</td>
                   <td className="p-2 border">{user.isSubscribed ? 'Yes' : 'No'}</td>
@@ -224,7 +245,8 @@ const UsersPage = () => {
                     username: formData.get('username'),
                     email: formData.get('email'),
                     role: formData.get('role'),
-                    isSubscribed: formData.get('subscription') === 'true'
+                    isSubscribed: formData.get('subscription') === 'true',
+                    emailVerified: formData.get('emailVerified') === 'true',
                   });
                   setModalType(null);
                   // Refresh users list
@@ -264,6 +286,17 @@ const UsersPage = () => {
                     <option value="customer">Customer</option>
                     <option value="moderator">Moderator</option>
                     <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Email Verified</label>
+                  <select
+                    name="emailVerified"
+                    defaultValue={selectedUser.emailVerified ? 'true' : 'false'}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
                   </select>
                 </div>
                 <div className="mb-4">

@@ -1,4 +1,12 @@
 import mongoose from "mongoose";
+export interface Ipackage {
+  name: string;
+  imgUrl: string;
+  price: number;
+  duration: string;
+  items: string[];
+  notes:string[];
+}
 // types/Video.ts
 export interface Video {
   _id?: string;

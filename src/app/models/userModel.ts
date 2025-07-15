@@ -8,11 +8,17 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: "admin" | "moderator" | "customer";
+  emailVerified?:boolean;
+  firstName?:string;
+  lastName?:string;
   isSubscribed: boolean;
   createdAt: Date;
   updatedAt: Date;
+  imageURL?:string;
+
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
+
 
 // Define the User schema
 const UserSchema = new Schema<IUser>(
@@ -20,9 +26,19 @@ const UserSchema = new Schema<IUser>(
     username: { 
       type: String, 
       required: true, 
-      unique: true,
+      unique: false,
       trim: true,
       minlength: 3
+    },
+    firstName:{
+      type: String,
+      required: false,
+      default: ""
+    },
+    lastName:{
+      type: String,
+      required: false,
+      default: ""
     },
     email: {
       type: String,
@@ -47,6 +63,13 @@ const UserSchema = new Schema<IUser>(
       default: false,
       required: false,
     },
+    imageURL:{
+      type: String,
+      required: false,
+      default: ""
+    },
+    emailVerified:{type:Boolean,default:true},
+
   },
   { timestamps: true }
 );
