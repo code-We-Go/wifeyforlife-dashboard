@@ -204,14 +204,14 @@ const VideoComponent: React.FC<VideoComponentProps> = ({ video, setVideos }) => 
   }
 else{
   return (
-    <div className="bg-secondary text-primary rounded-2xl w-full shadow-md p-6 mb-4">
+    <div className="bg-secondary text-creamey  rounded-2xl w-full shadow-md p-6 mb-4">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative w-full md:w-48 h-32 flex-shrink-0">
+        <div className="relative w-full md:w-48 h-32 max-md:h-52 flex-shrink-0">
           <Image
             src={video.thumbnailUrl}
             alt={video.title}
             fill
-            className="object-cover rounded-2xl"
+            className="object-cover aspect-video rounded-2xl"
           />
 
         </div>
