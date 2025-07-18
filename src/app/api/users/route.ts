@@ -2,6 +2,7 @@ import { ConnectDB } from "@/config/db";
 import UserModel from "@/app/models/userModel";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import subscriptionsModel from "@/app/models/subscriptionsModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -18,7 +19,7 @@ const errorResponse = (message: string, status: number = 500) => {
 const successResponse = (data: any, status: number = 200) => {
   return NextResponse.json({ data }, { status });
 };
-
+console.log(subscriptionsModel)
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -44,11 +45,17 @@ export async function GET(req: Request) {
     // Get users with pagination
     const users = await UserModel
       .find(searchQuery)
-      .select('-password') // Exclude password from response
+      .populate({  
+        path: "subscription",
+        model: "subscriptions", // <-- this matches your model registration and ref
+        options: { strictPopulate: false }
+      })
+      .select('-password')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
+console.log("ya rab" +users[1].subscription?.subscribed)
     return successResponse({
       users,
       pagination: {

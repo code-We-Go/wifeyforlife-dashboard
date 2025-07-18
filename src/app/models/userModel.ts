@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
+import { ISubscription } from "./subscriptionsModel";
 
 // Define the User interface
 export interface IUser extends Document {
@@ -11,7 +12,8 @@ export interface IUser extends Document {
   emailVerified?:boolean;
   firstName?:string;
   lastName?:string;
-  isSubscribed: boolean;
+  subscription:ISubscription;
+  // isSubscribed: boolean;
   createdAt: Date;
   updatedAt: Date;
   imageURL?:string;
@@ -58,9 +60,14 @@ const UserSchema = new Schema<IUser>(
       default: "customer",
       required: false,
     },
-    isSubscribed: {
-      type: Boolean,
-      default: false,
+    // isSubscribed: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: false,
+    // },
+    subscription: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "subscriptions",
       required: false,
     },
     imageURL:{

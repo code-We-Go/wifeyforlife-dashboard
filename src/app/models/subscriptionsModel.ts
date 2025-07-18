@@ -1,4 +1,15 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
+
+// Define the Subscription interface
+export interface ISubscription extends Document {
+  paymentID: string;
+  packageID: Types.ObjectId;
+  email?: string;
+  subscribed: boolean;
+  expiryDate: Date;
+  createdAt: Date;
+  updatedAt: Date; // Because of timestamps: true
+}
 
 // Define the Subscription schema with TTL
 const SubscriptionSchema = new Schema(
@@ -22,6 +33,7 @@ const SubscriptionSchema = new Schema(
 );
 
 // Define the Subscription model
-const subscriptionsModel = mongoose.models.subscriptions || mongoose.model<Document & mongoose.Model<any>>("subscriptions", SubscriptionSchema);
+const subscriptionsModel = mongoose.models.subscriptions ||
+  mongoose.model<ISubscription>("subscriptions", SubscriptionSchema);
 
 export default subscriptionsModel; 

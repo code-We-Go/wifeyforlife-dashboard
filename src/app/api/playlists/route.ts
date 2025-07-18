@@ -65,11 +65,11 @@ export async function PUT(request: Request) {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get("page") || "1", 10);
+  // const page = parseInt(searchParams.get("page") || "1", 10);
   const search = searchParams.get("search") || "";
   const all = searchParams.get("all") === "true";
-  const limit = all ? 0 : 10;
-  const skip = all ? 0 : (page - 1) * limit;
+  // const limit = all ? 0 : 10;
+  // const skip = all ? 0 : (page - 1) * limit;
 
   try {
     // Create search query
@@ -95,15 +95,15 @@ export async function GET(req: Request) {
         select: "title description thumbnailUrl duration isPublished"
       })
       .sort({ order: 1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      // .skip(skip)
+      // .limit(limit);
 
     return NextResponse.json(
       {
         data: playlists,
         total: totalPlaylists,
-        currentPage: page,
-        totalPages: all ? 1 : Math.ceil(totalPlaylists / limit),
+        // currentPage: page,
+        // totalPages: all ? 1 : Math.ceil(totalPlaylists / limit),
       },
       { status: 200 }
     );
