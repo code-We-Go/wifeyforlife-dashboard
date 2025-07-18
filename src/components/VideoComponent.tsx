@@ -237,7 +237,7 @@ else{
           </div>
 
           {video.description && (
-            <p className=" mb-2">{video.description}</p>
+            <p className=" mb-2 whitespace-pre-line">{video.description}</p>
           )}
 
           {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
