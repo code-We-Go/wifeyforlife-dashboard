@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { LoyaltyTransaction } from '@/interfaces/interfaces';
+import React, { useEffect, useState } from "react";
+import { ILoyaltyTransaction } from "@/interfaces/interfaces";
 
 type Props = {
   userId: string;
 };
 
 const LoyaltyTransactionsTable: React.FC<Props> = ({ userId }) => {
-  const [transactions, setTransactions] = useState<LoyaltyTransaction[]>([]);
+  const [transactions, setTransactions] = useState<ILoyaltyTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
     fetch(`/api/loyalty/transactions?userId=${userId}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setTransactions(data);
         setLoading(false);
       })
       .catch(() => {
-        setError('Failed to load transactions');
+        setError("Failed to load transactions");
         setLoading(false);
       });
   }, [userId]);
@@ -29,7 +29,7 @@ const LoyaltyTransactionsTable: React.FC<Props> = ({ userId }) => {
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
-    <table className="min-w-full border mb-4">
+    <table className="mb-4 min-w-full border">
       <thead>
         <tr>
           <th className="border px-4 py-2">Type</th>
@@ -40,13 +40,17 @@ const LoyaltyTransactionsTable: React.FC<Props> = ({ userId }) => {
         </tr>
       </thead>
       <tbody>
-        {transactions.map(tx => (
+        {transactions.map((tx) => (
           <tr key={tx._id}>
             <td className="border px-4 py-2">{tx.type}</td>
             <td className="border px-4 py-2">{tx.reason}</td>
             <td className="border px-4 py-2">{tx.amount}</td>
-            <td className="border px-4 py-2">{new Date(tx.timestamp).toLocaleString()}</td>
-            <td className="border px-4 py-2">{tx.rewardId ?? '-'}</td>
+            <td className="border px-4 py-2">
+              {new Date(tx.timestamp).toLocaleString()}
+            </td>
+            <td className="border px-4 py-2">
+              {tx.bonusID?.bonusPoints ?? "-"}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -54,4 +58,4 @@ const LoyaltyTransactionsTable: React.FC<Props> = ({ userId }) => {
   );
 };
 
-export default LoyaltyTransactionsTable; 
+export default LoyaltyTransactionsTable;

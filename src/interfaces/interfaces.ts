@@ -5,7 +5,7 @@ export interface Ipackage {
   price: number;
   duration: string;
   items: string[];
-  notes:string[];
+  notes: string[];
 }
 // types/Video.ts
 export interface Video {
@@ -14,9 +14,8 @@ export interface Video {
   description?: string;
   url: string;
   thumbnailUrl: string;
-  isPublic: boolean,
+  isPublic: boolean;
 
- 
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,7 +70,7 @@ export type mediaType = "image" | "video";
 
 export type price = {
   local: number;
-  global:number;
+  global: number;
 };
 export interface Category {
   _id: string;
@@ -179,7 +178,7 @@ export interface IOrder {
   cash?: boolean;
   cart?: CartItem[]; // Assuming CartItem interface exists
   subTotal?: number;
-  shipping:number;
+  shipping: number;
   total?: number;
   currency?: string;
   status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
@@ -211,14 +210,14 @@ export interface ShippingZone {
 export interface ILoyaltyTransaction {
   _id?: string;
   userId: string; // or mongoose.Types.ObjectId
-  type: 'earn' | 'spend';
+  type: "earn" | "spend";
   reason: string;
   amount: number;
   timestamp: Date;
-  bonusId?: string; // optional, if related to a reward redemption
+  bonusID?: ILoyaltyBonus;
 }
 
-export interface RoyaltyBonus {
+export interface ILoyaltyBonus {
   _id?: string;
   title: string;
   description: string;
