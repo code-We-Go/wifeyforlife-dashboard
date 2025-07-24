@@ -161,6 +161,7 @@ export interface User {
   deviceType: string;
   // phoneCode:string;
   dob: string;
+  points?: number;
 }
 export interface IOrder {
   _id: string;
@@ -205,4 +206,22 @@ export interface ShippingZone {
   localGlobal: "local" | "global";
   states?: string[];
   countries?: string[];
+}
+
+export interface ILoyaltyTransaction {
+  _id?: string;
+  userId: string; // or mongoose.Types.ObjectId
+  type: 'earn' | 'spend';
+  reason: string;
+  amount: number;
+  timestamp: Date;
+  bonusId?: string; // optional, if related to a reward redemption
+}
+
+export interface RoyaltyBonus {
+  _id?: string;
+  title: string;
+  description: string;
+  bonusPoints: number;
+  active: boolean;
 }

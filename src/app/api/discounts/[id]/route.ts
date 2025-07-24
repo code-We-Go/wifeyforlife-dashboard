@@ -57,6 +57,8 @@ export async function PUT(
       }
     }
 
+    // Allow updating redeemType as part of the discount update
+    // (Handled automatically by $set: body if redeemType is present)
     const updatedDiscount = await DiscountModel.findByIdAndUpdate(
       params.id,
       { $set: body },

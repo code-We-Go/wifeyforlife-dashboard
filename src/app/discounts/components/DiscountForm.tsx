@@ -25,6 +25,7 @@ export default function DiscountForm({ params }: DiscountFormProps) {
     calculationType: 'PERCENTAGE',
     value: 0,
     isActive: true,
+    redeemType: '',
     conditions: {
       validFrom: new Date(),
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
@@ -167,7 +168,7 @@ export default function DiscountForm({ params }: DiscountFormProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -312,6 +313,24 @@ export default function DiscountForm({ params }: DiscountFormProps) {
               />
             </div>
           ) : null}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Redeem Type
+            </label>
+            <select
+              name="redeemType"
+              value={formData.redeemType || ''}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Select Redeem Type</option>
+              <option value="Purchase">Purchase</option>
+              <option value="Subscription">Subscription</option>
+              <option value="All">All</option>
+            </select>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">

@@ -32,6 +32,7 @@ export interface Discount {
   description: string;
   applicationType: DiscountApplicationType;
   calculationType: DiscountCalculationType;
+  redeemType:string;
   value?: number; // percentage or fixed amount
   buyXGetYDetails?: BuyXGetYDetails;
   conditions: DiscountCondition;

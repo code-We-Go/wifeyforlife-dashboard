@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     // Validate required fields
-    const requiredFields = ['code', 'name', 'description', 'applicationType', 'calculationType', 'conditions'];
+    const requiredFields = ['code', 'name', 'description', 'applicationType', 'calculationType', 'conditions', 'redeemType'];
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
       description: body.description,
       applicationType: body.applicationType,
       calculationType: body.calculationType,
+      redeemType: body.redeemType,
       conditions: body.conditions,
       isActive: body.isActive ?? true,
     };

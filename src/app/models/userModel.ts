@@ -17,7 +17,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   imageURL?:string;
-
+  points?: number;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -76,6 +76,11 @@ const UserSchema = new Schema<IUser>(
       default: ""
     },
     emailVerified:{type:Boolean,default:true},
+    points: {
+      type: Number,
+      default: 0,
+      required: false,
+    },
 
   },
   { timestamps: true }

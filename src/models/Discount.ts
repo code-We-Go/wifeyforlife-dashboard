@@ -22,6 +22,11 @@ const discountSchema = new Schema<Discount>({
     enum: ['AUTOMATIC', 'MANUAL'],
     required: true,
   },
+  redeemType:{
+    type:String,
+    enum:["Purchase","Subscription","All"],
+    required:false
+  },
   calculationType: {
     type: String,
     enum: ['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_SHIPPING'],
