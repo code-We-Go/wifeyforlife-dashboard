@@ -53,7 +53,7 @@ const AddRoyaltyPointModal: React.FC<Props> = ({ onRoyaltyPointAdded }) => {
         onClick={() => setOpen(true)}
         className="mb-4 rounded bg-primary/90 px-4 py-2 text-white"
       >
-        Add Loyalty Point
+        Add Loyalty Bonus
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">

@@ -11,14 +11,13 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes, GiThreeFriends } from "react-icons/gi";
 import { BiMailSend } from "react-icons/bi";
-import { MdPlaylistPlay } from "react-icons/md";
+import { MdOutlineLoyalty, MdPlaylistPlay } from "react-icons/md";
 import { CiVideoOn } from "react-icons/ci";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { lifeyFont, thirdFont } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
 import { RiCoupon3Line } from "react-icons/ri";
 import { TiUserAddOutline } from "react-icons/ti";
-  
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -66,15 +65,13 @@ const menuGroups = [
         route: "/pages/orders",
       },
       {
-        icon: <MdPlaylistPlay />
-        ,
+        icon: <MdPlaylistPlay />,
         label: "Playslists",
         route: "/pages/playlists",
       },
       {
-        icon:<CiVideoOn />
+        icon: <CiVideoOn />,
 
-        ,
         label: "Videos",
         route: "/pages/videos",
       },
@@ -94,13 +91,17 @@ const menuGroups = [
         route: "/pages/collections",
       },
       {
+        icon: <MdOutlineLoyalty />,
+        label: "Loyalty",
+        route: "/pages/loyalty/rewards",
+      },
+      {
         icon: <RiCoupon3Line />,
         label: "Discounts",
         route: "/discounts",
       },
       {
-        icon: <GiThreeFriends />
-        ,
+        icon: <GiThreeFriends />,
         label: "Packages",
         route: "/pages/packages",
       },
@@ -128,16 +129,12 @@ const menuGroups = [
         route: "/pages/users",
       },
       {
-        icon: (
-          <TiUserAddOutline />
-
-        ),
+        icon: <TiUserAddOutline />,
         label: "Subscriptions",
         route: "/pages/subscriptions",
       },
       {
-        icon:<BiMailSend />
-        ,
+        icon: <BiMailSend />,
         label: "Newsletters",
         route: "/pages/newsletters",
       },
@@ -167,7 +164,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         }`}
       >
         {/* <!-- SIDEBAR HEADER --> */}
-        <div className="flex border-white bg-primary border-b items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
+        <div className="flex items-center justify-center gap-2 border-b border-white bg-primary px-6 py-5.5 lg:py-6.5">
           <Link href="/">
             <Image
               width={176}
@@ -202,11 +199,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
         <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
           {/* <!-- Sidebar Menu --> */}
-          <nav className={`${thirdFont.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}>
+          <nav
+            className={`${thirdFont.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}
+          >
             {menuGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
- 
-
                 <ul className="mb-6 flex flex-col gap-2">
                   {group.menuItems.map((menuItem, menuIndex) => (
                     <SidebarItem

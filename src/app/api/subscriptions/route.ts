@@ -10,7 +10,22 @@ const loadDB = async () => {
 
 // GET: List all subscriptions, populate package data
 export async function GET(request: Request) {
-  await loadDB();
+  const { searchParams } = new URL(request.url);
+  const email = searchParams.get('email');  await loadDB();
+  if(email){
+   
+    try {
+      const subscription = await subscriptionsModel.find({email:email}).populate({
+        path: 'packageID',
+        model: packageModel,
+        options: { strictPopulate: false },
+      });
+      console.log( "yessss"+subscription)
+      return NextResponse.json({ data: subscription }, { status: 200 });
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to fetch subscriptions' }, { status: 500 });
+    }
+  }
   try {
     const subscriptions = await subscriptionsModel.find().populate({
       path: 'packageID',

@@ -21,6 +21,7 @@
     "browser-image-compression": "^2.0.2",
     "flatpickr": "^4.6.13",
     "jsvectormap": "^1.6.0",
+    "lucide-react": "^0.525.0",
     "mongodb": "^6.13.0",
     "mongoose": "^8.15.1",
     "next": "^14.2.4",

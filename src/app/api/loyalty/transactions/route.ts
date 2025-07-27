@@ -4,10 +4,10 @@ import { ConnectDB } from '../../../../config/db';
 ConnectDB()
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId');
-  if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
-  const transactions = await LoyaltyTransactionModel.find({ userId }).sort({ timestamp: -1 });
-  return NextResponse.json(transactions);
+  const email = searchParams.get('email');
+  if (!email) return NextResponse.json({ error: 'email required' }, { status: 400 });
+  const transactions = await LoyaltyTransactionModel.find({ email:email }).sort({ timestamp: -1 });
+  return NextResponse.json({data:transactions});
 }
 
 export async function POST(req: NextRequest) {

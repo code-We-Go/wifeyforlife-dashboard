@@ -1,24 +1,34 @@
-'use client'
+"use client";
 
-import DefaultLayout from '@/components/Layouts/DefaultLayout';
-import { IUser } from '@/app/models/userModel';
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import { IUser } from "@/app/models/userModel";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<IUser[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [modalType, setModalType] = useState<'edit' | 'delete' | 'add' | null>(null);
+  const [modalType, setModalType] = useState<"edit" | "delete" | "add" | null>(
+    null,
+  );
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [subscriptionModal, setSubscriptionModal] = useState<{ type: 'view' | 'add' | null, user: IUser | null }>({ type: null, user: null });
-  const [availablePackages, setAvailablePackages] = useState<{ _id: string; name: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [subscriptionModal, setSubscriptionModal] = useState<{
+    type: "view" | "add" | null;
+    user: IUser | null;
+  }>({ type: null, user: null });
+  const [availablePackages, setAvailablePackages] = useState<
+    { _id: string; name: string }[]
+  >([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(`/api/users?page=${page}&search=${searchQuery}`);
+        const res = await axios.get(
+          `/api/users?page=${page}&search=${searchQuery}`,
+        );
         setUsers(res.data.data.users);
         setTotalPages(res.data.data.pagination.totalPages);
       } catch (error) {
@@ -28,7 +38,7 @@ const UsersPage = () => {
     fetchUsers();
   }, [page, searchQuery]);
 
-  const openModal = (type: 'edit' | 'delete' | 'add', user?: IUser) => {
+  const openModal = (type: "edit" | "delete" | "add", user?: IUser) => {
     setModalType(type);
     setSelectedUser(user || null);
   };
@@ -46,92 +56,104 @@ const UsersPage = () => {
 
   const handleSubscriptionClick = (user: IUser) => {
     if (user.subscription?.subscribed) {
-      setSubscriptionModal({ type: 'view', user });
+      setSubscriptionModal({ type: "view", user });
     } else {
       // Fetch packages from API when opening the add modal
-      axios.get('/api/packages?all=true')
-        .then(res => {
-          setAvailablePackages(res.data.data.map((pkg: any) => ({ _id: pkg._id, name: pkg.name })));
-          setSubscriptionModal({ type: 'add', user });
+      axios
+        .get("/api/packages?all=true")
+        .then((res) => {
+          setAvailablePackages(
+            res.data.data.map((pkg: any) => ({ _id: pkg._id, name: pkg.name })),
+          );
+          setSubscriptionModal({ type: "add", user });
         })
         .catch(() => {
           setAvailablePackages([]);
-          setSubscriptionModal({ type: 'add', user });
+          setSubscriptionModal({ type: "add", user });
         });
     }
   };
 
   return (
     <DefaultLayout>
-      <div className="px-1 overflow-hidden md:px-2 py-2 md:py-4 w-full h-auto min-h-screen flex flex-col justify-start items-center gap-4 bg-backgroundColor">
-        <div className="text-primary w-[97%] flex justify-between items-center">
+      <div className="flex h-auto min-h-screen w-full flex-col items-center justify-start gap-4 overflow-hidden bg-backgroundColor px-1 py-2 md:px-2 md:py-4">
+        <div className="flex w-[97%] items-center justify-between text-primary">
           <div className="flex items-center gap-2">
             <input
               type="text"
               placeholder="Search by username or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-64 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <button
-            className='bg-primary text-sm text-creamey px-4 py-2 rounded-2xl hover:cursor-pointer'
-            onClick={() => openModal('add')}
-          >ADD USER</button>
+            className="rounded-2xl bg-primary px-4 py-2 text-sm text-creamey hover:cursor-pointer"
+            onClick={() => openModal("add")}
+          >
+            ADD USER
+          </button>
         </div>
 
         {/* Table */}
         {users.length > 0 ? (
-          <table className="w-[97%] text-left border border-gray-300 rounded">
-            <thead className="bg-secondary text-white text-sm">
+          <table className="w-[97%] rounded border border-gray-300 text-left">
+            <thead className="bg-secondary text-sm text-white">
               <tr>
-                <th className="p-2 border">#</th>
-                <th className="p-2 border">Username</th>
-                <th className="p-2 border">Email</th>
-                <th className="p-2 border">Role</th>
-                <th className="p-2 border">Subscription</th>
-                <th className="p-2 border">Created At</th>
-                <th className="p-2 border">Actions</th>
+                <th className="border p-2">#</th>
+                <th className="border p-2">Username</th>
+                <th className="border p-2">Email</th>
+                <th className="border p-2">Role</th>
+                <th className="border p-2">Subscription</th>
+                <th className="border p-2">Created At</th>
+                <th className="border p-2">Actions</th>
               </tr>
             </thead>
-            <tbody className='bg-white'>
+            <tbody className="bg-white">
               {users.map((user, index) => (
-                <tr key={index} className="hover:bg-gray-50 text-sm">
-                  <td className="p-2 border">{(page - 1) * 10 + index + 1}</td>
-                  <td className="p-2 border">
-                    <div className="flex items-center gap-2">
-                      {user.imageURL && user.imageURL.trim() !== '' ? (
-                        <img
-                          src={user.imageURL}
-                          alt={user.username}
-                          className="w-8 h-8 rounded-full object-cover border"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-base border">
-                          {user.username
-                            ? user.username
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')
-                                .toUpperCase()
-                            : '?'}
-                        </div>
-                      )}
-                      <span>{user.username}</span>
-                    </div>
+                <tr key={index} className="text-sm hover:bg-gray-50">
+                  <td className="border p-2">{(page - 1) * 10 + index + 1}</td>
+                  <td className="border p-2">
+                    <Link
+                      href={`/pages/users/${user._id}`}
+                      className=" hover:underline"
+                    >
+                      <div className="flex items-center gap-2">
+                        {user.imageURL && user.imageURL.trim() !== "" ? (
+                          <img
+                            src={user.imageURL}
+                            alt={user.username}
+                            className="h-8 w-8 rounded-full border object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full border bg-gray-300 text-base font-bold text-gray-700">
+                            {user.username
+                              ? user.username
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .toUpperCase()
+                              : "?"}
+                          </div>
+                        )}
+                        <span>{user.username}</span>
+                      </div>
+                    </Link>
                   </td>
-                  <td className="p-2 border">{user.email}</td>
-                  <td className="p-2 border">{user.role}</td>
+                  <td className="border p-2">{user.email}</td>
+                  <td className="border p-2">{user.role}</td>
                   <td
-                    className="p-2 border cursor-pointer text-blue-600 underline"
+                    className="cursor-pointer border p-2 text-blue-600 underline"
                     onClick={() => handleSubscriptionClick(user)}
                   >
-                    {user.subscription?.subscribed ? 'Yes' : 'No'}
+                    {user.subscription?.subscribed ? "Yes" : "No"}
                   </td>
-                  <td className="p-2 border">{new Date(user.createdAt).toLocaleDateString()}</td>
-                  <td className="p-2 border space-x-2">
+                  <td className="border p-2">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="space-x-2 border p-2">
                     <button
-                      onClick={() => openModal('edit', user)}
+                      onClick={() => openModal("edit", user)}
                       className="text-blue-600 underline"
                     >
                       Edit
@@ -152,17 +174,19 @@ const UsersPage = () => {
         )}
 
         {/* Pagination */}
-        <div className="flex items-center gap-4 mt-4">
+        <div className="mt-4 flex items-center gap-4">
           <button
-            className="px-4 py-2 bg-accent text-white rounded disabled:opacity-50"
+            className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
             disabled={page === 1}
           >
             Previous
           </button>
-          <span className="text-lg">Page {page} of {totalPages}</span>
+          <span className="text-lg">
+            Page {page} of {totalPages}
+          </span>
           <button
-            className="px-4 py-2 bg-accent text-white rounded disabled:opacity-50"
+            className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={page === totalPages}
           >
@@ -171,59 +195,67 @@ const UsersPage = () => {
         </div>
 
         {/* Add User Modal */}
-        {modalType === 'add' && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg w-96">
-              <h2 className="text-xl font-bold mb-4">Add New User</h2>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                try {
-                  await axios.post('/api/users', {
-                    username: formData.get('username'),
-                    email: formData.get('email'),
-                    password: formData.get('password'),
-                    role: formData.get('role'),
-                    // isSubscriped: formData.get('subscription') === 'true'
-                  });
-                  setModalType(null);
-                  // Refresh users list
-                  const res = await axios.get(`/api/users?page=${page}`);
-                  setUsers(res.data.data.users);
-                } catch (error) {
-                  console.error("Error adding user:", error);
-                }
-              }}>
+        {modalType === "add" && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-96 rounded-lg bg-white p-6">
+              <h2 className="mb-4 text-xl font-bold">Add New User</h2>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  try {
+                    await axios.post("/api/users", {
+                      username: formData.get("username"),
+                      email: formData.get("email"),
+                      password: formData.get("password"),
+                      role: formData.get("role"),
+                      // isSubscriped: formData.get('subscription') === 'true'
+                    });
+                    setModalType(null);
+                    // Refresh users list
+                    const res = await axios.get(`/api/users?page=${page}`);
+                    setUsers(res.data.data.users);
+                  } catch (error) {
+                    console.error("Error adding user:", error);
+                  }
+                }}
+              >
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Username</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    Username
+                  </label>
                   <input
                     type="text"
                     name="username"
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Password</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    Password
+                  </label>
                   <input
                     type="password"
                     name="password"
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Role</label>
-                  <select name="role" className="w-full p-2 border rounded">
+                  <label className="mb-1 block text-sm font-medium">Role</label>
+                  <select name="role" className="w-full rounded border p-2">
                     <option value="customer">Customer</option>
                     <option value="moderator">Moderator</option>
                     <option value="admin">Admin</option>
@@ -246,7 +278,7 @@ const UsersPage = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-accent text-white rounded"
+                    className="rounded bg-accent px-4 py-2 text-white"
                   >
                     Add User
                   </button>
@@ -257,55 +289,61 @@ const UsersPage = () => {
         )}
 
         {/* Edit User Modal */}
-        {modalType === 'edit' && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg w-96">
-              <h2 className="text-xl font-bold mb-4">Edit User</h2>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                try {
-                  await axios.put(`/api/users?userId=${selectedUser._id}`, {
-                    username: formData.get('username'),
-                    email: formData.get('email'),
-                    role: formData.get('role'),
-                    // isSubscribed: formData.get('subscription') === 'true',
-                    emailVerified: formData.get('emailVerified') === 'true',
-                  });
-                  setModalType(null);
-                  // Refresh users list
-                  const res = await axios.get(`/api/users?page=${page}`);
-                  setUsers(res.data.data.users);
-                } catch (error) {
-                  console.error("Error updating user:", error);
-                }
-              }}>
+        {modalType === "edit" && selectedUser && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-96 rounded-lg bg-white p-6">
+              <h2 className="mb-4 text-xl font-bold">Edit User</h2>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  try {
+                    await axios.put(`/api/users?userId=${selectedUser._id}`, {
+                      username: formData.get("username"),
+                      email: formData.get("email"),
+                      role: formData.get("role"),
+                      // isSubscribed: formData.get('subscription') === 'true',
+                      emailVerified: formData.get("emailVerified") === "true",
+                    });
+                    setModalType(null);
+                    // Refresh users list
+                    const res = await axios.get(`/api/users?page=${page}`);
+                    setUsers(res.data.data.users);
+                  } catch (error) {
+                    console.error("Error updating user:", error);
+                  }
+                }}
+              >
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Username</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    Username
+                  </label>
                   <input
                     type="text"
                     name="username"
                     defaultValue={selectedUser.username}
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
                     defaultValue={selectedUser.email}
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Role</label>
+                  <label className="mb-1 block text-sm font-medium">Role</label>
                   <select
                     name="role"
                     defaultValue={selectedUser.role}
-                    className="w-full p-2 border rounded"
+                    className="w-full rounded border p-2"
                   >
                     <option value="customer">Customer</option>
                     <option value="moderator">Moderator</option>
@@ -313,11 +351,13 @@ const UsersPage = () => {
                   </select>
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Email Verified</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    Email Verified
+                  </label>
                   <select
                     name="emailVerified"
-                    defaultValue={selectedUser.emailVerified ? 'true' : 'false'}
-                    className="w-full p-2 border rounded"
+                    defaultValue={selectedUser.emailVerified ? "true" : "false"}
+                    className="w-full rounded border p-2"
                   >
                     <option value="true">Yes</option>
                     <option value="false">No</option>
@@ -344,7 +384,7 @@ const UsersPage = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-accent text-white rounded"
+                    className="rounded bg-accent px-4 py-2 text-white"
                   >
                     Update User
                   </button>
@@ -355,7 +395,7 @@ const UsersPage = () => {
         )}
 
         {/* Subscription Modals */}
-        {subscriptionModal.type === 'view' && subscriptionModal.user && (
+        {subscriptionModal.type === "view" && subscriptionModal.user && (
           <SubscriptionInfoModal
             user={subscriptionModal.user}
             availablePackages={availablePackages}
@@ -369,71 +409,91 @@ const UsersPage = () => {
           />
         )}
 
-        {subscriptionModal.type === 'add' && subscriptionModal.user && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-96">
-              <h2 className="text-xl font-bold mb-4">Add Subscription</h2>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                try {
-                  // 1. Create the subscription with selected packageID and other fields
-                  const subRes = await axios.post('/api/subscriptions', {
-                    paymentID: formData.get('paymentID'),
-                    packageID: formData.get('packageID'),
-                    email: subscriptionModal.user?.email,
-                    subscribed: true,
-                    expiryDate: formData.get('expiryDate'),
-                  });
-                  const newSubscriptionId = subRes.data.data._id || subRes.data.data.subscription?._id;
-                  // 2. Update the user with the new subscription ID
-                  await axios.put(`/api/users?userId=${subscriptionModal.user!._id}`, {
-                    subscription: newSubscriptionId,
-                  });
-                  setSubscriptionModal({ type: null, user: null });
-                  // Refresh users list
-                  const res = await axios.get(`/api/users?page=${page}`);
-                  setUsers(res.data.data.users);
-                } catch (error) {
-                  console.error("Error adding subscription and updating user:", error);
-                }
-              }}>
-                <label className="block text-sm font-medium mb-1">Payment ID</label>
+        {subscriptionModal.type === "add" && subscriptionModal.user && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-96 rounded-lg bg-white p-6">
+              <h2 className="mb-4 text-xl font-bold">Add Subscription</h2>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  try {
+                    // 1. Create the subscription with selected packageID and other fields
+                    const subRes = await axios.post("/api/subscriptions", {
+                      paymentID: formData.get("paymentID"),
+                      packageID: formData.get("packageID"),
+                      email: subscriptionModal.user?.email,
+                      subscribed: true,
+                      expiryDate: formData.get("expiryDate"),
+                    });
+                    const newSubscriptionId =
+                      subRes.data.data._id ||
+                      subRes.data.data.subscription?._id;
+                    // 2. Update the user with the new subscription ID
+                    await axios.put(
+                      `/api/users?userId=${subscriptionModal.user!._id}`,
+                      {
+                        subscription: newSubscriptionId,
+                      },
+                    );
+                    setSubscriptionModal({ type: null, user: null });
+                    // Refresh users list
+                    const res = await axios.get(`/api/users?page=${page}`);
+                    setUsers(res.data.data.users);
+                  } catch (error) {
+                    console.error(
+                      "Error adding subscription and updating user:",
+                      error,
+                    );
+                  }
+                }}
+              >
+                <label className="mb-1 block text-sm font-medium">
+                  Payment ID
+                </label>
                 <input
                   type="text"
                   name="paymentID"
-                  className="w-full p-2 border rounded"
+                  className="w-full rounded border p-2"
                   required
                 />
-                <label className="block text-sm font-medium mb-1 mt-2">Package</label>
+                <label className="mb-1 mt-2 block text-sm font-medium">
+                  Package
+                </label>
                 <select
                   name="packageID"
-                  className="w-full p-2 border rounded"
+                  className="w-full rounded border p-2"
                   required
                 >
                   <option value="">Select a package</option>
-                  {availablePackages.map(pkg => (
-                    <option key={pkg._id} value={pkg._id}>{pkg.name}</option>
+                  {availablePackages.map((pkg) => (
+                    <option key={pkg._id} value={pkg._id}>
+                      {pkg.name}
+                    </option>
                   ))}
                 </select>
-                <label className="block text-sm font-medium mb-1 mt-2">Expiry Date</label>
+                <label className="mb-1 mt-2 block text-sm font-medium">
+                  Expiry Date
+                </label>
                 <input
                   type="date"
                   name="expiryDate"
-                  className="w-full p-2 border rounded"
+                  className="w-full rounded border p-2"
                   required
                 />
-                <div className="flex justify-end gap-2 mt-4">
+                <div className="mt-4 flex justify-end gap-2">
                   <button
                     type="button"
-                    onClick={() => setSubscriptionModal({ type: null, user: null })}
+                    onClick={() =>
+                      setSubscriptionModal({ type: null, user: null })
+                    }
                     className="px-4 py-2 text-gray-600 hover:text-gray-800"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-accent text-white rounded"
+                    className="rounded bg-accent px-4 py-2 text-white"
                   >
                     Add Subscription
                   </button>
@@ -449,12 +509,20 @@ const UsersPage = () => {
 
 export default UsersPage;
 
-const SubscriptionInfoModal = ({ user, availablePackages, setAvailablePackages, onClose, onUserRefresh }: {
-  user: IUser,
-  availablePackages: { _id: string; name: string }[],
-  setAvailablePackages: React.Dispatch<React.SetStateAction<{ _id: string; name: string }[]>>,
-  onClose: () => void,
-  onUserRefresh: () => void,
+const SubscriptionInfoModal = ({
+  user,
+  availablePackages,
+  setAvailablePackages,
+  onClose,
+  onUserRefresh,
+}: {
+  user: IUser;
+  availablePackages: { _id: string; name: string }[];
+  setAvailablePackages: React.Dispatch<
+    React.SetStateAction<{ _id: string; name: string }[]>
+  >;
+  onClose: () => void;
+  onUserRefresh: () => void;
 }) => {
   const [subData, setSubData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -467,15 +535,22 @@ const SubscriptionInfoModal = ({ user, availablePackages, setAvailablePackages, 
       setError(null);
       try {
         // Fetch latest subscription data
-        const res = await axios.get(`/api/subscriptions?id=${user.subscription?._id}`);
+        const res = await axios.get(
+          `/api/subscriptions?id=${user.subscription?._id}`,
+        );
         setSubData(res.data.data[0] || user.subscription);
         // Fetch packages if not already loaded
         if (!availablePackages.length) {
-          const pkgRes = await axios.get('/api/packages?all=true');
-          setAvailablePackages(pkgRes.data.data.map((pkg: any) => ({ _id: pkg._id, name: pkg.name })));
+          const pkgRes = await axios.get("/api/packages?all=true");
+          setAvailablePackages(
+            pkgRes.data.data.map((pkg: any) => ({
+              _id: pkg._id,
+              name: pkg.name,
+            })),
+          );
         }
       } catch (err) {
-        setError('Failed to load subscription data');
+        setError("Failed to load subscription data");
       }
       setLoading(false);
     };
@@ -483,67 +558,82 @@ const SubscriptionInfoModal = ({ user, availablePackages, setAvailablePackages, 
     // eslint-disable-next-line
   }, [user]);
 
-  if (loading) return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 text-center">Loading...</div>
-    </div>
-  );
-  if (error) return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 text-center">{error}</div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="w-96 rounded-lg bg-white p-6 text-center">
+          Loading...
+        </div>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="w-96 rounded-lg bg-white p-6 text-center">{error}</div>
+      </div>
+    );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Edit Subscription</h2>
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          setSaving(true);
-          setError(null);
-          const formData = new FormData(e.currentTarget);
-          try {
-            await axios.put(`/api/subscriptions?subscriptionID=${subData._id}`, {
-              paymentID: formData.get('paymentID'),
-              packageID: formData.get('packageID'),
-              expiryDate: formData.get('expiryDate'),
-              subscribed: formData.get('subscribed') === 'true',
-            });
-            setSaving(false);
-            onClose();
-            await onUserRefresh();
-          } catch (err) {
-            setError('Failed to update subscription');
-            setSaving(false);
-          }
-        }}>
-          <label className="block text-sm font-medium mb-1">Payment ID</label>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-96 rounded-lg bg-white p-6">
+        <h2 className="mb-4 text-xl font-bold">Edit Subscription</h2>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setSaving(true);
+            setError(null);
+            const formData = new FormData(e.currentTarget);
+            try {
+              await axios.put(
+                `/api/subscriptions?subscriptionID=${subData._id}`,
+                {
+                  paymentID: formData.get("paymentID"),
+                  packageID: formData.get("packageID"),
+                  expiryDate: formData.get("expiryDate"),
+                  subscribed: formData.get("subscribed") === "true",
+                },
+              );
+              setSaving(false);
+              onClose();
+              await onUserRefresh();
+            } catch (err) {
+              setError("Failed to update subscription");
+              setSaving(false);
+            }
+          }}
+        >
+          <label className="mb-1 block text-sm font-medium">Payment ID</label>
           <input
             type="text"
             name="paymentID"
-            className="w-full p-2 border rounded"
+            className="w-full rounded border p-2"
             defaultValue={subData.paymentID}
             required
           />
-          <label className="block text-sm font-medium mb-1 mt-2">Package</label>
+          <label className="mb-1 mt-2 block text-sm font-medium">Package</label>
           <select
             name="packageID"
-            className="w-full p-2 border rounded"
+            className="w-full rounded border p-2"
             defaultValue={subData.packageID?._id || subData.packageID}
             required
           >
             <option value="">Select a package</option>
-            {availablePackages.map(pkg => (
-              <option key={pkg._id} value={pkg._id}>{pkg.name}</option>
+            {availablePackages.map((pkg) => (
+              <option key={pkg._id} value={pkg._id}>
+                {pkg.name}
+              </option>
             ))}
           </select>
-          <label className="block text-sm font-medium mb-1 mt-2">Expiry Date</label>
+          <label className="mb-1 mt-2 block text-sm font-medium">
+            Expiry Date
+          </label>
           <input
             type="date"
             name="expiryDate"
-            className="w-full p-2 border rounded"
-            defaultValue={subData.expiryDate ? subData.expiryDate.slice(0,10) : ''}
+            className="w-full rounded border p-2"
+            defaultValue={
+              subData.expiryDate ? subData.expiryDate.slice(0, 10) : ""
+            }
             required
           />
           {/* <label className="block text-sm font-medium mb-1 mt-2">Subscribed</label>
@@ -556,7 +646,7 @@ const SubscriptionInfoModal = ({ user, availablePackages, setAvailablePackages, 
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select> */}
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
@@ -567,13 +657,13 @@ const SubscriptionInfoModal = ({ user, availablePackages, setAvailablePackages, 
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-accent text-white rounded"
+              className="rounded bg-accent px-4 py-2 text-white"
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
-          {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
+          {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
         </form>
       </div>
     </div>
