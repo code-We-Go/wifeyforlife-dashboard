@@ -18,6 +18,8 @@ import { lifeyFont, thirdFont } from "@/app/lib/fonts";
 import { FiLogOut } from "react-icons/fi";
 import { RiCoupon3Line } from "react-icons/ri";
 import { TiUserAddOutline } from "react-icons/ti";
+import { PiBooks, PiBooksLight } from "react-icons/pi";
+
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -94,6 +96,13 @@ const menuGroups = [
         icon: <MdOutlineLoyalty />,
         label: "Loyalty",
         route: "/pages/loyalty/rewards",
+      },
+      {
+        icon: <PiBooks />
+
+        ,
+        label: "Blogs",
+        route: "/pages/blogs",
       },
       {
         icon: <RiCoupon3Line />,
