@@ -8,16 +8,18 @@ interface AddVideoModalProps {
   isModalOpen: boolean;
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setVideos: React.Dispatch<React.SetStateAction<Video[]>>;
+  isPublic?: boolean;
+  setIsPublic?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen, setVideos }) => {
+const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen, setVideos, isPublic, setIsPublic }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     url: "",
     thumbnailUrl: "",
     tags: [] as string[],
-    isPublic: false,
+    isPublic: isPublic ?? false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,10 +28,17 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
+      if (name === "isPublic" && setIsPublic) setIsPublic(checked);
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
+  // Sync formData.isPublic with prop when modal opens
+  React.useEffect(() => {
+    if (isModalOpen && typeof isPublic === "boolean") {
+      setFormData(prev => ({ ...prev, isPublic }));
+    }
+  }, [isModalOpen, isPublic]);
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag);

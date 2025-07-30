@@ -11,6 +11,7 @@ const VideosPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [addModalisOpen, setAddModalisOpen] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -50,7 +51,7 @@ const VideosPage = () => {
 
   return (
     <DefaultLayout>
-      <div className="flex px-2 h-auto min-h-screen w-full flex-col items-center justify-between gap-4 overflow-hidden bg-backgroundColor md:px-4 py-2  md:py-4">
+      <div className="flex h-auto min-h-screen w-full flex-col items-center justify-between gap-4 overflow-hidden bg-backgroundColor px-2 py-2 md:px-4  md:py-4">
         <div className="flex h-full w-full flex-col items-center space-y-4">
           <div className="flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row">
             <div className="w-full md:w-64">
@@ -62,16 +63,16 @@ const VideosPage = () => {
                 className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
-            <div className="flex w-full justify-end text-primary underline md:w-auto">
+            <div className="flex w-full flex-col gap-2 text-primary underline md:w-auto md:flex-row md:items-center md:justify-end md:gap-4">
               <button
-                className="hover:cursor-pointer rounded-2xl px-4 bg-primary text-creamey py-2 text-sm"
+                className="rounded-2xl bg-primary px-4 py-2 text-sm text-creamey hover:cursor-pointer"
                 onClick={() => setAddModalisOpen(true)}
               >
                 ADD NEW VIDEO
               </button>
             </div>
           </div>
-          
+
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-lg">Loading videos...</div>
@@ -90,11 +91,13 @@ const VideosPage = () => {
             </div>
           )}
         </div>
-        
+
         <AddVideoModal
           isModalOpen={addModalisOpen}
           setModalOpen={setAddModalisOpen}
           setVideos={setVideos}
+          isPublic={isPublic}
+          setIsPublic={setIsPublic}
         />
 
         {/* Pagination Controls */}
@@ -126,4 +129,4 @@ const VideosPage = () => {
   );
 };
 
-export default VideosPage; 
+export default VideosPage;

@@ -49,14 +49,17 @@ export default function AccountPage() {
     lastName: "",
     email: "",
     imageUrl: "",
-    subscripton:{subscribed:false,expiryDate:new Date()}
+    subscripton: { subscribed: false, expiryDate: new Date() },
   });
   const [isDetailsModalOpen, setDetailsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
   const [modalStatus, setModalStatus] = useState<string>("pending");
   const [modalPayment, setModalPayment] = useState<string>("pending");
   const [showUploader, setShowUploader] = useState(false);
-  const [subscription,setSubscription] =useState ({subscribed:false,expiryDate:new Date()})
+  const [subscription, setSubscription] = useState({
+    subscribed: false,
+    expiryDate: new Date(),
+  });
   // const handleRemoveFromWishlist = (productId: string, variant: any, attributes: any) => {
   //   setWishList((prevList) =>
   //     prevList.filter(
@@ -78,17 +81,29 @@ export default function AccountPage() {
     try {
       const response = await axios.get(`/api/users/profile?userID=${userID}`);
       const userData = response.data.user;
+      const subscription = await axios(
+        `/api/subscriptions?email=${userData.email}`,
+      );
+      // console.log("DATA" + JSON.stringify(subscription.data.data.expiryDate));
+      const expiryDateRaw = subscription.data?.data?.expiryDate;
+      const expiryDate = expiryDateRaw ? new Date(expiryDateRaw) : null;
+      const subscriptionData = {
+        subscribed:
+          expiryDate && expiryDate.getTime() > Date.now() ? true : false,
+        expiryDate: expiryDateRaw,
+      };
+      console.log(JSON.stringify(subscriptionData) + " subscriptionData");
       setUserInfo({
         name: userData.username || "User",
         firstName: userData.firstName || "",
         lastName: userData.lastName || "",
         email: userData.email || "user@example.com",
         imageUrl: userData.imageURL || "",
-        subscripton:subscription
+        subscripton: subscriptionData,
       });
     } catch (error) {
       console.error("Error fetching user data:", error);
-      setUserInfo((oldUser)=>({
+      setUserInfo((oldUser) => ({
         ...oldUser,
         name: "User",
         firstName: "",
@@ -97,39 +112,43 @@ export default function AccountPage() {
         imageUrl: "",
       }));
     }
-  }
+  };
 
-  const  fetchUserOrders= async () => {
-      if (!userID) return;
-      setLoading(true);
-      try {
-        // alert(email);
-        const response = await axios.get(`/api/orders?email=${userInfo.email}`);
-        setOrders(response.data.data || []);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoading(false);
-      }
+  const fetchUserOrders = async () => {
+    if (!userID) return;
+    setLoading(true);
+    try {
+      // alert(email);
+      const response = await axios.get(`/api/orders?email=${userInfo.email}`);
+      setOrders(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
     }
-    const fetchUserSubscription = async () =>{
-      const subscription = await axios(`/api/subscriptions?email=${userInfo.email}`)
-      const subscriptionData=subscription.data
-      console.log(subscriptionData)
-      const subscriptionNeededData = {subscribed:subscriptionData.expiryDate>Date.now()?true:false,expiryDate:subscriptionData.expiryDate}
-      setSubscription(subscriptionNeededData)
-    }
+  };
+  const fetchUserSubscription = async () => {
+    const subscription = await axios(
+      `/api/subscriptions?email=${userInfo.email}`,
+    );
+    const subscriptionData = subscription.data;
+    console.log(subscriptionData);
+    const subscriptionNeededData = {
+      subscribed: subscriptionData.expiryDate > Date.now() ? true : false,
+      expiryDate: subscriptionData.expiryDate,
+    };
+    setSubscription(subscriptionNeededData);
+  };
 
-    
   useEffect(() => {
     if (userID) {
       fetchUserData();
     }
-    if(userInfo.email){
-      fetchUserSubscription();
+    if (userInfo.email) {
+      // fetchUserSubscription();
       fetchUserOrders();
     }
-  }, [userID,userInfo.email]);
+  }, [userID, userInfo.email]);
   const [loyaltyTransactions, setLoyaltyTransactions] = useState<
     ILoyaltyTransaction[]
   >([]);
@@ -166,7 +185,6 @@ export default function AccountPage() {
   // };
 
   // No session, skip unauthenticated redirect
-
 
   const [isUploading, setIsUploading] = useState(false);
 
@@ -223,7 +241,7 @@ export default function AccountPage() {
   const user = {
     name: userInfo.name || "User",
     email: userInfo.email || "user@example.com",
-    isSubscribed: userInfo.subscripton.subscribed? true:false, // You may fetch this from userInfo if available
+    isSubscribed: userInfo.subscripton.subscribed ? true : false, // You may fetch this from userInfo if available
     subscriptionExpiryDate: userInfo.subscripton.expiryDate, // You may fetch this from userInfo if available
     imgUrl: userInfo.imageUrl,
     loyaltyPoints: loyaltyPoints,
@@ -298,7 +316,7 @@ export default function AccountPage() {
           <div className="flex w-full flex-col gap-4 sm:flex-row sm:justify-between">
             <div className="flex min-w-0 items-center space-x-4">
               {userInfo.imageUrl ? (
-                <div className="border-primary relative h-24 w-24 flex-shrink-0 rounded-full border-2">
+                <div className="relative h-24 w-24 flex-shrink-0 rounded-full border-2 border-primary">
                   <Image
                     className="rounded-full object-cover"
                     alt={user.name}
@@ -323,7 +341,7 @@ export default function AccountPage() {
                 <p className="flex items-center gap-2 text-sm font-semibold text-primary/80">
                   Subscription :{" "}
                   <span>
-                    {subscription.subscribed ? (
+                    {userInfo.subscripton.subscribed ? (
                       <BadgeCheck className="text-primary/80" />
                     ) : (
                       <BadgeAlert />
@@ -360,7 +378,7 @@ export default function AccountPage() {
             {stats.map((stat) => (
               <div
                 key={stat.name}
-                className="bg-primary relative overflow-hidden rounded-lg px-4 py-5 shadow sm:px-6"
+                className="relative overflow-hidden rounded-lg bg-primary px-4 py-5 shadow sm:px-6"
               >
                 <dt>
                   <div className={`absolute rounded-md ${stat.bgColor} p-3`}>
@@ -392,7 +410,7 @@ export default function AccountPage() {
                   className={`flex items-center space-x-1 whitespace-nowrap border-b-2 px-1 py-2 text-xs font-medium sm:space-x-2 sm:text-sm ${
                     activeTab === tab.id
                       ? "border-primary font-semibold text-primary"
-                      : "hover:border-primary border-transparent text-primary/90 duration-300 hover:text-primary"
+                      : "border-transparent text-primary/90 duration-300 hover:border-primary hover:text-primary"
                   }`}
                 >
                   <tab.icon className="h-4 w-4" />
@@ -430,7 +448,7 @@ export default function AccountPage() {
                     {orders.map((order) => (
                       <div
                         key={order._id}
-                        className="bg-primary overflow-hidden  rounded-lg text-creamey shadow"
+                        className="overflow-hidden rounded-lg  bg-primary text-creamey shadow"
                       >
                         <div className="border-b  px-4 py-5 text-creamey sm:px-6">
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -464,7 +482,7 @@ export default function AccountPage() {
                               {order.total} LE
                             </div>
                             <button
-                              className="hover:bg-everGreen bg-creamey rounded-md px-4 py-2 text-primary transition duration-300 hover:text-creamey"
+                              className="hover:bg-everGreen rounded-md bg-creamey px-4 py-2 text-primary transition duration-300 hover:text-creamey"
                               // variant="outline"
                               // size="sm"
                               onClick={() => {
@@ -481,7 +499,7 @@ export default function AccountPage() {
                       </div>
                     ))}
                     <button
-                      className="bg-primary hover:border-primary rounded-2xl text-creamey hover:border hover:bg-creamey hover:text-primary"
+                      className="rounded-2xl bg-primary text-creamey hover:border hover:border-primary hover:bg-creamey hover:text-primary"
                       // variant="outline"
                       // size="sm"
                       onClick={() => setShowAllOrders(!showAllOrders)}
@@ -509,7 +527,7 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="divide-primary/20 min-w-full divide-y">
+                      <table className="min-w-full divide-y divide-primary/20">
                         <thead>
                           <tr>
                             <th className="px-4 py-2 text-left text-xs font-medium uppercase text-primary">
@@ -529,7 +547,7 @@ export default function AccountPage() {
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-primary/10 divide-y">
+                        <tbody className="divide-y divide-primary/10">
                           {loyaltyTransactions.map((tx, idx) => (
                             <tr className="text-primary" key={idx}>
                               <td className="whitespace-nowrap px-4 py-2">
@@ -570,7 +588,7 @@ export default function AccountPage() {
                     Profile Information
                   </h2>
                   <button
-                    className="border-primary border bg-creamey text-primary hover:cursor-pointer hover:bg-creamey hover:text-primary"
+                    className="border border-primary bg-creamey text-primary hover:cursor-pointer hover:bg-creamey hover:text-primary"
                     // variant="outline"
                     // size="sm"
                     onClick={() => setEditingInfo(!editingInfo)}
@@ -627,7 +645,7 @@ export default function AccountPage() {
                             </p>
                             <button
                               type="button"
-                              className="bg-primary hover:bg-primary/80 rounded-full p-1 transition"
+                              className="rounded-full bg-primary p-1 transition hover:bg-primary/80"
                               onClick={() => setShowUploader(true)}
                               aria-label="Change profile picture"
                             >
@@ -773,7 +791,7 @@ export default function AccountPage() {
                       <div className="flex space-x-3 pt-4">
                         <button
                           // onClick={handleSaveInfo}
-                          className="bg-primary hover:bg-primary/90 text-creamey"
+                          className="bg-primary text-creamey hover:bg-primary/90"
                         >
                           Save Changes
                         </button>
@@ -814,7 +832,7 @@ export default function AccountPage() {
                   {orders.slice(3, orders.length).map((order) => (
                     <div
                       key={order._id}
-                      className="bg-primary overflow-hidden  rounded-lg text-creamey shadow"
+                      className="overflow-hidden rounded-lg  bg-primary text-creamey shadow"
                     >
                       <div className="border-b  px-4 py-5 text-creamey sm:px-6">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1005,7 +1023,7 @@ export default function AccountPage() {
                 {isUploading && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity">
                     <div className="animate-fadeIn flex min-w-[280px] flex-col items-center rounded-2xl bg-creamey px-8 py-8 shadow-xl">
-                      <div className="border-primary mb-4 h-14 w-14 animate-spin rounded-full border-b-4 border-t-4"></div>
+                      <div className="mb-4 h-14 w-14 animate-spin rounded-full border-b-4 border-t-4 border-primary"></div>
                       <span className="mb-2 text-lg font-bold text-primary">
                         Hang tight!
                       </span>

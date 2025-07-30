@@ -104,7 +104,7 @@ const UsersPage = () => {
                 <th className="border p-2">Username</th>
                 <th className="border p-2">Email</th>
                 <th className="border p-2">Role</th>
-                <th className="border p-2">Subscription</th>
+                {/* <th className="border p-2">Subscription</th> */}
                 <th className="border p-2">Created At</th>
                 <th className="border p-2">Actions</th>
               </tr>
@@ -142,12 +142,12 @@ const UsersPage = () => {
                   </td>
                   <td className="border p-2">{user.email}</td>
                   <td className="border p-2">{user.role}</td>
-                  <td
+                  {/* <td
                     className="cursor-pointer border p-2 text-blue-600 underline"
                     onClick={() => handleSubscriptionClick(user)}
                   >
                     {user.subscription?.subscribed ? "Yes" : "No"}
-                  </td>
+                  </td> */}
                   <td className="border p-2">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
