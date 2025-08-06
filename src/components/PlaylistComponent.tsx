@@ -347,6 +347,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({ playlist, setPlay
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-900 truncate">{video.title}</p>
+                      {video.playlistHint && <p className="text-sm text-gray-900 truncate">({video.playlistHint})</p>}
                     </div>
                   </div>
                 ))}

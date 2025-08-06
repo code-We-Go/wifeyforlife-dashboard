@@ -23,6 +23,7 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
     url: video.url,
     thumbnailUrl: video.thumbnailUrl,
     isPublic: video.isPublic || false,
+    playlistHint: video.playlistHint || "",
   });
 
   const handleInputChange = (
@@ -84,8 +85,12 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
 
   if (isEditing) {
     return (
-      <div className="fixed inset-0 z-10 flex h-full w-full items-center justify-center bg-black/30 md:pl-72.5">
-        <div className="boder-lovely mb-4 max-h-[80vh] overflow-y-scroll rounded-2xl  border-2 bg-white p-6 shadow-md md:w-[50vw]">
+      <div 
+      onClick={()=>setIsEditing(false)}
+      className="fixed inset-0 z-10 flex h-full w-full items-center justify-center bg-black/30 md:pl-72.5">
+        <div 
+        onClick={(e)=>e.stopPropagation()}
+        className="boder-lovely mb-4 max-h-[80vh] overflow-y-scroll rounded-2xl  border-2 bg-white p-6 shadow-md md:w-[50vw]">
           <div className="grid grid-cols-1 gap-4  md:col-span-2">
             <div className="w-full">
               <label className="mb-2 block text-sm font-medium text-primary/80">
@@ -132,6 +137,18 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
                 className="w-full rounded-2xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-primary/80">
+                Playlist Hint
+              </label>
+              <input
+                type="text"
+                name="playlistHint"
+                value={formData.playlistHint}
+                onChange={handleInputChange}
+                className="w-full rounded-2xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
 
             {/* <div>
             <label className="block text-sm font-medium text-primary/80 mb-2">
@@ -158,6 +175,7 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary"
             /> */}
+
               {formData.thumbnailUrl && (
                 <div className="mt-2">
                   <p className="mb-2 text-xs text-gray-500">
@@ -194,8 +212,8 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
                 />
               </div>
             </div>
-            
-            <div className="md:col-span-2 flex items-center mt-2">
+
+            <div className="mt-2 flex items-center md:col-span-2">
               <input
                 type="checkbox"
                 name="isPublic"

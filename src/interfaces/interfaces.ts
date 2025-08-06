@@ -15,7 +15,7 @@ export interface Video {
   url: string;
   thumbnailUrl: string;
   isPublic: boolean;
-
+  playlistHint?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -12,7 +12,13 @@ interface AddVideoModalProps {
   setIsPublic?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen, setVideos, isPublic, setIsPublic }) => {
+const AddVideoModal: React.FC<AddVideoModalProps> = ({
+  isModalOpen,
+  setModalOpen,
+  setVideos,
+  isPublic,
+  setIsPublic,
+}) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -20,29 +26,35 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
     thumbnailUrl: "",
     tags: [] as string[],
     isPublic: isPublic ?? false,
+    playlistHint: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
       if (name === "isPublic" && setIsPublic) setIsPublic(checked);
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
   // Sync formData.isPublic with prop when modal opens
   React.useEffect(() => {
     if (isModalOpen && typeof isPublic === "boolean") {
-      setFormData(prev => ({ ...prev, isPublic }));
+      setFormData((prev) => ({ ...prev, isPublic }));
     }
   }, [isModalOpen, isPublic]);
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag);
-    setFormData(prev => ({ ...prev, tags }));
+    const tags = e.target.value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+    setFormData((prev) => ({ ...prev, tags }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,16 +63,17 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
 
     try {
       const response = await axios.post("/api/videos", formData);
-      setVideos(prev => [response.data.data, ...prev]);
+      setVideos((prev) => [response.data.data, ...prev]);
       setModalOpen(false);
       setFormData({
         title: "",
         description: "",
         url: "",
         thumbnailUrl: "",
-       
+
         tags: [],
         isPublic: false,
+        playlistHint: "",
       });
     } catch (error) {
       console.error("Error creating video:", error);
@@ -73,9 +86,13 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
   if (!isModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 md:pl-72.5 flex max-md:pt-16 items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-md:max-h-[80vh] max-h-[90vh]  overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+    <div 
+    onClick={()=>setModalOpen(false)}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 max-md:pt-16 md:pl-72.5">
+      <div 
+      onClick={(e)=>e.stopPropagation()}
+      className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6  max-md:max-h-[80vh]">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Add New Video</h2>
           <button
             onClick={() => setModalOpen(false)}
@@ -88,8 +105,8 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1  gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title 
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Title
               </label>
               <input
                 type="text"
@@ -97,15 +114,13 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
                 value={formData.title}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-
-
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -113,14 +128,14 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div className="grid grid-cols-1  gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                VDO ID 
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                VDO ID
               </label>
               <input
                 type="text"
@@ -128,11 +143,24 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
                 value={formData.url}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-
-
+          </div>
+          <div className="grid grid-cols-1  gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                playlistHint
+              </label>
+              <input
+                type="text"
+                name="playlistHint"
+                value={formData.playlistHint}
+                onChange={handleInputChange}
+                required
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
           </div>
 
           {/* <div>
@@ -150,7 +178,7 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
           </div> */}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-gray-700">
               Thumbnail URL *
             </label>
             <input
@@ -159,18 +187,21 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
               value={formData.thumbnailUrl}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="mt-1 text-xs text-gray-500">
               Or upload an image using the button below
             </p>
             <div className="mt-2">
               <UploadButton
-              className="bg-primary w-fit p-2 text-creamey rounded-2xl"
+                className="w-fit rounded-2xl bg-primary p-2 text-creamey"
                 endpoint="mediaUploader"
                 onClientUploadComplete={(res) => {
                   if (res && res.length > 0) {
-                    setFormData(prev => ({ ...prev, thumbnailUrl: res[0].url }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      thumbnailUrl: res[0].url,
+                    }));
                   }
                 }}
                 onUploadError={(error: Error) => {
@@ -188,23 +219,21 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
               onChange={handleInputChange}
               className="mr-2"
             />
-            <label className="text-sm font-medium text-gray-700">
-              Public
-            </label>
+            <label className="text-sm font-medium text-gray-700">Public</label>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="rounded-md border border-gray-300 px-4 py-2 text-gray-600 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
+              className="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {isSubmitting ? "Creating..." : "Create Video"}
             </button>
@@ -215,4 +244,4 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({ isModalOpen, setModalOpen
   );
 };
 
-export default AddVideoModal; 
+export default AddVideoModal;

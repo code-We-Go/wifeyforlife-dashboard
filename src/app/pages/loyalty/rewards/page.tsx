@@ -22,9 +22,9 @@ const RoyaltyPointsPage = () => {
         <div className="flex w-full justify-between">
           <Link
             className="text-primary underline hover:cursor-pointer"
-            href={"/pages/loyalty/analytics"}
+            href={"/pages/loyalty/transactions"}
           >
-            Analytics
+            Transactions
           </Link>
           <h1 className="mb-4 text-2xl font-bold text-primary">
             Manage Loyalty Bonuses

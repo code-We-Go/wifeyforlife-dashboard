@@ -25,6 +25,8 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
   const [newItem, setNewItem] = useState("");
   const [newNote, setNewNote] = useState("");
+  const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null);
+  const [editingNoteText, setEditingNoteText] = useState("");
 
   useEffect(() => {
     if (packageItem) {
@@ -144,6 +146,26 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
       }));
       setNewNote("");
     }
+  };
+  const editNote = (index: number) => {
+    if (editingNoteText.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        notes: prev.notes.map((note, i) => i === index ? editingNoteText.trim() : note)
+      }));
+      setEditingNoteIndex(null);
+      setEditingNoteText("");
+    }
+  };
+
+  const startEditNote = (index: number, noteText: string) => {
+    setEditingNoteIndex(index);
+    setEditingNoteText(noteText);
+  };
+
+  const cancelEditNote = () => {
+    setEditingNoteIndex(null);
+    setEditingNoteText("");
   };
 
   const removeNote = (index: number) => {
@@ -304,14 +326,55 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             <div className="space-y-1">
               {formData.notes.map((note, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-creamey border border-primary/50 rounded">
-                  <span className="flex-1">{note}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeNote(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
+                  {editingNoteIndex === index ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editingNoteText}
+                        onChange={(e) => setEditingNoteText(e.target.value)}
+                        className="flex-1 px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), editNote(index))}
+                        onKeyDown={(e) => e.key === 'Escape' && cancelEditNote()}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => editNote(index)}
+                        className="text-green-500 hover:text-green-700"
+                        title="Save"
+                      >
+                        ✓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditNote}
+                        className="text-gray-500 hover:text-gray-700"
+                        title="Cancel"
+                      >
+                        ✗
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1">{note}</span>
+                      <button
+                        type="button"
+                        onClick={() => startEditNote(index, note)}
+                        className="text-blue-500 hover:text-blue-700"
+                        title="Edit"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeNote(index)}
+                        className="text-red-500 hover:text-red-700"
+                        title="Delete"
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
