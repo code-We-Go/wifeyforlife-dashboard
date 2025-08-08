@@ -28,7 +28,7 @@ const attributeSchema = new Schema<attribute>({
 
 // Define the Variant schema
 const VariantSchema = new Schema<Variant>({
-  name: { type: String, required: true }, // e.g., "Default Variant"
+  name: { type: String, required: false }, // e.g., "Default Variant"
   attributeName: { type: String, required: true }, // e.g., "Color" or "Size"
   attributes: {
     type: [attributeSchema],
@@ -55,7 +55,7 @@ const VariantSchema = new Schema<Variant>({
 // Define the price schema
 const priceSchema = new Schema<price>({
   local: { type: Number, required: true, min: 0 },
-  global: { type: Number, required: false, min: 0 ,default:0 },
+  global: { type: Number, required: false, min: 0, default: 0 },
 });
 
 // Define the Product schema
@@ -67,8 +67,7 @@ const ProductSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "subCategories",
-    options: { strictPopulate: false }
-
+    options: { strictPopulate: false },
   },
 
   season: { type: String, required: false },
