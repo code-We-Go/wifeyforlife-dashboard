@@ -28,7 +28,6 @@ const BlogSchema = new Schema<IBlog>(
       type: String,
       required: true,
       trim: true,
-      maxlength: 200,
     },
     slug: {
       type: String,
@@ -48,7 +47,6 @@ const BlogSchema = new Schema<IBlog>(
     excerpt: {
       type: String,
       required: false,
-      maxlength: 1000,
     },
     featuredImage: {
       type: String,
@@ -87,11 +85,9 @@ const BlogSchema = new Schema<IBlog>(
     },
     metaTitle: {
       type: String,
-      maxlength: 60,
     },
     metaDescription: {
       type: String,
-      maxlength: 160,
     },
     publishedAt: {
       type: Date,
