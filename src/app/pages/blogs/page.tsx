@@ -71,10 +71,7 @@ const BlogsPage = () => {
     fetchBlogs();
   }, [page, search, statusFilter]);
 
-  const openModal = (
-    type: "edit" | "delete" | "add" | "view",
-    blog?: Blog,
-  ) => {
+  const openModal = (type: "edit" | "delete" | "add" | "view", blog?: Blog) => {
     setModalType(type);
     setSelectedBlog(blog || null);
   };
@@ -94,7 +91,10 @@ const BlogsPage = () => {
       published: "bg-green-100 text-green-800",
       archived: "bg-gray-100 text-gray-800",
     };
-    return statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-800";
+    return (
+      statusColors[status as keyof typeof statusColors] ||
+      "bg-gray-100 text-gray-800"
+    );
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -103,19 +103,21 @@ const BlogsPage = () => {
   };
 
   const stripHtml = (html: string) => {
-    return html.replace(/<[^>]*>/g, '');
+    return html.replace(/<[^>]*>/g, "");
   };
 
   return (
     <DefaultLayout>
       <div className="flex h-auto min-h-screen w-full flex-col items-center justify-start gap-4 overflow-hidden bg-backgroundColor px-1 py-2 md:px-2 md:py-4">
         {/* Header */}
-        <div className="flex w-[97%] justify-between items-center text-primary">
-          <h1 className={`${thirdFont.className} text-secondary text-3xl font-semibold`}>
+        <div className="flex w-[97%] items-center justify-between text-primary">
+          <h1
+            className={`${thirdFont.className} text-3xl font-semibold text-secondary`}
+          >
             Blog Management
           </h1>
           <button
-            className="border-[1px] rounded-2xl bg-secondary px-4 py-2 text-sm text-creamey hover:bg-opacity-90"
+            className="rounded-2xl border-[1px] bg-secondary px-4 py-2 text-sm text-creamey hover:bg-opacity-90"
             onClick={() => openModal("add")}
           >
             ADD NEW BLOG
@@ -123,21 +125,21 @@ const BlogsPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex w-[97%] gap-4 items-center">
+        <div className="flex w-[97%] items-center gap-4">
           <div className="flex-1">
             <input
               type="text"
               placeholder="Search blogs..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary"
             />
           </div>
           <div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary"
             >
               <option value="">All Status</option>
               <option value="draft">Draft</option>
@@ -148,42 +150,42 @@ const BlogsPage = () => {
         </div>
 
         {/* Stats */}
-        <div className="w-[97%] grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow">
+        <div className="grid w-[97%] grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="rounded-lg bg-white p-4 shadow">
             <h3 className="text-lg font-semibold text-gray-700">Total Blogs</h3>
             <p className="text-2xl font-bold text-secondary">{totalBlogs}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="rounded-lg bg-white p-4 shadow">
             <h3 className="text-lg font-semibold text-gray-700">Published</h3>
             <p className="text-2xl font-bold text-green-600">
-              {blogs.filter(blog => blog.status === 'published').length}
+              {blogs.filter((blog) => blog.status === "published").length}
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="rounded-lg bg-white p-4 shadow">
             <h3 className="text-lg font-semibold text-gray-700">Drafts</h3>
             <p className="text-2xl font-bold text-yellow-600">
-              {blogs.filter(blog => blog.status === 'draft').length}
+              {blogs.filter((blog) => blog.status === "draft").length}
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="rounded-lg bg-white p-4 shadow">
             <h3 className="text-lg font-semibold text-gray-700">Featured</h3>
             <p className="text-2xl font-bold text-blue-600">
-              {blogs.filter(blog => blog.featured).length}
+              {blogs.filter((blog) => blog.featured).length}
             </p>
           </div>
         </div>
 
         {/* Blogs Table */}
         {loading ? (
-          <div className="w-[97%] text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+          <div className="w-[97%] py-8 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-secondary"></div>
             <p className="mt-2 text-gray-600">Loading blogs...</p>
           </div>
         ) : blogs.length > 0 ? (
           <div className="w-[97%] text-center">
             <div className="overflow-x-auto">
-              <table className="w-full rounded border border-gray-300 text-left bg-white">
-                <thead className="bg-secondary text-creamey text-sm">
+              <table className="w-full rounded border border-gray-300 bg-white text-left">
+                <thead className="bg-secondary text-sm text-creamey">
                   <tr>
                     <th className="border p-3">#</th>
                     <th className="border p-3">Title</th>
@@ -203,10 +205,10 @@ const BlogsPage = () => {
                       <td className="border p-3">
                         <div>
                           <div className="font-semibold text-gray-900">
-                            {truncateText(blog.title, 50)}
+                            {truncateText(blog.title, 150)}
                           </div>
-                          <div className="text-gray-600 text-xs mt-1">
-                            {truncateText(stripHtml(blog.excerpt), 80)}
+                          <div className="mt-1 text-xs text-gray-600">
+                            {truncateText(stripHtml(blog.excerpt), 1000)}
                           </div>
                         </div>
                       </td>
@@ -227,8 +229,11 @@ const BlogsPage = () => {
                         </div>
                       </td> */}
                       <td className="border p-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(blog.status)}`}>
-                          {blog.status.charAt(0).toUpperCase() + blog.status.slice(1)}
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadge(blog.status)}`}
+                        >
+                          {blog.status.charAt(0).toUpperCase() +
+                            blog.status.slice(1)}
                         </span>
                       </td>
                       <td className="border p-3 text-center">
@@ -238,7 +243,9 @@ const BlogsPage = () => {
                           <span className="text-gray-300">☆</span>
                         )}
                       </td>
-                      <td className="border p-3 text-center">{blog.viewCount}</td>
+                      <td className="border p-3 text-center">
+                        {blog.viewCount}
+                      </td>
                       <td className="border p-3">
                         {new Date(blog.createdAt).toLocaleDateString()}
                       </td>
@@ -269,7 +276,7 @@ const BlogsPage = () => {
             </div>
           </div>
         ) : (
-          <div className="w-[97%] text-center py-8">
+          <div className="w-[97%] py-8 text-center">
             <p className="text-gray-600">No blogs found.</p>
           </div>
         )}
@@ -278,7 +285,7 @@ const BlogsPage = () => {
         {totalPages > 1 && (
           <div className="mt-4 flex items-center gap-4">
             <button
-              className="rounded bg-secondary px-4 py-2 text-white disabled:opacity-50 hover:bg-opacity-90"
+              className="rounded bg-secondary px-4 py-2 text-white hover:bg-opacity-90 disabled:opacity-50"
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
             >
@@ -288,7 +295,7 @@ const BlogsPage = () => {
               Page {page} of {totalPages}
             </span>
             <button
-              className="rounded bg-secondary px-4 py-2 text-white disabled:opacity-50 hover:bg-opacity-90"
+              className="rounded bg-secondary px-4 py-2 text-white hover:bg-opacity-90 disabled:opacity-50"
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={page === totalPages}
             >
