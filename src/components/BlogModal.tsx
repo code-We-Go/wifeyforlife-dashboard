@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import RichTextEditor from "./RichTextEditor";
@@ -109,67 +110,77 @@ const BlogModal: React.FC<BlogModalProps> = ({
   }, [blog, type]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, type: inputType } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: inputType === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        inputType === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const handleContentChange = (content: string) => {
-    setFormData(prev => ({ ...prev, content }));
+    setFormData((prev) => ({ ...prev, content }));
     if (errors.content) {
-      setErrors(prev => ({ ...prev, content: "" }));
+      setErrors((prev) => ({ ...prev, content: "" }));
     }
   };
 
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagInput.trim()]
+        tags: [...prev.tags, tagInput.trim()],
       }));
       setTagInput("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
   const addCategory = () => {
-    if (categoryInput.trim() && !formData.categories.includes(categoryInput.trim())) {
-      setFormData(prev => ({
+    if (
+      categoryInput.trim() &&
+      !formData.categories.includes(categoryInput.trim())
+    ) {
+      setFormData((prev) => ({
         ...prev,
-        categories: [...prev.categories, categoryInput.trim()]
+        categories: [...prev.categories, categoryInput.trim()],
       }));
       setCategoryInput("");
     }
   };
 
   const removeCategory = (categoryToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      categories: prev.categories.filter(category => category !== categoryToRemove)
+      categories: prev.categories.filter(
+        (category) => category !== categoryToRemove,
+      ),
     }));
   };
 
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .trim();
   };
 
@@ -188,15 +199,13 @@ const BlogModal: React.FC<BlogModalProps> = ({
       newErrors.excerpt = "Excerpt is required";
     }
 
-
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -210,7 +219,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
       };
 
       if (type === "add") {
-        alert("add")
+        alert("add");
         await axios.post("/api/blogs", submitData);
       } else if (type === "edit" && blog) {
         await axios.put(`/api/blogs?id=${blog._id}`, submitData);
@@ -234,7 +243,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
     setLoading(true);
     try {
       await axios.delete("/api/blogs", {
-        data: { blogId: blog._id }
+        data: { blogId: blog._id },
       });
       refreshData();
       closeModal();
@@ -246,28 +255,37 @@ const BlogModal: React.FC<BlogModalProps> = ({
   };
 
   const stripHtml = (html: string) => {
-    return html.replace(/<[^>]*>/g, '');
+    return html.replace(/<[^>]*>/g, "");
   };
 
   if (type === "delete") {
     return (
-      <div className="fixed md:pl-72.5 inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-          <h2 className="text-xl font-bold mb-4 text-red-600">Delete Blog</h2>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 md:pl-72.5"
+        onClick={closeModal}
+      >
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-lg "
+        >
+          <h2 className="mb-4 text-xl font-bold text-red-600">Delete Blog</h2>
           <p className="mb-6">
-            Are you sure you want to delete &ldquo;{blog?.title}&rdquo;? This action cannot be undone.
+            Are you sure you want to delete &ldquo;{blog?.title}&rdquo;? This
+            action cannot be undone.
           </p>
           <div className="flex justify-end gap-4">
             <button
               onClick={closeModal}
-              className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-50"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? "Deleting..." : "Delete"}
@@ -280,34 +298,61 @@ const BlogModal: React.FC<BlogModalProps> = ({
 
   if (type === "view" && blog) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 md:pl-72.5"
+        onClick={closeModal}
+      >
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-lg "
+        >
           <div className="p-6">
-            <div className="flex justify-between items-start mb-4">
+            <div className="mb-4 flex items-start justify-between">
               <h2 className="text-2xl font-bold text-gray-900">{blog.title}</h2>
               <button
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="text-2xl text-gray-500 hover:text-gray-700"
               >
                 ×
               </button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+
+            <div className="mb-6 grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
               {/* <div><strong>Author:</strong> {blog.author.firstName && blog.author.lastName ? `${blog.author.firstName} ${blog.author.lastName}` : blog.author.username}</div> */}
-              <div><strong>Status:</strong> <span className={`px-2 py-1 rounded text-xs ${blog.status === 'published' ? 'bg-green-100 text-green-800' : blog.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{blog.status}</span></div>
-              <div><strong>Views:</strong> {blog.viewCount}</div>
-              <div><strong>Reading Time:</strong> {blog.readingTime} min</div>
-              <div><strong>Featured:</strong> {blog.featured ? "Yes" : "No"}</div>
-              <div><strong>Created:</strong> {new Date(blog.createdAt).toLocaleDateString()}</div>
+              <div>
+                <strong>Status:</strong>{" "}
+                <span
+                  className={`rounded px-2 py-1 text-xs ${blog.status === "published" ? "bg-green-100 text-green-800" : blog.status === "draft" ? "bg-yellow-100 text-yellow-800" : "bg-gray-100 text-gray-800"}`}
+                >
+                  {blog.status}
+                </span>
+              </div>
+              <div>
+                <strong>Views:</strong> {blog.viewCount}
+              </div>
+              <div>
+                <strong>Reading Time:</strong> {blog.readingTime} min
+              </div>
+              <div>
+                <strong>Featured:</strong> {blog.featured ? "Yes" : "No"}
+              </div>
+              <div>
+                <strong>Created:</strong>{" "}
+                {new Date(blog.createdAt).toLocaleDateString()}
+              </div>
             </div>
 
             {blog.tags.length > 0 && (
               <div className="mb-4">
                 <strong>Tags:</strong>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {blog.tags.map((tag, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                    <span
+                      key={index}
+                      className="rounded bg-blue-100 px-2 py-1 text-sm text-blue-800"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -318,9 +363,12 @@ const BlogModal: React.FC<BlogModalProps> = ({
             {blog.categories.length > 0 && (
               <div className="mb-4">
                 <strong>Categories:</strong>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {blog.categories.map((category, index) => (
-                    <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
+                    <span
+                      key={index}
+                      className="rounded bg-purple-100 px-2 py-1 text-sm text-purple-800"
+                    >
                       {category}
                     </span>
                   ))}
@@ -335,8 +383,8 @@ const BlogModal: React.FC<BlogModalProps> = ({
 
             <div>
               <strong>Content:</strong>
-              <div 
-                className="mt-2 prose max-w-none"
+              <div
+                className="prose mt-2 max-w-none"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
               />
             </div>
@@ -347,31 +395,37 @@ const BlogModal: React.FC<BlogModalProps> = ({
   }
 
   return (
-    <div className="fixed md:pl-72.5 inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 md:pl-72.5"
+      onClick={closeModal}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-lg "
+      >
         <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold">
               {type === "add" ? "Add New Blog" : "Edit Blog"}
             </h2>
             <button
               onClick={closeModal}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-2xl text-gray-500 hover:text-gray-700"
             >
               ×
             </button>
           </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">
               {errors.general}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Title *
                 </label>
                 <input
@@ -379,14 +433,16 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Enter blog title"
                 />
-                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-500">{errors.title}</p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Slug
                 </label>
                 <input
@@ -394,7 +450,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   name="slug"
                   value={formData.slug}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Auto-generated from title"
                 />
               </div>
@@ -422,14 +478,14 @@ const BlogModal: React.FC<BlogModalProps> = ({
               </div> */}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Status
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
@@ -439,35 +495,41 @@ const BlogModal: React.FC<BlogModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Featured Image
               </label>
-              
+
               {/* Image Preview */}
               {formData.featuredImage && (
-                <div className="mb-4">
-                  <img
+                <div className="relative mb-4 aspect-video w-full bg-gray-500">
+                  <Image
+                    fill
                     src={formData.featuredImage}
                     alt="Featured image preview"
-                    className="w-full max-w-md h-48 object-cover rounded-lg border border-gray-300"
+                    className=" object-cover"
                   />
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, featuredImage: "" }))}
-                    className="mt-2 px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, featuredImage: "" }))
+                    }
+                    className="mt-2 rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
                   >
                     Remove Image
                   </button>
                 </div>
               )}
-              
+
               {/* Upload Button */}
               {!formData.featuredImage && (
                 <UploadButton<OurFileRouter, "mediaUploader">
                   endpoint="mediaUploader"
                   onClientUploadComplete={(res) => {
                     if (res && res[0]) {
-                      setFormData(prev => ({ ...prev, featuredImage: res[0].url }));
+                      setFormData((prev) => ({
+                        ...prev,
+                        featuredImage: res[0].url,
+                      }));
                     }
                   }}
                   onUploadError={(error: Error) => {
@@ -475,15 +537,16 @@ const BlogModal: React.FC<BlogModalProps> = ({
                     alert(`Upload failed: ${error.message}`);
                   }}
                   appearance={{
-                    button: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-500 text-white hover:bg-blue-600",
-                    allowedContent: "text-sm text-gray-600 mt-2"
+                    button:
+                      "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-500 text-white hover:bg-blue-600",
+                    allowedContent: "text-sm text-gray-600 mt-2",
                   }}
                 />
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Excerpt *
               </label>
               <textarea
@@ -491,14 +554,16 @@ const BlogModal: React.FC<BlogModalProps> = ({
                 value={formData.excerpt}
                 onChange={handleInputChange}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.excerpt ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.excerpt ? "border-red-500" : "border-gray-300"}`}
                 placeholder="Brief description of the blog post"
               />
-              {errors.excerpt && <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>}
+              {errors.excerpt && (
+                <p className="mt-1 text-sm text-red-500">{errors.excerpt}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Content *
               </label>
               <RichTextEditor
@@ -506,27 +571,31 @@ const BlogModal: React.FC<BlogModalProps> = ({
                 onChange={handleContentChange}
                 height="400px"
               />
-              {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
+              {errors.content && (
+                <p className="mt-1 text-sm text-red-500">{errors.content}</p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Tags
                 </label>
-                <div className="flex gap-2 mb-2">
+                <div className="mb-2 flex gap-2">
                   <input
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addTag())
+                    }
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Add a tag"
                   />
                   <button
                     type="button"
                     onClick={addTag}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
                   >
                     Add
                   </button>
@@ -535,7 +604,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   {formData.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm flex items-center gap-1"
+                      className="flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-sm text-blue-800"
                     >
                       {tag}
                       <button
@@ -551,22 +620,24 @@ const BlogModal: React.FC<BlogModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Categories
                 </label>
-                <div className="flex gap-2 mb-2">
+                <div className="mb-2 flex gap-2">
                   <input
                     type="text"
                     value={categoryInput}
                     onChange={(e) => setCategoryInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addCategory())
+                    }
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Add a category"
                   />
                   <button
                     type="button"
                     onClick={addCategory}
-                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                    className="rounded-lg bg-purple-500 px-4 py-2 text-white hover:bg-purple-600"
                   >
                     Add
                   </button>
@@ -575,7 +646,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   {formData.categories.map((category, index) => (
                     <span
                       key={index}
-                      className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm flex items-center gap-1"
+                      className="flex items-center gap-1 rounded bg-purple-100 px-2 py-1 text-sm text-purple-800"
                     >
                       {category}
                       <button
@@ -591,9 +662,9 @@ const BlogModal: React.FC<BlogModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Meta Title
                 </label>
                 <input
@@ -601,7 +672,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   name="metaTitle"
                   value={formData.metaTitle}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="SEO title (max 60 characters)"
                   maxLength={60}
                 />
@@ -616,13 +687,15 @@ const BlogModal: React.FC<BlogModalProps> = ({
                     onChange={handleInputChange}
                     className="mr-2"
                   />
-                  <span className="text-sm font-medium text-gray-700">Featured Blog</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Featured Blog
+                  </span>
                 </label>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Meta Description
               </label>
               <textarea
@@ -630,7 +703,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                 value={formData.metaDescription}
                 onChange={handleInputChange}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="SEO description (max 160 characters)"
                 maxLength={160}
               />
@@ -640,17 +713,21 @@ const BlogModal: React.FC<BlogModalProps> = ({
               <button
                 type="button"
                 onClick={closeModal}
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 px-6 py-2 hover:bg-gray-50"
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
                 disabled={loading}
               >
-                {loading ? "Saving..." : type === "add" ? "Create Blog" : "Update Blog"}
+                {loading
+                  ? "Saving..."
+                  : type === "add"
+                    ? "Create Blog"
+                    : "Update Blog"}
               </button>
             </div>
           </form>

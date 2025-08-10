@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { thirdFont } from "@/app/lib/fonts";
+import Image from "next/image";
 
 interface Blog {
   _id: string;
@@ -60,10 +61,10 @@ const BlogListPage = () => {
       // Extract unique categories and tags
       const categories = new Set<string>();
       const tags = new Set<string>();
-      
+
       response.data.data.forEach((blog: Blog) => {
-        blog.categories.forEach(cat => categories.add(cat));
-        blog.tags.forEach(tag => tags.add(tag));
+        blog.categories.forEach((cat) => categories.add(cat));
+        blog.tags.forEach((tag) => tags.add(tag));
       });
 
       setAllCategories(Array.from(categories));
@@ -77,7 +78,9 @@ const BlogListPage = () => {
 
   const fetchFeaturedBlogs = async () => {
     try {
-      const response = await axios.get("/api/blogs?status=published&featured=true&all=true");
+      const response = await axios.get(
+        "/api/blogs?status=published&featured=true&all=true",
+      );
       setFeaturedBlogs(response.data.data.slice(0, 3)); // Show top 3 featured blogs
     } catch (error) {
       console.error("Error fetching featured blogs:", error);
@@ -92,7 +95,7 @@ const BlogListPage = () => {
   }, [page, search, selectedCategory, selectedTag]);
 
   const stripHtml = (html: string) => {
-    return html.replace(/<[^>]*>/g, '');
+    return html.replace(/<[^>]*>/g, "");
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -101,10 +104,10 @@ const BlogListPage = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -119,47 +122,53 @@ const BlogListPage = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className={`${thirdFont.className} text-4xl font-bold text-gray-900 mb-4`}>
+            <h1
+              className={`${thirdFont.className} mb-4 text-4xl font-bold text-gray-900`}
+            >
               Our Blog
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="mx-auto max-w-2xl text-xl text-gray-600">
               Discover insights, stories, and updates from our team
             </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Featured Blogs Section */}
         {featuredBlogs.length > 0 && page === 1 && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Posts</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <h2 className="mb-6 text-2xl font-bold text-gray-900">
+              Featured Posts
+            </h2>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {featuredBlogs.map((blog) => (
-                <div key={blog._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                  key={blog._id}
+                  className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
+                >
                   {blog.featuredImage && (
-                    <div className="h-48 bg-gray-200">
-                      <img
+                    <div className="aspect-video w-full bg-gray-200">
+                      <Image
+                        fill
                         src={blog.featuredImage}
                         alt={blog.title}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                   )}
                   <div className="p-6">
-                    <div className="flex items-center mb-3">
-                      <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                    <div className="mb-3 flex items-center">
+                      <span className="rounded bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
                         Featured
                       </span>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                      <Link href={`/blog/${blog.slug}`}>
-                        {blog.title}
-                      </Link>
+                    <h3 className="mb-2 text-xl font-semibold text-gray-900 hover:text-blue-600">
+                      <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="mb-4 text-gray-600">
                       {truncateText(stripHtml(blog.excerpt), 120)}
                     </p>
                     {/* <div className="flex items-center justify-between text-sm text-gray-500">
@@ -187,22 +196,22 @@ const BlogListPage = () => {
         )}
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="mb-8 rounded-lg bg-white p-6 shadow-sm">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="md:col-span-2">
               <input
                 type="text"
                 placeholder="Search blogs..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Categories</option>
                 {allCategories.map((category) => (
@@ -216,7 +225,7 @@ const BlogListPage = () => {
               <select
                 value={selectedTag}
                 onChange={(e) => setSelectedTag(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Tags</option>
                 {allTags.map((tag) => (
@@ -231,7 +240,7 @@ const BlogListPage = () => {
             <div className="mt-4">
               <button
                 onClick={clearFilters}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
               >
                 Clear all filters
               </button>
@@ -241,70 +250,76 @@ const BlogListPage = () => {
 
         {/* Blog List */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="py-12 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
             <p className="mt-4 text-gray-600">Loading blogs...</p>
           </div>
         ) : blogs.length > 0 ? (
           <div className="space-y-8">
             {blogs.map((blog) => (
-              <article key={blog._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <article
+                key={blog._id}
+                className="overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md"
+              >
                 <div className="md:flex">
                   {blog.featuredImage && (
                     <div className="md:w-1/3">
-                      <div className="h-48 md:h-full bg-gray-200">
-                        <img
+                      <div className="aspect-video w-full bg-gray-200">
+                        <Image
+                          fill
                           src={blog.featuredImage}
                           alt={blog.title}
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                         />
                       </div>
                     </div>
                   )}
-                  <div className={`p-6 ${blog.featuredImage ? 'md:w-2/3' : 'w-full'}`}>
-                    <div className="flex items-center mb-3">
+                  <div
+                    className={`p-6 ${blog.featuredImage ? "md:w-2/3" : "w-full"}`}
+                  >
+                    <div className="mb-3 flex items-center">
                       {blog.featured && (
-                        <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2">
+                        <span className="mr-2 rounded bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
                           Featured
                         </span>
                       )}
                       {blog.categories.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {blog.categories.slice(0, 2).map((category, index) => (
-                            <span
-                              key={index}
-                              className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-                            >
-                              {category}
-                            </span>
-                          ))}
+                          {blog.categories
+                            .slice(0, 2)
+                            .map((category, index) => (
+                              <span
+                                key={index}
+                                className="rounded bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+                              >
+                                {category}
+                              </span>
+                            ))}
                         </div>
                       )}
                     </div>
-                    
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3 hover:text-blue-600">
-                      <Link href={`/blog/${blog.slug}`}>
-                        {blog.title}
-                      </Link>
+
+                    <h2 className="mb-3 text-2xl font-bold text-gray-900 hover:text-blue-600">
+                      <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
                     </h2>
-                    
-                    <p className="text-gray-600 mb-4 leading-relaxed">
+
+                    <p className="mb-4 leading-relaxed text-gray-600">
                       {truncateText(stripHtml(blog.excerpt), 200)}
                     </p>
-                    
+
                     {blog.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="mb-4 flex flex-wrap gap-2">
                         {blog.tags.slice(0, 4).map((tag, index) => (
                           <span
                             key={index}
-                            className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
+                            className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700"
                           >
                             #{tag}
                           </span>
                         ))}
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <div className="flex items-center space-x-4">
                         {/* <div className="flex items-center">
@@ -322,7 +337,9 @@ const BlogListPage = () => {
                           </span>
                         </div> */}
                         <span>•</span>
-                        <span>{formatDate(blog.publishedAt || blog.createdAt)}</span>
+                        <span>
+                          {formatDate(blog.publishedAt || blog.createdAt)}
+                        </span>
                         <span>•</span>
                         <span>{blog.readingTime} min read</span>
                       </div>
@@ -336,12 +353,12 @@ const BlogListPage = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No blogs found.</p>
+          <div className="py-12 text-center">
+            <p className="text-lg text-gray-600">No blogs found.</p>
             {(search || selectedCategory || selectedTag) && (
               <button
                 onClick={clearFilters}
-                className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
+                className="mt-4 font-medium text-blue-600 hover:text-blue-800"
               >
                 Clear filters to see all blogs
               </button>
@@ -354,34 +371,36 @@ const BlogListPage = () => {
           <div className="mt-12 flex justify-center">
             <nav className="flex items-center space-x-2">
               <button
-                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                 disabled={page === 1}
-                className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Previous
               </button>
-              
+
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 const pageNum = i + 1;
                 return (
                   <button
                     key={pageNum}
                     onClick={() => setPage(pageNum)}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                    className={`rounded-lg px-4 py-2 text-sm font-medium ${
                       page === pageNum
-                        ? 'text-white bg-blue-600 border border-blue-600'
-                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                        ? "border border-blue-600 bg-blue-600 text-white"
+                        : "border border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     {pageNum}
                   </button>
                 );
               })}
-              
+
               <button
-                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={page === totalPages}
-                className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
               </button>
