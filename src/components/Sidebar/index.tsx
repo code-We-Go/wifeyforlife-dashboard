@@ -20,7 +20,6 @@ import { RiCoupon3Line } from "react-icons/ri";
 import { TiUserAddOutline } from "react-icons/ti";
 import { PiBooks, PiBooksLight } from "react-icons/pi";
 
-
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -98,9 +97,13 @@ const menuGroups = [
         route: "/pages/loyalty/rewards",
       },
       {
-        icon: <PiBooks />
+        icon: <BsCollection />,
+        label: "Banners",
+        route: "/pages/banners",
+      },
+      {
+        icon: <PiBooks />,
 
-        ,
         label: "Blogs",
         route: "/pages/blogs",
       },
