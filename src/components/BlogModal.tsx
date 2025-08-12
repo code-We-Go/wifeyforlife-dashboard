@@ -385,7 +385,13 @@ const BlogModal: React.FC<BlogModalProps> = ({
               <strong>Content:</strong>
               <div
                 className="prose mt-2 max-w-none"
-                dangerouslySetInnerHTML={{ __html: blog.content }}
+                // Add style to images so they float left and text wraps beside
+                dangerouslySetInnerHTML={{
+                  __html: blog.content.replace(
+                    /<img /g,
+                    '<img style="float:left;max-width:320px;margin:30px 16px 8px 0;display:inline-block;" ',
+                  ),
+                }}
               />
             </div>
           </div>
@@ -601,7 +607,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                 <p className="mt-1 text-sm text-red-500">{errors.content}</p>
               )}
 
-              {/* Show images in content with remove buttons */}
+              {/* Show images in content with remove buttons and preview with float style */}
               {(() => {
                 const extractImagesFromContent = (content: string) => {
                   return content.match(/<img[^>]*src=\"[^\"]*\"[^>]*>/g) || [];
@@ -623,7 +629,13 @@ const BlogModal: React.FC<BlogModalProps> = ({
                             <img
                               src={src}
                               alt=""
-                              className="h-20 w-32 rounded border object-cover"
+                              style={{
+                                float: "left",
+                                maxWidth: 320,
+                                margin: "0 16px 8px 0",
+                                display: "inline-block",
+                              }}
+                              className="rounded border object-cover"
                             />
                             <button
                               type="button"
@@ -640,6 +652,20 @@ const BlogModal: React.FC<BlogModalProps> = ({
                           </div>
                         );
                       })}
+                    </div>
+                    {/* Live preview of content with styled images */}
+                    <div className="prose mt-6 max-w-none border-t pt-4">
+                      <div className="mb-2 text-xs font-semibold text-gray-500">
+                        Live Preview:
+                      </div>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: formData.content.replace(
+                            /<img /g,
+                            '<img style="float:left;max-width:320px;margin:0 16px 8px 0;display:inline-block;" ',
+                          ),
+                        }}
+                      />
                     </div>
                   </div>
                 );
