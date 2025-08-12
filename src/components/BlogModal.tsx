@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import RichTextEditor from "./RichTextEditor";
-import { UploadButton } from "@uploadthing/react";
+import { UploadButton } from "../utils/uploadthing";
 import type { OurFileRouter } from "../app/api/uploadthing/core";
 
 interface Blog {
@@ -508,21 +508,23 @@ const BlogModal: React.FC<BlogModalProps> = ({
                     alt="Featured image preview"
                     className=" object-cover"
                   />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, featuredImage: "" }))
-                    }
-                    className="mt-2 rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
-                  >
-                    Remove Image
-                  </button>
                 </div>
               )}
-
-              {/* Upload Button */}
-              {!formData.featuredImage && (
-                <UploadButton<OurFileRouter, "mediaUploader">
+            </div>
+            <div className="mt-2 flex gap-2">
+              {blog?.featuredImage && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, featuredImage: "" }))
+                  }
+                  className="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
+                >
+                  Remove Image
+                </button>
+              )}
+              {type === "edit" && (
+                <UploadButton
                   endpoint="mediaUploader"
                   onClientUploadComplete={(res) => {
                     if (res && res[0]) {
@@ -538,12 +540,36 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   }}
                   appearance={{
                     button:
-                      "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-500 text-white hover:bg-blue-600",
-                    allowedContent: "text-sm text-gray-600 mt-2",
+                      "px-3 py-1 border border-gray-300 rounded bg-blue-500 text-sm text-white hover:bg-blue-600",
+                    allowedContent: "hidden",
                   }}
                 />
               )}
             </div>
+
+            {/* Upload Button */}
+            {/* {!formData.featuredImage && (
+              <UploadButton
+                endpoint="mediaUploader"
+                onClientUploadComplete={(res) => {
+                  if (res && res[0]) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      featuredImage: res[0].url,
+                    }));
+                  }
+                }}
+                onUploadError={(error: Error) => {
+                  console.error("Upload error:", error);
+                  alert(`Upload failed: ${error.message}`);
+                }}
+                appearance={{
+                  button:
+                    "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-500 text-white hover:bg-blue-600",
+                  allowedContent: "text-sm text-gray-600 mt-2",
+                }}
+              />
+            )} */}
 
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -574,6 +600,50 @@ const BlogModal: React.FC<BlogModalProps> = ({
               {errors.content && (
                 <p className="mt-1 text-sm text-red-500">{errors.content}</p>
               )}
+
+              {/* Show images in content with remove buttons */}
+              {(() => {
+                const extractImagesFromContent = (content: string) => {
+                  return content.match(/<img[^>]*src=\"[^\"]*\"[^>]*>/g) || [];
+                };
+                const images = extractImagesFromContent(formData.content);
+                if (images.length === 0) return null;
+                return (
+                  <div className="mt-4">
+                    <div className="mb-2 text-xs font-semibold text-gray-500">
+                      Images in Content:
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      {images.map((imgTag, idx) => {
+                        const srcMatch = imgTag.match(/src=\"([^\"]*)\"/);
+                        const src = srcMatch ? srcMatch[1] : "";
+                        return (
+                          <div key={idx} className="flex flex-col items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={src}
+                              alt=""
+                              className="h-20 w-32 rounded border object-cover"
+                            />
+                            <button
+                              type="button"
+                              className="mt-1 rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  content: prev.content.replace(imgTag, ""),
+                                }))
+                              }
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
