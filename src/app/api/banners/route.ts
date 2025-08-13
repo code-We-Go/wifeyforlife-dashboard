@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBanners, updateBanner } from "@/app/models/bannersModel";
+import { ConnectDB } from "@/config/db";
+
+const loadDB = async () => {
+  await ConnectDB();
+};
+
+loadDB();
 
 export async function GET(req: NextRequest) {
   try {
