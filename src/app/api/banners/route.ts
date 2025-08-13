@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
+    console.log("banner" + JSON.stringify(body));
     const updated = await updateBanner(body);
     return NextResponse.json({ data: updated }, { status: 200 });
   } catch (error) {

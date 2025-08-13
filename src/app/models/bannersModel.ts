@@ -20,7 +20,7 @@ export async function getBanners() {
 }
 
 export async function updateBanner(data: { announcementBar: string }) {
-  let banner = await BannersModel.findOne();
+  let banner = await BannersModel.findById("6899f4226d5cdf79c1908292");
   if (!banner) {
     banner = await BannersModel.create({
       announcementBar: data.announcementBar,
