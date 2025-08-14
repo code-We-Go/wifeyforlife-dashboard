@@ -19,17 +19,17 @@ export async function getBanners() {
   return banner;
 }
 
-export async function updateBanner(data: { announcementBar: string }) {
-  let banner = await BannersModel.findById("6899f4226d5cdf79c1908292");
-  if (!banner) {
-    banner = await BannersModel.create({
-      announcementBar: data.announcementBar,
-    });
-  } else {
-    banner.announcementBar = data.announcementBar;
-    await banner.save();
-  }
-  return banner;
-}
+// export async function updateBanner(data: { announcementBar: string }) {
+//   let banner = await BannersModel.findById("6899f4226d5cdf79c1908292");
+//   if (!banner) {
+//     banner = await BannersModel.create({
+//       announcementBar: data.announcementBar,
+//     });
+//   } else {
+//     banner.announcementBar = data.announcementBar;
+//     await banner.save();
+//   }
+//   return banner;
+// }
 
 export default BannersModel;

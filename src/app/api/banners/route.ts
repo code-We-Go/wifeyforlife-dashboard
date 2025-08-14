@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getBanners, updateBanner } from "@/app/models/bannersModel";
+import BannersModel, {
+  getBanners,
+  // updateBanner,
+} from "@/app/models/bannersModel";
 import { ConnectDB } from "@/config/db";
 
 export async function GET(req: Request) {
@@ -21,7 +24,14 @@ export async function PUT(req: Request) {
     await ConnectDB();
     const body = await req.json();
     console.log("banner" + JSON.stringify(body));
-    const updated = await updateBanner(body);
+    // const updated = await updateBanner(body);
+    const updated = await BannersModel.findByIdAndUpdate(
+      "6899f4226d5cdf79c1908292",
+
+      { announcementBar: body.announcementBar },
+
+      { new: true },
+    );
     return NextResponse.json({ data: updated }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
