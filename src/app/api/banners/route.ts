@@ -23,7 +23,7 @@ export async function PUT(req: Request) {
   try {
     await ConnectDB();
     const body = await req.json();
-    console.log("banner" + JSON.stringify(body));
+    console.log("banner" + JSON.stringify(body.announcementBar));
     // const updated = await updateBanner(body);
     const updated = await BannersModel.findByIdAndUpdate(
       "6899f4226d5cdf79c1908292",
