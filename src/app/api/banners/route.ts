@@ -28,7 +28,7 @@ export async function PUT(req: Request) {
     const updated = await BannersModel.findByIdAndUpdate(
       "6899f4226d5cdf79c1908292",
 
-      { announcementBar: body.announcementBar },
+      body,
 
       { new: true },
     );
