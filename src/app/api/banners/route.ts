@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { getBanners, updateBanner } from "@/app/models/bannersModel";
 import { ConnectDB } from "@/config/db";
 
-const loadDB = async () => {
-  await ConnectDB();
-};
-
-loadDB();
-
 export async function GET(req: NextRequest) {
   try {
+    await ConnectDB();
     const banner = await getBanners();
     return NextResponse.json({ data: banner }, { status: 200 });
   } catch (error) {
@@ -22,6 +18,7 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    await ConnectDB();
     const body = await req.json();
     console.log("banner" + JSON.stringify(body));
     const updated = await updateBanner(body);
