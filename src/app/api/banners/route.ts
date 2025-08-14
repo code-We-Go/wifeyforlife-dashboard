@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBanners, updateBanner } from "@/app/models/bannersModel";
 import { ConnectDB } from "@/config/db";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     await ConnectDB();
     const banner = await getBanners();
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PUT(req: Request) {
   try {
     await ConnectDB();
     const body = await req.json();
