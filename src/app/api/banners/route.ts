@@ -19,16 +19,17 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PUT(req: Request) {
+export async function PATCH(req: Request) {
   try {
     await ConnectDB();
     const body = await req.json();
     console.log("banner" + JSON.stringify(body.announcementBar));
+    console.log("banner" + body.announcementBar);
     // const updated = await updateBanner(body);
     const updated = await BannersModel.findByIdAndUpdate(
       "6899f4226d5cdf79c1908292",
 
-      body,
+      { announcementBar: body.announcementBar },
 
       { new: true },
     );

@@ -33,7 +33,7 @@ const BannersPage = () => {
     setSaving(true);
     setError("");
     try {
-      await axios.put("/api/banners", {
+      await axios.patch("/api/banners", {
         announcementBar: banner.announcementBar,
       });
       // await axios.put("/api/banners", banner);
