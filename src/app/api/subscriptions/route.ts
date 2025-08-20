@@ -13,27 +13,25 @@ console.log("registering" + packageModel);
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const email = searchParams.get("email");
+  const subscribed = searchParams.get("subscribed"); // "true" or "false"
+  const type = searchParams.get("type"); // "real", "gift", "all"
   await loadDB();
+  let query: any = {};
   if (email) {
-    try {
-      const subscription = await subscriptionsModel
-        .findOne({ email: email })
-        .populate({
-          path: "packageID",
-          model: packageModel,
-          options: { strictPopulate: false },
-        });
-      console.log("yessss" + subscription);
-      return NextResponse.json({ data: subscription }, { status: 200 });
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Failed to fetch subscriptions" },
-        { status: 500 },
-      );
-    }
+    query.email = email;
+  }
+  if (subscribed === "true") {
+    query.subscribed = true;
+  } else if (subscribed === "false") {
+    query.subscribed = false;
+  }
+  if (type === "real") {
+    query.subTotal = { $gt: 1000 };
+  } else if (type === "gift") {
+    query.subTotal = { $lte: 1000 };
   }
   try {
-    const subscriptions = await subscriptionsModel.find().populate({
+    const subscriptions = await subscriptionsModel.find(query).populate({
       path: "packageID",
       model: packageModel,
       options: { strictPopulate: false },
@@ -82,7 +80,29 @@ export async function PUT(request: Request) {
     );
   }
   try {
-    const body = await request.json();
+    let body = await request.json();
+    // Convert empty strings to null for ObjectId fields
+    if (body.appliedDiscount === "") body.appliedDiscount = null;
+    if (body.packageID === "") body.packageID = null;
+    // Validate apartment is a string
+    if (body.apartment !== undefined && typeof body.apartment !== "string") {
+      return NextResponse.json(
+        {
+          error: `Apartment must be a string. Received: ${JSON.stringify(body.apartment)} (type: ${typeof body.apartment})`,
+        },
+        { status: 400 },
+      );
+    }
+    // Validate state is present
+    if (body.state !== undefined && typeof body.state !== "string") {
+      return NextResponse.json(
+        {
+          error: `State must be a string. Received: ${JSON.stringify(body.state)} (type: ${typeof body.state})`,
+        },
+        { status: 400 },
+      );
+    }
+    console.log(JSON.stringify(body));
     const updated = await subscriptionsModel.findByIdAndUpdate(
       subscriptionID,
       body,
@@ -95,7 +115,10 @@ export async function PUT(request: Request) {
       );
     }
     return NextResponse.json({ data: updated }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json(
       { error: "Failed to update subscription" },
       { status: 500 },

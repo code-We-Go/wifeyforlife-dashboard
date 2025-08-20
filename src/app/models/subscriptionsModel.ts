@@ -64,12 +64,24 @@ const SubscriptionSchema = new Schema(
   { timestamps: true },
 );
 
-// Define the Subscription model
+
+// Add static filter methods
+SubscriptionSchema.statics.filterBySubscribed = function(subscribed) {
+  return this.find({ subscribed });
+};
+
+SubscriptionSchema.statics.filterByType = function(type) {
+  if (type === "real") {
+    return this.find({ subTotal: { $gt: 1000 } });
+  } else if (type === "gift") {
+    return this.find({ $or: [ { subTotal: { $lt: 1000 } }, { subTotal: { $exists: false } } ] });
+  } else {
+    return this.find();
+  }
+};
+
 const subscriptionsModel =
   mongoose.models.subscriptions ||
-  mongoose.model<Document & mongoose.Model<any>>(
-    "subscriptions",
-    SubscriptionSchema,
-  );
+  mongoose.model("subscriptions", SubscriptionSchema);
 
 export default subscriptionsModel;

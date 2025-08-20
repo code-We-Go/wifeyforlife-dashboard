@@ -54,6 +54,9 @@ const SubscriptionsPage = () => {
   const [selectedSubscription, setSelectedSubscription] =
     useState<Subscription | null>(null);
   const [search, setSearch] = useState("");
+  // Filter states
+  const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   // Form state for add/edit
   const [form, setForm] = useState({
@@ -97,12 +100,18 @@ const SubscriptionsPage = () => {
   useEffect(() => {
     fetchSubscriptions();
     fetchPackages();
-  }, []);
+  }, [subscribedFilter, typeFilter]);
 
   const fetchSubscriptions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/subscriptions");
+      let params: any = {};
+      if (subscribedFilter !== "all") params.subscribed = subscribedFilter;
+      if (typeFilter !== "all") params.type = typeFilter;
+      const query = new URLSearchParams(params).toString();
+      const res = await axios.get(
+        `/api/subscriptions${query ? `?${query}` : ""}`,
+      );
       setSubscriptions(res.data.data || []);
     } catch (error) {
       console.error("Error fetching subscriptions:", error);
@@ -248,14 +257,34 @@ const SubscriptionsPage = () => {
   return (
     <DefaultLayout>
       <div className="flex min-h-[calc(100vh-124px)] w-full flex-col items-center p-4">
-        <div className="mb-4 flex w-full items-center justify-between">
-          <input
-            type="text"
-            placeholder="Search by email or paymentID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-64 rounded border p-2"
-          />
+        <div className="mb-4 flex w-full flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search by email or paymentID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64 rounded border p-2"
+            />
+            <select
+              value={subscribedFilter}
+              onChange={(e) => setSubscribedFilter(e.target.value)}
+              className="rounded border p-2"
+            >
+              <option value="all">All</option>
+              <option value="true">Subscribed</option>
+              <option value="false">Not Subscribed</option>
+            </select>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="rounded border p-2"
+            >
+              <option value="all">All Types</option>
+              <option value="real">Real</option>
+              <option value="gift">Gift</option>
+            </select>
+          </div>
           <button
             className="rounded bg-primary px-4 py-2 text-white"
             onClick={() => openModal("add")}
