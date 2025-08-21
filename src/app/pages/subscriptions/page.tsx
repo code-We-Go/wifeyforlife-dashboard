@@ -365,7 +365,7 @@ const SubscriptionsPage = () => {
         {(modalType === "add" || modalType === "edit") && (
           <div
             onClick={closeModal}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 pl-72.5"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 md:pl-72.5"
           >
             <div className="max-h-[90vh] w-[800px] overflow-y-auto rounded-lg bg-white p-6">
               <h2 className="mb-4 text-xl font-bold">
