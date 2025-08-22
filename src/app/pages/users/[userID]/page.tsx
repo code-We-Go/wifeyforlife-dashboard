@@ -84,8 +84,9 @@ export default function AccountPage() {
       const subscription = await axios(
         `/api/subscriptions?email=${userData.email}`,
       );
-      // console.log("DATA" + JSON.stringify(subscription.data.data.expiryDate));
-      const expiryDateRaw = subscription.data?.data?.expiryDate;
+      console.log("DATA" + JSON.stringify(subscription.data));
+      const subscriptionRecord = subscription.data?.data?.[0]; // Get first subscription record
+      const expiryDateRaw = subscriptionRecord?.expiryDate;
       const expiryDate = expiryDateRaw ? new Date(expiryDateRaw) : null;
       const subscriptionData = {
         subscribed:
@@ -133,9 +134,10 @@ export default function AccountPage() {
     );
     const subscriptionData = subscription.data;
     console.log(subscriptionData);
+    const subscriptionRecord = subscriptionData?.data?.[0]; // Get first subscription record
     const subscriptionNeededData = {
-      subscribed: subscriptionData.expiryDate > Date.now() ? true : false,
-      expiryDate: subscriptionData.expiryDate,
+      subscribed: subscriptionRecord?.expiryDate > Date.now() ? true : false,
+      expiryDate: subscriptionRecord?.expiryDate,
     };
     setSubscription(subscriptionNeededData);
   };
