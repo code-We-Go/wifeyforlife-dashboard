@@ -4,6 +4,7 @@ import "@/css/style.css";
 import React from "react";
 import ClientWrapper from "@/components/Wrapper";
 import { wifeyFont } from "./lib/fonts";
+import { Toaster } from "react-hot-toast";
 
 export default function RootLayout({
   children,
@@ -20,6 +21,16 @@ export default function RootLayout({
         className={`$${wifeyFont.className} bg-creamey  antialiased`}
       >
         <ClientWrapper>{children}</ClientWrapper>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+          }}
+        />
       </body>
     </html>
   );
