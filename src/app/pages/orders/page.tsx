@@ -15,24 +15,27 @@ const OrdersPage = () => {
 
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
-      try {
+    try {
       const params = new URLSearchParams({ page: String(page) });
       if (search) params.append('search', search);
       if (orderDate) params.append('orderDate', orderDate);
       const res = await axios.get(`/api/orders?${params.toString()}`);
-        setOrders(res.data.data);
-        setTotalPages(res.data.totalPages);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
+      setOrders(res.data.data);
+      setTotalPages(res.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
     } finally {
       setIsLoading(false);
-      }
+    }
   }, [page, search, orderDate]);
 
   useEffect(() => {
-    setPage(1); // Reset to first page on filter change
     fetchOrders();
-  }, [fetchOrders]);
+  }, [page, search, orderDate]);
+
+  useEffect(() => {
+    setPage(1); // Reset to first page when filters change
+  }, [search, orderDate]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
