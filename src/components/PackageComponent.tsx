@@ -8,6 +8,8 @@ import Swal from "sweetalert2";
 import Image from "next/image";
 import { thirdFont } from "@/app/lib/fonts";
 import PackageModal from "./PackageModal";
+import { FaImages } from "react-icons/fa";
+import { IoCardOutline } from "react-icons/io5";
 
 interface PackageComponentProps {
   package: Ipackage & { _id: string };
@@ -116,6 +118,24 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
             <p className={`${thirdFont.className} text-sm xl:text-base text-creamey/90`}>
               Items: {packageItem.items.length}
             </p>
+            <div className="flex items-center gap-2">
+              {packageItem.images && packageItem.images.length > 0 && (
+                <div className="flex items-center">
+                  <FaImages className="text-creamey/90 mr-1" />
+                  <span className={`${thirdFont.className} text-xs xl:text-sm text-creamey/90`}>
+                    {packageItem.images.length}
+                  </span>
+                </div>
+              )}
+              {packageItem.cards && packageItem.cards.length > 0 && (
+                <div className="flex items-center ml-2">
+                  <IoCardOutline className="text-creamey/90 mr-1" />
+                  <span className={`${thirdFont.className} text-xs xl:text-sm text-creamey/90`}>
+                    {packageItem.cards.length}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex flex-col items-end">
             <p className={`${thirdFont.className} text-xl xl:text-2xl`}>
@@ -181,4 +201,4 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
   );
 };
 
-export default PackageComponent; 
+export default PackageComponent;

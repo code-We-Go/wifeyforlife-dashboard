@@ -1,11 +1,18 @@
 import mongoose from "mongoose";
+export interface PackageCard {
+  image: string;
+  points: string[];
+}
+
 export interface Ipackage {
   name: string;
-  imgUrl: string;
+  imgUrl: string; // Main image (keeping for backward compatibility)
+  images: string[]; // Array of image URLs
   price: number;
   duration: string;
   items: string[];
   notes: string[];
+  cards: PackageCard[]; // Array of cards with image and points
 }
 // types/Video.ts
 export interface Video {
