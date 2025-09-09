@@ -1,5 +1,5 @@
 "use client";
-import { Ipackage, PackageCard } from "@/interfaces/interfaces";
+import { Ipackage, PackageCard, PackageItem } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -39,13 +39,25 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
   useEffect(() => {
     if (packageItem) {
+      // Handle potential legacy data where items might be strings instead of objects
+      const formattedItems = Array.isArray(packageItem.items) 
+        ? packageItem.items.map(item => {
+            // Check if item is already in the correct format
+            if (typeof item === 'object' && item !== null && 'value' in item && 'included' in item) {
+              return item as PackageItem;
+            }
+            // Convert string items to the new format
+            return { value: String(item), included: true };
+          })
+        : [];
+
       setFormData({
         name: packageItem.name,
         imgUrl: packageItem.imgUrl,
         images: packageItem.images || [],
         price: packageItem.price,
         duration: packageItem.duration,
-        items: [...packageItem.items],
+        items: formattedItems,
         notes: [...packageItem.notes],
         cards: packageItem.cards || [],
       });
@@ -149,7 +161,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     if (newItem.trim()) {
       setFormData(prev => ({
         ...prev,
-        items: [...prev.items, newItem.trim()]
+        items: [...prev.items, { value: newItem.trim(), included: true }]
       }));
       setNewItem("");
     }
@@ -444,7 +456,20 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             <div className="space-y-1">
               {formData.items.map((item, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-creamey border border-primary/50 rounded">
-                  <span className="flex-1">{item}</span>
+                  <input
+                    type="checkbox"
+                    checked={item.included}
+                    onChange={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        items: prev.items.map((i, idx) => 
+                          idx === index ? { ...i, included: !i.included } : i
+                        )
+                      }));
+                    }}
+                    className="mr-2"
+                  />
+                  <span className="flex-1">{typeof item.value === 'string' ? item.value : String(item.value)}</span>
                   <button
                     type="button"
                     onClick={() => removeItem(index)}

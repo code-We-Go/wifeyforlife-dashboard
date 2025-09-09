@@ -4,13 +4,18 @@ export interface PackageCard {
   points: string[];
 }
 
+export interface PackageItem {
+  value: string;
+  included: boolean;
+}
+
 export interface Ipackage {
   name: string;
   imgUrl: string; // Main image (keeping for backward compatibility)
   images: string[]; // Array of image URLs
   price: number;
   duration: string;
-  items: string[];
+  items: PackageItem[];
   notes: string[];
   cards: PackageCard[]; // Array of cards with image and points
 }

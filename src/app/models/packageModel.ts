@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { Ipackage, PackageCard } from "@/interfaces/interfaces";
+import { Ipackage, PackageCard, PackageItem } from "@/interfaces/interfaces";
 
 // Define the Package Card schema
 const PackageCardSchema = new Schema<PackageCard>({
@@ -14,7 +14,7 @@ const PackageSchema = new Schema<Ipackage>({
   images: { type: [String], required: false, default: [] },
   price: { type: Number, required: true, min: 0 },
   duration: { type: String, required: true },
-  items: { type: [String], required: true, default: [] },
+  items: { type: [{ value: String, included: Boolean }], required: true, default: [] },
   notes: { type: [String], required: true, default: [] },
   cards: { type: [PackageCardSchema], required: false, default: [] }
 }, {
