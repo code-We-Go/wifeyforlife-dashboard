@@ -19,6 +19,16 @@ export async function GET(req: Request) {
     const duration = url.searchParams.get("duration");
 
     switch (duration) {
+      case "today":
+        // Start of today
+        startOfPeriod = new Date(today);
+        startOfPeriod.setHours(0, 0, 0, 0);
+
+        // End of today
+        endOfPeriod = new Date(today);
+        endOfPeriod.setHours(23, 59, 59, 999);
+        break;
+
       case "thisWeek":
         // Start of this week (Sunday to Saturday)
         startOfPeriod = new Date(today);

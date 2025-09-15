@@ -4,15 +4,15 @@ import ReactApexChart from "react-apexcharts";
 import axios from "axios";
 import { thirdFont } from "@/app/lib/fonts";
 interface Visit {
-  deviceType: string; 
-  countryCode:string;// e.g., 'desktop', 'tablet', 'mobile', 'other'
+  deviceType: string;
+  countryCode: string; // e.g., 'desktop', 'tablet', 'mobile', 'other'
 }
 const options: ApexOptions = {
   chart: {
     fontFamily: "Satoshi, sans-serif",
     type: "donut",
   },
-  colors: ["#D32333", "#81C8BB", "#12665C","#FFB6C7"],
+  colors: ["#D32333", "#81C8BB", "#12665C", "#FFB6C7"],
   labels: ["Desktop", "Tablet", "Mobile", "Other"],
   legend: {
     show: true,
@@ -51,10 +51,10 @@ const options: ApexOptions = {
 
 const ChartThree: React.FC = () => {
   const [visits, setVisits] = useState<Visit[]>([]);
-const [duration,setDuration]= useState("thisWeek")
+  const [duration, setDuration] = useState("today");
   // Fetch visits data from API using axios
   useEffect(() => {
-    const fetchData = async (duration:string) => {
+    const fetchData = async (duration: string) => {
       try {
         // Using axios to fetch the data
         const response = await axios(`/api/visites?duration=${duration}`);
@@ -106,18 +106,23 @@ const [duration,setDuration]= useState("thisWeek")
     <div className="col-span-12 rounded-2xl border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-6">
       <div className="mb-3 justify-between gap-4 sm:flex">
         <div>
-          <h5 className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-secondary dark:text-white`}>
+          <h5
+            className={`${thirdFont.className} text-2xl font-semibold tracking-normal text-secondary dark:text-white`}
+          >
             Visitors Analytics
           </h5>
         </div>
         <div>
           <div className="relative z-20 inline-block">
             <select
-            onChange={(e) => setDuration(e.target.value)}
+              onChange={(e) => setDuration(e.target.value)}
               name=""
               id=""
               className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
             >
+              <option value="today" className="dark:bg-boxdark">
+                today
+              </option>
               <option value="thisWeek" className="dark:bg-boxdark">
                 this week
               </option>
