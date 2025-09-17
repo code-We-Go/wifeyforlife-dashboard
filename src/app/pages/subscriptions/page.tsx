@@ -20,6 +20,10 @@ interface Subscription {
   lastName?: string;
   phone?: string;
   whatsAppNumber?: string;
+  // Gift information
+  isGift?: boolean;
+  giftRecipientEmail?: string;
+  specialMessage?: string;
   // Address information
   country?: string;
   address?: string;
@@ -70,6 +74,10 @@ const SubscriptionsPage = () => {
     lastName: "",
     phone: "",
     whatsAppNumber: "",
+    // Gift information
+    isGift: false,
+    giftRecipientEmail: "",
+    specialMessage: "",
     // Address information
     country: "",
     address: "",
@@ -147,6 +155,10 @@ const SubscriptionsPage = () => {
         lastName: subscription.lastName || "",
         phone: subscription.phone || "",
         whatsAppNumber: subscription.whatsAppNumber || "",
+        // Gift information
+        isGift: subscription.isGift || false,
+        giftRecipientEmail: subscription.giftRecipientEmail || "",
+        specialMessage: subscription.specialMessage || "",
         // Address information
         country: subscription.country || "",
         address: subscription.address || "",
@@ -185,6 +197,10 @@ const SubscriptionsPage = () => {
         lastName: "",
         phone: "",
         whatsAppNumber: "",
+        // Gift information
+        isGift: false,
+        giftRecipientEmail: "",
+        specialMessage: "",
         // Address information
         country: "",
         address: "",
@@ -272,8 +288,8 @@ const SubscriptionsPage = () => {
               className="rounded border p-2"
             >
               <option value="all">All</option>
-              <option value="true">Subscribed</option>
-              <option value="false">Not Subscribed</option>
+              <option value="true">Paid</option>
+              <option value="false">Paymob Failed</option>
             </select>
             <select
               value={typeFilter}
@@ -282,7 +298,7 @@ const SubscriptionsPage = () => {
             >
               <option value="all">All Types</option>
               <option value="real">Real</option>
-              <option value="gift">Gift</option>
+              <option value="gift">Free</option>
             </select>
           </div>
           <button
@@ -302,7 +318,8 @@ const SubscriptionsPage = () => {
                 <th className="border p-2">Payment ID</th>
                 <th className="border p-2">Package</th>
                 {/* <th className="p-2 border">Total</th> */}
-                <th className="border p-2">Subscribed</th>
+                <th className="border p-2">Paid</th>
+                <th className="border p-2">Gift</th>
                 <th className="border p-2">Expiry</th>
                 <th className="border p-2">Actions</th>
               </tr>
@@ -336,6 +353,7 @@ const SubscriptionsPage = () => {
                     <td className="border p-2">
                       {sub.subscribed ? "Yes" : "No"}
                     </td>
+                    <td className="border p-2">{sub.isGift ? "Yes" : "No"}</td>
                     <td className="border p-2">
                       {sub.expiryDate
                         ? new Date(sub.expiryDate).toLocaleDateString()
@@ -425,9 +443,7 @@ const SubscriptionsPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Subscribed
-                  </label>
+                  <label className="mb-1 block text-sm font-medium">Paid</label>
                   <select
                     value={form.subscribed ? "true" : "false"}
                     onChange={(e) =>
@@ -485,6 +501,55 @@ const SubscriptionsPage = () => {
                     />
                   </div>
                 </div>
+                <h3 className="mt-6 text-lg font-medium">Gift Information</h3>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Gifted
+                  </label>
+                  <select
+                    value={form.isGift ? "true" : "false"}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        isGift: e.target.value === "true",
+                      }))
+                    }
+                    className="w-full rounded border p-2"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Gift Recipient Email
+                  </label>
+                  <input
+                    type="email"
+                    value={form.giftRecipientEmail}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        giftRecipientEmail: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded border p-2"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Special Message
+                  </label>
+                  <textarea
+                    value={form.specialMessage}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, specialMessage: e.target.value }))
+                    }
+                    className="w-full rounded border p-2"
+                    rows={3}
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="mb-1 block text-sm font-medium">

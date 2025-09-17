@@ -15,6 +15,7 @@ export async function GET(request: Request) {
   const email = searchParams.get("email");
   const subscribed = searchParams.get("subscribed"); // "true" or "false"
   const type = searchParams.get("type"); // "real", "gift", "all"
+  const isGift = searchParams.get("isGift"); // "true" or "false"
   await loadDB();
   let query: any = {};
   if (email) {
@@ -29,6 +30,11 @@ export async function GET(request: Request) {
     query.subTotal = { $gt: 1000 };
   } else if (type === "gift") {
     query.subTotal = { $lte: 1000 };
+  }
+  if (isGift === "true") {
+    query.isGift = true;
+  } else if (isGift === "false") {
+    query.isGift = false;
   }
   try {
     const subscriptions = await subscriptionsModel.find(query).populate({

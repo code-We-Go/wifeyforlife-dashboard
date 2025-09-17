@@ -6,6 +6,10 @@ export interface ISubscription extends Document {
   packageID: Types.ObjectId;
   email?: string;
   subscribed: boolean;
+  // Gift information
+  isGift: boolean;
+  giftRecipientEmail: string;
+  specialMessage: string;
   expiryDate: Date;
   createdAt: Date;
   updatedAt: Date; // Because of timestamps: true
@@ -33,6 +37,10 @@ const SubscriptionSchema = new Schema(
     lastName: { type: String, required: false },
     phone: { type: String, required: false },
     whatsAppNumber: { type: String, required: false },
+    // Gift information
+    isGift: { type: Boolean, default: false },
+    giftRecipientEmail: { type: String, required: false },
+    specialMessage: { type: String, required: false },
     // Address information
     country: { type: String, required: false },
     address: { type: String, required: false },
@@ -64,17 +72,18 @@ const SubscriptionSchema = new Schema(
   { timestamps: true },
 );
 
-
 // Add static filter methods
-SubscriptionSchema.statics.filterBySubscribed = function(subscribed) {
+SubscriptionSchema.statics.filterBySubscribed = function (subscribed) {
   return this.find({ subscribed });
 };
 
-SubscriptionSchema.statics.filterByType = function(type) {
+SubscriptionSchema.statics.filterByType = function (type) {
   if (type === "real") {
     return this.find({ subTotal: { $gt: 1000 } });
   } else if (type === "gift") {
-    return this.find({ $or: [ { subTotal: { $lt: 1000 } }, { subTotal: { $exists: false } } ] });
+    return this.find({
+      $or: [{ subTotal: { $lt: 1000 } }, { subTotal: { $exists: false } }],
+    });
   } else {
     return this.find();
   }
