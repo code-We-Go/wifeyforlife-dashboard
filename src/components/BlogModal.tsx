@@ -384,7 +384,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
             <div>
               <strong>Content:</strong>
               <div
-                className="prose mt-2 max-w-none blog-content"
+                className="prose blog-content mt-2 max-w-none"
                 // Add style to images so they float left and text wraps beside
                 dangerouslySetInnerHTML={{
                   __html: blog.content.replace(
@@ -396,6 +396,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
               <style jsx global>{`
                 .blog-content ol {
                   list-style-type: decimal;
+                  padding-top: 3em;
                   margin-left: 1.5em;
                   padding-left: 1em;
                 }
