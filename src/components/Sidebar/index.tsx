@@ -19,6 +19,9 @@ import { FiLogOut } from "react-icons/fi";
 import { RiCoupon3Line } from "react-icons/ri";
 import { TiUserAddOutline } from "react-icons/ti";
 import { PiBooks, PiBooksLight } from "react-icons/pi";
+import { LuNotebookPen } from "react-icons/lu";
+
+import { TfiNotepad } from "react-icons/tfi";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -119,7 +122,7 @@ const menuGroups = [
         route: "/discounts",
       },
       {
-        icon: <GiThreeFriends />,
+        icon: <LuNotebookPen />,
         label: "Packages",
         route: "/pages/packages",
       },
