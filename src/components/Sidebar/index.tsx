@@ -97,7 +97,13 @@ const menuGroups = [
         route: "/pages/loyalty/rewards",
       },
       {
+        icon: <GiThreeFriends />,
+        label: "Partners",
+        route: "/pages/partners",
+      },
+      {
         icon: <BsCollection />,
+
         label: "Banners",
         route: "/pages/banners",
       },
