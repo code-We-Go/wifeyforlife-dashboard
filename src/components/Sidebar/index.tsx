@@ -20,6 +20,7 @@ import { RiCoupon3Line } from "react-icons/ri";
 import { TiUserAddOutline } from "react-icons/ti";
 import { PiBooks, PiBooksLight } from "react-icons/pi";
 import { LuNotebookPen } from "react-icons/lu";
+import { FiKey } from "react-icons/fi";
 
 import { TfiNotepad } from "react-icons/tfi";
 
@@ -163,6 +164,11 @@ const menuGroups = [
         icon: <LiaShippingFastSolid />,
         label: "Shipping",
         route: "/pages/shipping",
+      },
+      {
+        icon: <FiKey />,
+        label: "Logins",
+        route: "/pages/logins",
       },
       {
         icon: <FiLogOut />,
