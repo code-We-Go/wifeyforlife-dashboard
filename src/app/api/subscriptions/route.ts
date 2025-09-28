@@ -16,6 +16,7 @@ export async function GET(request: Request) {
   const subscribed = searchParams.get("subscribed"); // "true" or "false"
   const type = searchParams.get("type"); // "real", "gift", "all"
   const isGift = searchParams.get("isGift"); // "true" or "false"
+  const packageID = searchParams.get("packageID"); // Package ID for filtering
   await loadDB();
   let query: any = {};
   if (email) {
@@ -36,12 +37,18 @@ export async function GET(request: Request) {
   } else if (isGift === "false") {
     query.isGift = false;
   }
+  if (packageID) {
+    query.packageID = new mongoose.Types.ObjectId(packageID);
+  }
   try {
-    const subscriptions = await subscriptionsModel.find(query).populate({
-      path: "packageID",
-      model: packageModel,
-      options: { strictPopulate: false },
-    });
+    const subscriptions = await subscriptionsModel
+      .find(query)
+      .populate({
+        path: "packageID",
+        model: packageModel,
+        options: { strictPopulate: false },
+      })
+      .sort({ createdAt: -1 });
     return NextResponse.json({ data: subscriptions }, { status: 200 });
   } catch (error) {
     return NextResponse.json(

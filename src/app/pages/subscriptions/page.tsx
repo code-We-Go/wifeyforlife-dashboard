@@ -61,6 +61,7 @@ const SubscriptionsPage = () => {
   // Filter states
   const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [packageFilter, setPackageFilter] = useState<string>("all");
 
   // Form state for add/edit
   const [form, setForm] = useState({
@@ -104,11 +105,22 @@ const SubscriptionsPage = () => {
     appliedDiscount: "",
     appliedDiscountAmount: 0,
   });
-
   useEffect(() => {
-    fetchSubscriptions();
     fetchPackages();
-  }, [subscribedFilter, typeFilter]);
+  }, []);
+
+  // Use a ref to track if this is the first render
+  const isInitialMount = React.useRef(true);
+  
+  useEffect(() => {
+    // Skip the first render to prevent double fetching
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    fetchSubscriptions();
+  }, [subscribedFilter, typeFilter, packageFilter]);
 
   const fetchSubscriptions = async () => {
     setLoading(true);
@@ -116,6 +128,7 @@ const SubscriptionsPage = () => {
       let params: any = {};
       if (subscribedFilter !== "all") params.subscribed = subscribedFilter;
       if (typeFilter !== "all") params.type = typeFilter;
+      if (packageFilter !== "all") params.packageID = packageFilter;
       const query = new URLSearchParams(params).toString();
       const res = await axios.get(
         `/api/subscriptions${query ? `?${query}` : ""}`,
@@ -299,6 +312,18 @@ const SubscriptionsPage = () => {
               <option value="all">All Types</option>
               <option value="real">Real</option>
               <option value="gift">Free</option>
+            </select>
+            <select
+              value={packageFilter}
+              onChange={(e) => setPackageFilter(e.target.value)}
+              className="rounded border p-2"
+            >
+              <option value="all">All Packages</option>
+              {packages.map((pkg) => (
+                <option key={pkg._id} value={pkg._id}>
+                  {pkg.name}
+                </option>
+              ))}
             </select>
           </div>
           <button
