@@ -31,6 +31,7 @@ export async function GET(request: Request) {
 
     // Build query
     let query: any = {
+      subscribed: true,
       createdAt: {
         $gte: startDate,
         $lte: endDate,
@@ -100,7 +101,10 @@ export async function GET(request: Request) {
       const redeemedPointsValue = redeemedPoints / 20; // Convert to pounds
 
       // Calculate Paymob fees (2.75% of total, 0 if isGift)
-      const paymobFees = sub.isGift ? 0 : (total * 0.0275);
+      const paymobFeesBefore14Vat = total * 0.0275;
+      const paymobFees = sub.isGift
+        ? 0
+        : paymobFeesBefore14Vat + paymobFeesBefore14Vat * 0.14;
 
       // Calculate profit (revenue - cost - shipping - paymob fees)
       const profit = revenue - cost - shippingCost - paymobFees;
