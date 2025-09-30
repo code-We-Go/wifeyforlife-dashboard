@@ -17,6 +17,7 @@ export interface Ipackage {
   duration: string;
   items: PackageItem[];
   notes: string[];
+  cost?: string;
   cards: PackageCard[]; // Array of cards with image and points
 }
 // types/Video.ts

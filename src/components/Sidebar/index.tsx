@@ -156,6 +156,14 @@ const menuGroups = [
         route: "/pages/subscriptions",
       },
       {
+        icon: <svg className="fill-current" width="18" height="18" viewBox="0 0 24 24">
+          <path d="M5 12H19M5 12L9 8M5 12L9 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <path d="M12 4V20M12 4L16 8M12 4L8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>,
+        label: "Analytics",
+        route: "/pages/analytics/subscriptions",
+      },
+      {
         icon: <BiMailSend />,
         label: "Newsletters",
         route: "/pages/newsletters",
