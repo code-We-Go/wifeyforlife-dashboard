@@ -111,6 +111,7 @@ const SubscriptionsPage = () => {
   });
   useEffect(() => {
     fetchPackages();
+    fetchSubscriptions(); // Initial fetch of subscriptions
   }, []);
 
   // Use a ref to track if this is the first render
@@ -393,7 +394,23 @@ const SubscriptionsPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white">
-              {paginatedSubscriptions.map((sub, idx) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="border p-8 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-4">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
+                      <p className="text-gray-600">Loading subscriptions...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedSubscriptions.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="border p-8 text-center text-gray-500">
+                    No subscriptions found
+                  </td>
+                </tr>
+              ) : (
+                paginatedSubscriptions.map((sub, idx) => (
                   <tr key={sub._id} className="hover:bg-gray-50">
                     <td className="border p-2">{startIndex + idx + 1}</td>
                     <td className="border p-2">{sub.email || "-"}</td>
@@ -430,13 +447,14 @@ const SubscriptionsPage = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!loading && totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredSubscriptions.length)} of {filteredSubscriptions.length} results

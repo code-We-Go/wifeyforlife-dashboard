@@ -15,6 +15,8 @@ const UsersPage = () => {
   );
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [subscriptionModal, setSubscriptionModal] = useState<{
     type: "view" | "add" | null;
     user: IUser | null;
@@ -23,20 +25,39 @@ const UsersPage = () => {
     { _id: string; name: string }[]
   >([]);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset page to 1 when search query changes
+  useEffect(() => {
+    if (debouncedSearchQuery !== searchQuery) return; // Only reset when debounced query is set
+    setPage(1);
+  }, [debouncedSearchQuery]);
+
+  // Fetch users when page or debounced search query changes
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
         const res = await axios.get(
-          `/api/users?page=${page}&search=${searchQuery}`,
+          `/api/users?page=${page}&search=${debouncedSearchQuery}`,
         );
         setUsers(res.data.data.users);
         setTotalPages(res.data.data.pagination.totalPages);
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUsers();
-  }, [page, searchQuery]);
+  }, [page, debouncedSearchQuery]);
 
   const openModal = (type: "edit" | "delete" | "add", user?: IUser) => {
     setModalType(type);
@@ -46,9 +67,12 @@ const UsersPage = () => {
   const handleDelete = async (userId: string) => {
     try {
       await axios.delete(`/api/users?userId=${userId}`);
-      // Refresh the users list
-      const res = await axios.get(`/api/users?page=${page}`);
+      // Refresh the users list with current search and page
+      const res = await axios.get(
+        `/api/users?page=${page}&search=${debouncedSearchQuery}`,
+      );
       setUsers(res.data.data.users);
+      setTotalPages(res.data.data.pagination.totalPages);
     } catch (error) {
       console.error("Error deleting user:", error);
     }
@@ -96,21 +120,30 @@ const UsersPage = () => {
         </div>
 
         {/* Table */}
-        {users.length > 0 ? (
-          <table className="w-[97%] rounded border border-gray-300 text-left">
-            <thead className="bg-secondary text-sm text-white">
+        <table className="w-[97%] rounded border border-gray-300 text-left">
+          <thead className="bg-secondary text-sm text-white">
+            <tr>
+              <th className="border p-2">#</th>
+              <th className="border p-2">Username</th>
+              <th className="border p-2">Email</th>
+              <th className="border p-2">Role</th>
+              {/* <th className="border p-2">Subscription</th> */}
+              <th className="border p-2">Created At</th>
+              <th className="border p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white">
+            {loading ? (
               <tr>
-                <th className="border p-2">#</th>
-                <th className="border p-2">Username</th>
-                <th className="border p-2">Email</th>
-                <th className="border p-2">Role</th>
-                {/* <th className="border p-2">Subscription</th> */}
-                <th className="border p-2">Created At</th>
-                <th className="border p-2">Actions</th>
+                <td colSpan={6} className="border p-8 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                    <span className="text-gray-600">Loading users...</span>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white">
-              {users.map((user, index) => (
+            ) : users.length > 0 ? (
+              users.map((user, index) => (
                 <tr key={index} className="text-sm hover:bg-gray-50">
                   <td className="border p-2">{(page - 1) * 10 + index + 1}</td>
                   <td className="border p-2">
@@ -166,33 +199,43 @@ const UsersPage = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <h1>No users found</h1>
-        )}
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="border p-8 text-center">
+                  <div className="text-gray-600">
+                    {debouncedSearchQuery
+                      ? `No users found matching "${debouncedSearchQuery}"`
+                      : "No users found"}
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
         {/* Pagination */}
-        <div className="mt-4 flex items-center gap-4">
-          <button
-            className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <span className="text-lg">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-        </div>
+        {!loading && users.length > 0 && totalPages > 1 && (
+          <div className="mt-4 flex items-center gap-4">
+            <button
+              className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            <span className="text-lg">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="rounded bg-accent px-4 py-2 text-white disabled:opacity-50"
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
 
         {/* Add User Modal */}
         {modalType === "add" && (
