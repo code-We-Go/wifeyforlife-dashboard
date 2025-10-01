@@ -62,6 +62,10 @@ const SubscriptionsPage = () => {
   const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Fixed items per page
 
   // Form state for add/edit
   const [form, setForm] = useState({
@@ -110,17 +114,39 @@ const SubscriptionsPage = () => {
   }, []);
 
   // Use a ref to track if this is the first render
-  const isInitialMount = React.useRef(true);
-  
+  // const isInitialMount = React.useRef(true);
+
   useEffect(() => {
     // Skip the first render to prevent double fetching
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    
+    // if (isInitialMount.current) {
+    //   isInitialMount.current = false;
+    //   return;
+    // }
+
     fetchSubscriptions();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [subscribedFilter, typeFilter, packageFilter]);
+
+  // Pagination logic
+  const filteredSubscriptions = subscriptions.filter(
+    (s) =>
+      s.email?.toLowerCase().includes(search.toLowerCase()) ||
+      s.paymentID?.toLowerCase().includes(search.toLowerCase()) ||
+      (s.firstName &&
+        s.firstName.toLowerCase().includes(search.toLowerCase())) ||
+      (s.lastName &&
+        s.lastName.toLowerCase().includes(search.toLowerCase())),
+  );
+
+  const totalPages = Math.ceil(filteredSubscriptions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSubscriptions = filteredSubscriptions.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const fetchSubscriptions = async () => {
     setLoading(true);
@@ -283,6 +309,23 @@ const SubscriptionsPage = () => {
     }
   };
 
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
     <DefaultLayout>
       <div className="flex min-h-[calc(100vh-124px)] w-full flex-col items-center p-4">
@@ -350,21 +393,9 @@ const SubscriptionsPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white">
-              {subscriptions
-                .filter(
-                  (s) =>
-                    s.email?.toLowerCase().includes(search.toLowerCase()) ||
-                    s.paymentID?.toLowerCase().includes(search.toLowerCase()) ||
-                    (s.firstName &&
-                      s.firstName
-                        .toLowerCase()
-                        .includes(search.toLowerCase())) ||
-                    (s.lastName &&
-                      s.lastName.toLowerCase().includes(search.toLowerCase())),
-                )
-                .map((sub, idx) => (
+              {paginatedSubscriptions.map((sub, idx) => (
                   <tr key={sub._id} className="hover:bg-gray-50">
-                    <td className="border p-2">{idx + 1}</td>
+                    <td className="border p-2">{startIndex + idx + 1}</td>
                     <td className="border p-2">{sub.email || "-"}</td>
                     <td className="border p-2">
                       {`${sub.firstName || ""} ${sub.lastName || ""}`.trim() ||
@@ -403,6 +434,68 @@ const SubscriptionsPage = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredSubscriptions.length)} of {filteredSubscriptions.length} results
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              
+              {/* Page numbers */}
+              <div className="flex space-x-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current page
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`rounded px-3 py-1 text-sm ${
+                          currentPage === page
+                            ? "bg-blue-500 text-white"
+                            : "border hover:bg-gray-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return (
+                      <span key={page} className="px-2 text-sm text-gray-500">
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Modal for Add/Edit */}
         {(modalType === "add" || modalType === "edit") && (
