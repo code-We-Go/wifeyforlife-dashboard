@@ -13,6 +13,7 @@ interface Blog {
   content: string;
   excerpt: string;
   featuredImage?: string;
+  tikTokVideoUrl?: string;
   // author: {
   //   _id: string;
   //   username: string;
@@ -62,6 +63,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
     content: "",
     excerpt: "",
     featuredImage: "",
+    tikTokVideoUrl: "",
     // author: "",
     status: "draft" as "draft" | "published" | "archived",
     tags: [] as string[],
@@ -98,6 +100,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
         content: blog.content,
         excerpt: blog.excerpt,
         featuredImage: blog.featuredImage || "",
+        tikTokVideoUrl: blog.tikTokVideoUrl || "",
         // author: blog.author._id,
         status: blog.status,
         tags: blog.tags,
@@ -619,7 +622,26 @@ const BlogModal: React.FC<BlogModalProps> = ({
               {errors.content && (
                 <p className="mt-1 text-sm text-red-500">{errors.content}</p>
               )}
+            </div>
 
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                TikTok Video URL
+              </label>
+              <input
+                type="url"
+                name="tikTokVideoUrl"
+                value={formData.tikTokVideoUrl}
+                onChange={handleInputChange}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://www.tiktok.com/@username/video/..."
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional: Add a TikTok video URL to display after the blog content
+              </p>
+            </div>
+
+            <div>
               {/* Show images in content with remove buttons and preview with float style */}
               {(() => {
                 const extractImagesFromContent = (content: string) => {

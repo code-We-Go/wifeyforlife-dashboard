@@ -8,6 +8,7 @@ export interface IBlog extends Document {
   content: string; // Rich text content (HTML)
   excerpt: string;
   featuredImage?: string;
+  tikTokVideoUrl?: string;
   author: mongoose.Types.ObjectId;
   status: "draft" | "published" | "archived";
   tags: string[];
@@ -51,6 +52,19 @@ const BlogSchema = new Schema<IBlog>(
     featuredImage: {
       type: String,
       required: false,
+    },
+    tikTokVideoUrl: {
+      type: String,
+      required: false,
+      validate: {
+        validator: function (v: string) {
+          if (!v) return true; // Allow empty values
+          // Validate TikTok URL format
+          return /^https:\/\/(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/.test(v) ||
+                 /^https:\/\/vm\.tiktok\.com\/[\w]+/.test(v);
+        },
+        message: "Please enter a valid TikTok video URL",
+      },
     },
     // author: {
     //   type: mongoose.Schema.Types.ObjectId,

@@ -4,6 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { thirdFont } from "@/app/lib/fonts";
+import TikTokEmbed from '@/components/TikTokEmbed';
 
 interface Blog {
   _id: string;
@@ -12,6 +13,7 @@ interface Blog {
   content: string;
   excerpt: string;
   featuredImage?: string;
+  tikTokVideoUrl?: string;
   // author: {
   //   _id: string;
   //   username: string;
@@ -243,6 +245,16 @@ const BlogDetailPage = () => {
             dangerouslySetInnerHTML={{ __html: blog.content }}
           />
         </div>
+
+        {/* TikTok Video */}
+        {blog.tikTokVideoUrl && (
+          <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Featured Video</h3>
+            <div className="flex justify-center">
+              <TikTokEmbed url={blog.tikTokVideoUrl} />
+            </div>
+          </div>
+        )}
 
         {/* Tags */}
         {blog.tags.length > 0 && (

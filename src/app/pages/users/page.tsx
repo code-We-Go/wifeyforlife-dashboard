@@ -45,9 +45,9 @@ const UsersPage = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(
-          `/api/users?page=${page}&search=${debouncedSearchQuery}`,
-        );
+        const apiUrl = `/api/users?page=${page}&search=${encodeURIComponent(debouncedSearchQuery)}`;
+        const res = await axios.get(apiUrl);
+        
         setUsers(res.data.data.users);
         setTotalPages(res.data.data.pagination.totalPages);
       } catch (error) {
@@ -69,7 +69,7 @@ const UsersPage = () => {
       await axios.delete(`/api/users?userId=${userId}`);
       // Refresh the users list with current search and page
       const res = await axios.get(
-        `/api/users?page=${page}&search=${debouncedSearchQuery}`,
+        `/api/users?page=${page}&search=${encodeURIComponent(debouncedSearchQuery)}`,
       );
       setUsers(res.data.data.users);
       setTotalPages(res.data.data.pagination.totalPages);

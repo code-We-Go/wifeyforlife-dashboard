@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const search = searchParams.get("search") || "";
+    const search = decodeURIComponent(searchParams.get("search") || "");
     const all = searchParams.get("all") === "true";
     const limit = all ? 0 : 10;
     const skip = all ? 0 : (page - 1) * limit;
@@ -34,8 +34,8 @@ export async function GET(req: Request) {
       ? {
           $or: [
             { username: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-          ],
+            { email: { $regex: search, $options: "i" } }
+          ]
         }
       : {};
 
@@ -43,21 +43,19 @@ export async function GET(req: Request) {
     const totalUsers = await UserModel.countDocuments(searchQuery);
 
     // Get users with pagination
-    console.log("registering subscriptionModel" + subscriptionsModel);
-    const users = await UserModel.find(searchQuery)
-      .populate({
+    const users = await UserModel
+      .find(searchQuery)
+      .populate({  
         path: "subscription",
         model: "subscriptions", // <-- this matches your model registration and ref
-        options: { strictPopulate: false },
+        options: { strictPopulate: false }
       })
-      .select("-password")
+      .select('-password')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    console.log("users" + users.length);
-
-    console.log("ya rab" + users[1].subscription?.subscribed);
+    console.log("ya rab" + users[1]?.subscription?.subscribed);
     return successResponse({
       users,
       pagination: {
