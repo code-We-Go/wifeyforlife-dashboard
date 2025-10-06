@@ -570,7 +570,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
             </div>
 
             {/* Upload Button */}
-            {/* {!formData.featuredImage && (
+            {!formData.featuredImage && (
               <UploadButton
                 endpoint="mediaUploader"
                 onClientUploadComplete={(res) => {
@@ -591,7 +591,7 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   allowedContent: "text-sm text-gray-600 mt-2",
                 }}
               />
-            )} */}
+            )}
 
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -637,7 +637,8 @@ const BlogModal: React.FC<BlogModalProps> = ({
                 placeholder="https://www.tiktok.com/@username/video/..."
               />
               <p className="mt-1 text-xs text-gray-500">
-                Optional: Add a TikTok video URL to display after the blog content
+                Optional: Add a TikTok video URL to display after the blog
+                content
               </p>
             </div>
 
