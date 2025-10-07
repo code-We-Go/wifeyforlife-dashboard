@@ -94,7 +94,7 @@ export async function GET(request: Request) {
       const discount = sub.appliedDiscountAmount || 0; // Keep discount as is
 
       // Calculate shipping costs when total is not equal to subTotal
-      const shippingCost = sub.shipping;
+      const shippingCost = sub.shipping + sub.shipping * 0.14;
 
       // Calculate redeemed points and their value (20 points = 1 pound)
       const redeemedPoints = sub.redeemedLoyaltyPoints || 0;
