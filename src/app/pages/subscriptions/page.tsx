@@ -24,6 +24,7 @@ interface Subscription {
   isGift?: boolean;
   giftRecipientEmail?: string;
   specialMessage?: string;
+  giftCardName?: string;
   // Address information
   country?: string;
   address?: string;
@@ -62,7 +63,7 @@ const SubscriptionsPage = () => {
   const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10); // Fixed items per page
@@ -83,6 +84,7 @@ const SubscriptionsPage = () => {
     isGift: false,
     giftRecipientEmail: "",
     specialMessage: "",
+    giftCardName: "",
     // Address information
     country: "",
     address: "",
@@ -135,14 +137,16 @@ const SubscriptionsPage = () => {
       s.paymentID?.toLowerCase().includes(search.toLowerCase()) ||
       (s.firstName &&
         s.firstName.toLowerCase().includes(search.toLowerCase())) ||
-      (s.lastName &&
-        s.lastName.toLowerCase().includes(search.toLowerCase())),
+      (s.lastName && s.lastName.toLowerCase().includes(search.toLowerCase())),
   );
 
   const totalPages = Math.ceil(filteredSubscriptions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedSubscriptions = filteredSubscriptions.slice(startIndex, endIndex);
+  const paginatedSubscriptions = filteredSubscriptions.slice(
+    startIndex,
+    endIndex,
+  );
 
   // Reset to first page when search changes
   useEffect(() => {
@@ -199,6 +203,7 @@ const SubscriptionsPage = () => {
         isGift: subscription.isGift || false,
         giftRecipientEmail: subscription.giftRecipientEmail || "",
         specialMessage: subscription.specialMessage || "",
+        giftCardName: subscription.giftCardName || "",
         // Address information
         country: subscription.country || "",
         address: subscription.address || "",
@@ -241,6 +246,7 @@ const SubscriptionsPage = () => {
         isGift: false,
         giftRecipientEmail: "",
         specialMessage: "",
+        giftCardName: "",
         // Address information
         country: "",
         address: "",
@@ -405,7 +411,10 @@ const SubscriptionsPage = () => {
                 </tr>
               ) : paginatedSubscriptions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="border p-8 text-center text-gray-500">
+                  <td
+                    colSpan={9}
+                    className="border p-8 text-center text-gray-500"
+                  >
                     No subscriptions found
                   </td>
                 </tr>
@@ -457,57 +466,64 @@ const SubscriptionsPage = () => {
         {!loading && totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredSubscriptions.length)} of {filteredSubscriptions.length} results
+              Showing {startIndex + 1} to{" "}
+              {Math.min(
+                startIndex + itemsPerPage,
+                filteredSubscriptions.length,
+              )}{" "}
+              of {filteredSubscriptions.length} results
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1}
-                className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Previous
               </button>
-              
+
               {/* Page numbers */}
               <div className="flex space-x-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current page
-                  if (
-                    page === 1 ||
-                    page === totalPages ||
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  ) {
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`rounded px-3 py-1 text-sm ${
-                          currentPage === page
-                            ? "bg-blue-500 text-white"
-                            : "border hover:bg-gray-50"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  } else if (
-                    page === currentPage - 2 ||
-                    page === currentPage + 2
-                  ) {
-                    return (
-                      <span key={page} className="px-2 text-sm text-gray-500">
-                        ...
-                      </span>
-                    );
-                  }
-                  return null;
-                })}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => {
+                    // Show first page, last page, current page, and pages around current page
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`rounded px-3 py-1 text-sm ${
+                            currentPage === page
+                              ? "bg-blue-500 text-white"
+                              : "border hover:bg-gray-50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return (
+                        <span key={page} className="px-2 text-sm text-gray-500">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  },
+                )}
               </div>
 
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
               </button>
@@ -655,6 +671,22 @@ const SubscriptionsPage = () => {
                     <option value="false">No</option>
                     <option value="true">Yes</option>
                   </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Gift Card Name
+                  </label>
+                  <input
+                    type="text"
+                    value={form.giftCardName || ""}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        giftCardName: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded border p-2"
+                  />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">

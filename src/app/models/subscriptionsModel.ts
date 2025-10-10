@@ -41,6 +41,8 @@ const SubscriptionSchema = new Schema(
     isGift: { type: Boolean, default: false },
     giftRecipientEmail: { type: String, required: false },
     specialMessage: { type: String, required: false },
+    giftCardName: { type: String, required: false },
+
     // Address information
     country: { type: String, required: false },
     address: { type: String, required: false },
