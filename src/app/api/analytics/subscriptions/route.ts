@@ -12,18 +12,25 @@ const loadDB = async () => {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const month = searchParams.get("month"); // Format: YYYY-MM
+  const year = searchParams.get("year"); // Format: YYYY
   const packageId = searchParams.get("packageId"); // Optional package filter
 
   await loadDB();
 
   try {
-    // Parse month parameter or use current month
+    // Parse parameters or use current month/year
     let startDate, endDate;
-    if (month) {
-      const [year, monthNum] = month.split("-").map(Number);
-      startDate = new Date(year, monthNum - 1, 1);
-      endDate = new Date(year, monthNum, 0); // Last day of month
+    if (year) {
+      // If year parameter is provided, get data for the entire year
+      startDate = new Date(parseInt(year), 0, 1); // January 1st of the year
+      endDate = new Date(parseInt(year), 11, 31); // December 31st of the year
+    } else if (month) {
+      // If month parameter is provided, get data for that specific month
+      const [yearNum, monthNum] = month.split("-").map(Number);
+      startDate = new Date(yearNum, monthNum - 1, 1);
+      endDate = new Date(yearNum, monthNum, 0); // Last day of month
     } else {
+      // Default to current month
       const now = new Date();
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -245,16 +252,14 @@ export async function GET(request: Request) {
 
       monthProfit = monthRevenue - monthCost;
 
-      // Only add data if we have real subscriptions for this month
-      if (monthSubscriptions.length > 0) {
-        monthlyData.push({
-          month: monthName,
-          revenue: monthRevenue,
-          cost: monthCost,
-          profit: monthProfit,
-          isSample: false,
-        });
-      }
+      // Always add data for all months, even if zero
+      monthlyData.push({
+        month: monthName,
+        revenue: monthRevenue,
+        cost: monthCost,
+        profit: monthProfit,
+        isSample: false,
+      });
     }
 
     return NextResponse.json(

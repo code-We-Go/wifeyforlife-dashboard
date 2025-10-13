@@ -71,9 +71,9 @@ const options: ApexOptions = {
     },
     min: 0,
     labels: {
-      formatter: function(val) {
+      formatter: function (val) {
         return Math.round(val).toString();
-      }
+      },
     },
   },
   responsive: [
@@ -151,50 +151,66 @@ const ChartSubscriptions: React.FC = () => {
           });
         }
 
-        // Fetch data for each month of the selected year
-        const promises = [];
-        for (let i = 1; i <= 12; i++) {
-          const monthStr = String(i).padStart(2, "0");
-          const url = `/api/analytics/subscriptions?month=${year}-${monthStr}`;
-          promises.push(axios.get(url));
-        }
+        // Fetch data for the entire year with a single API call
+        try {
+          const url = `/api/analytics/subscriptions?year=${year}`;
+          const response = await axios.get(url);
+          console.log(JSON.stringify(response.data.data.monthlyData));
+          let hasSampleData = false;
 
-        const responses = await Promise.all(promises);
-        let hasSampleData = false;
+          if (
+            response.data &&
+            response.data.data &&
+            response.data.data.monthlyData
+          ) {
+            const yearlyData = response.data.data.monthlyData;
 
-        // Process each month's data
-        responses.forEach((response, index) => {
-          if (response.data && response.data.data) {
-            const { summary } = response.data.data;
+            // Arabic month names mapping to their index (0-based)
+            const arabicMonthsMap: {[key: string]: number} = {
+              "يناير": 0,    // January
+              "فبراير": 1,   // February
+              "مارس": 2,     // March
+              "أبريل": 3,    // April
+              "مايو": 4,     // May
+              "يونيو": 5,    // June
+              "يوليو": 6,    // July
+              "أغسطس": 7,    // August
+              "سبتمبر": 8,   // September
+              "أكتوبر": 9,   // October
+              "نوفمبر": 10,  // November
+              "ديسمبر": 11   // December
+            };
 
-            // Use monthly data instead of summary data
-            const monthlyData = response.data.data.monthlyData;
-            if (monthlyData && monthlyData.length > 0) {
-              // Use the first (and should be only) monthly data item for this month
-              const monthData = monthlyData[0];
-              fullYearData[index].revenue = monthData.revenue || 0;
-              fullYearData[index].cost = monthData.cost || 0;
-              fullYearData[index].profit = monthData.profit || 0;
-            } else {
-              // If no monthly data exists, ensure we use zero values
-              fullYearData[index].revenue = 0;
-              fullYearData[index].cost = 0;
-              fullYearData[index].profit = 0;
-            }
+            // Process the yearly data and distribute among months
+            yearlyData.forEach((monthData: any) => {
+              // Extract month from the month string (format: "MMM YYYY" in Arabic)
+              const monthStr = monthData.month.split(" ")[0]; // Get Arabic month name
+              
+              // Get month index from Arabic month name
+              const monthIndex = arabicMonthsMap[monthStr];
 
-            // Check if this month has sample data
-            if (
-              response.data.data.monthlyData &&
-              response.data.data.monthlyData.some(
-                (item: any) => item.isSample === true,
-              )
-            ) {
-              hasSampleData = true;
-            }
+              if (monthIndex !== undefined && monthIndex >= 0 && monthIndex < 12) {
+                // Assign data to the correct month
+                fullYearData[monthIndex] = {
+                  month: monthNames[monthIndex],
+                  revenue: monthData.revenue || 0,
+                  cost: monthData.cost || 0,
+                  profit: monthData.profit || 0,
+                };
+              }
+
+              // Check if this is sample data
+              if (monthData.isSample === true) {
+                hasSampleData = true;
+              }
+            });
           }
-        });
 
-        setIsSampleData(hasSampleData);
+          setIsSampleData(hasSampleData);
+        } catch (error) {
+          console.error("Error fetching yearly subscription data:", error);
+          // Keep the default zero values for all months
+        }
 
         // Extract data for chart
         const months = fullYearData.map((item) => item.month);
@@ -229,7 +245,7 @@ const ChartSubscriptions: React.FC = () => {
             data: Array(12).fill(0),
           },
         ]);
-        
+
         // Set sample data flag to false since we're showing actual zeros
         setIsSampleData(false);
       }
@@ -242,7 +258,7 @@ const ChartSubscriptions: React.FC = () => {
   const getYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 2; i++) {
       years.push(currentYear - i);
     }
     return years;
