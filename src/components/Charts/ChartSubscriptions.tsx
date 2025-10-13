@@ -49,7 +49,7 @@ const options: ApexOptions = {
     shared: true,
     intersect: false,
     y: {
-      formatter: (value) => `${value.toLocaleString()} EGP`,
+      formatter: (value) => `${Math.round(value).toLocaleString()} EGP`,
     },
   },
   xaxis: {
@@ -70,6 +70,11 @@ const options: ApexOptions = {
       },
     },
     min: 0,
+    labels: {
+      formatter: function(val) {
+        return Math.round(val).toString();
+      }
+    },
   },
   responsive: [
     {
@@ -99,66 +104,134 @@ const ChartSubscriptions: React.FC = () => {
   ]);
   const [categories, setCategories] = useState<string[]>([]);
   const [year, setYear] = useState(new Date().getFullYear().toString());
+  const [isSampleData, setIsSampleData] = useState<boolean>(false);
+
+  // Define interface for monthly data item
+  interface MonthlyDataItem {
+    month: string;
+    revenue: number;
+    cost: number;
+    profit: number;
+  }
+
+  // Month names for chart labels
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
-        // Fetch data for all months of the selected year
-        const monthlyData: { [key: string]: { revenue: number; cost: number; profit: number } } = {};
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        
-        // Initialize data structure
-        monthNames.forEach(month => {
-          monthlyData[month] = { revenue: 0, cost: 0, profit: 0 };
-        });
+        // Generate all months for the selected year
+        const allMonths = [];
 
-        // Fetch data for each month
-        const promises = monthNames.map(async (_, index) => {
-          const monthNum = index + 1;
-          const monthStr = monthNum < 10 ? `0${monthNum}` : `${monthNum}`;
-          const monthParam = `${year}-${monthStr}`;
-          
-          try {
-            const response = await axios.get(`/api/analytics/subscriptions?month=${monthParam}`);
-            return { month: monthNames[index], data: response.data };
-          } catch (error) {
-            console.error(`Error fetching data for ${monthParam}:`, error);
-            return { month: monthNames[index], data: { revenue: 0, cost: 0, profit: 0 } };
+        // Create full year data structure
+        const fullYearData: MonthlyDataItem[] = [];
+        for (let i = 0; i < 12; i++) {
+          const monthName = monthNames[i]; // Only use month name without year
+          allMonths.push(monthName);
+
+          // Initialize with zero values
+          fullYearData.push({
+            month: monthName,
+            revenue: 0,
+            cost: 0,
+            profit: 0,
+          });
+        }
+
+        // Fetch data for each month of the selected year
+        const promises = [];
+        for (let i = 1; i <= 12; i++) {
+          const monthStr = String(i).padStart(2, "0");
+          const url = `/api/analytics/subscriptions?month=${year}-${monthStr}`;
+          promises.push(axios.get(url));
+        }
+
+        const responses = await Promise.all(promises);
+        let hasSampleData = false;
+
+        // Process each month's data
+        responses.forEach((response, index) => {
+          if (response.data && response.data.data) {
+            const { summary } = response.data.data;
+
+            // Use monthly data instead of summary data
+            const monthlyData = response.data.data.monthlyData;
+            if (monthlyData && monthlyData.length > 0) {
+              // Use the first (and should be only) monthly data item for this month
+              const monthData = monthlyData[0];
+              fullYearData[index].revenue = monthData.revenue || 0;
+              fullYearData[index].cost = monthData.cost || 0;
+              fullYearData[index].profit = monthData.profit || 0;
+            } else {
+              // If no monthly data exists, ensure we use zero values
+              fullYearData[index].revenue = 0;
+              fullYearData[index].cost = 0;
+              fullYearData[index].profit = 0;
+            }
+
+            // Check if this month has sample data
+            if (
+              response.data.data.monthlyData &&
+              response.data.data.monthlyData.some(
+                (item: any) => item.isSample === true,
+              )
+            ) {
+              hasSampleData = true;
+            }
           }
         });
 
-        const results = await Promise.all(promises);
-        
-        // Process results
-        results.forEach(result => {
-          const { month, data } = result;
-          if (data && data.analytics) {
-            monthlyData[month] = {
-              revenue: data.analytics.revenue || 0,
-              cost: data.analytics.cost || 0,
-              profit: data.analytics.profit || 0
-            };
-          }
-        });
+        setIsSampleData(hasSampleData);
+
+        // Extract data for chart
+        const months = fullYearData.map((item) => item.month);
+        const revenueData = fullYearData.map((item) => item.revenue);
+        const costData = fullYearData.map((item) => item.cost);
+        const profitData = fullYearData.map((item) => item.profit);
 
         // Update chart data
-        setCategories(monthNames);
+        setCategories(months);
         setSeries([
-          { 
-            name: "Revenue", 
-            data: monthNames.map(month => monthlyData[month].revenue) 
-          },
-          { 
-            name: "Cost", 
-            data: monthNames.map(month => monthlyData[month].cost) 
-          },
-          { 
-            name: "Profit", 
-            data: monthNames.map(month => monthlyData[month].profit) 
-          }
+          { name: "Revenue", data: revenueData },
+          { name: "Cost", data: costData },
+          { name: "Profit", data: profitData },
         ]);
       } catch (error) {
         console.error("Error fetching subscription data:", error);
+
+        // Set default data with zeros if API doesn't return expected format
+        const defaultMonths = monthNames.map((month) => `${month} ${year}`);
+        setCategories(defaultMonths);
+        setSeries([
+          {
+            name: "Revenue",
+            data: Array(12).fill(0),
+          },
+          {
+            name: "Cost",
+            data: Array(12).fill(0),
+          },
+          {
+            name: "Profit",
+            data: Array(12).fill(0),
+          },
+        ]);
+        
+        // Set sample data flag to false since we're showing actual zeros
+        setIsSampleData(false);
       }
     };
 
@@ -177,13 +250,22 @@ const ChartSubscriptions: React.FC = () => {
 
   return (
     <div className="col-span-12 rounded-2xl border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5">
-      <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap mb-4">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
         <div className="flex min-w-47.5">
           <div className="w-full">
-            <h4 className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-secondary`}>
+            <h4
+              className={`${thirdFont.className} text-2xl font-semibold tracking-normal text-secondary`}
+            >
               Subscription Analytics
             </h4>
-            <p className="text-sm text-gray-500">Revenue, Cost, and Profit by Month</p>
+            <p className="text-sm text-gray-500">
+              Revenue, Cost, and Profit by Month
+            </p>
+            {isSampleData && (
+              <span className="mt-1 inline-block rounded bg-amber-500 px-2 py-1 text-xs font-medium text-white">
+                Sample Data
+              </span>
+            )}
           </div>
         </div>
         <div>

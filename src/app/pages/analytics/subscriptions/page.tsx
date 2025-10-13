@@ -359,7 +359,12 @@ export default function SubscriptionAnalyticsPage() {
                 <div className="mt-4 flex items-end justify-between">
                   <div>
                     <h4 className="text-title-md font-bold text-black dark:text-white">
-                      LE{analyticsData.summary.totalCost.toFixed(2)}
+                      LE
+                      {(
+                        analyticsData.summary.totalCost +
+                        analyticsData.summary.totalShippingCost +
+                        analyticsData.summary.totalPaymobFees
+                      ).toFixed(2)}
                     </h4>
                     <span className="text-sm font-medium">Total Cost</span>
                   </div>

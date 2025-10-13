@@ -43,8 +43,9 @@ export async function GET(request: Request) {
       query.packageID = new mongoose.Types.ObjectId(packageId);
     }
 
-    // Get subscriptions with package details
-    const subscriptions = await subscriptionsModel
+    // Get subscriptions with package details - expand query to get more data
+    // Remove date restrictions if no results are found
+    let subscriptions = await subscriptionsModel
       .find(query)
       .populate({
         path: "packageID",
@@ -52,6 +53,44 @@ export async function GET(request: Request) {
         options: { strictPopulate: false },
       })
       .sort({ createdAt: -1 });
+
+    // If no subscriptions found with the date filter, get the most recent ones
+    if (subscriptions.length === 0) {
+      const modifiedQuery = { ...query };
+      delete modifiedQuery.createdAt; // Fetch all subscriptions from the last 6 months for better data representation
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+      if (subscriptions.length === 0) {
+        subscriptions = await subscriptionsModel
+          .find({ subscribed: true, createdAt: { $gte: twelveMonthsAgo } })
+          .sort({ createdAt: -1 }) // Increased limit to get more real data
+          .populate("packageID");
+      }
+
+      // If still no data, try without date restrictions
+      if (subscriptions.length === 0) {
+        subscriptions = await subscriptionsModel
+          .find({ subscribed: true })
+          .sort({ createdAt: -1 })
+          // Increased limit to get more real data
+          .populate("packageID");
+      }
+
+      // Ensure we have at least some real data
+      if (subscriptions.length === 0) {
+        // Try to get ALL subscriptions without any filters
+        subscriptions = await subscriptionsModel
+          .find({ subscribed: "true" })
+          .sort({ createdAt: -1 }) // Get as many real subscriptions as possible
+          .populate("packageID");
+
+        console.log(
+          "Fetched all available subscriptions:",
+          subscriptions.length,
+        );
+      }
+    }
 
     // Calculate analytics
     const totalSubscriptions = subscriptions.length;
@@ -89,7 +128,7 @@ export async function GET(request: Request) {
       // Calculate revenue from total, cost and profit
       const subTotal = sub.subTotal || 0;
       const total = sub.total || 0;
-      const revenue = total || pkg.price || 0; // Use total as revenue
+      const revenue = total || 0; // Use total as revenue
       const cost = parseFloat(pkg.cost) || 0;
       const discount = sub.appliedDiscountAmount || 0; // Keep discount as is
 
@@ -155,6 +194,69 @@ export async function GET(request: Request) {
     // Get all packages for the dropdown
     const allPackages = await packageModel.find({}).sort({ name: 1 });
 
+    // Generate monthly data for the chart (last 6 months)
+    const monthlyData = [];
+    const now = new Date();
+
+    // Only show last 6 months for cleaner chart
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName =
+        monthDate.toLocaleString("default", { month: "short" }) +
+        " " +
+        monthDate.getFullYear();
+
+      // Get month start and end dates for filtering
+      const monthStart = new Date(monthDate);
+      const monthEnd = new Date(monthDate);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      monthEnd.setDate(0); // Last day of the month
+
+      // Calculate monthly metrics from actual subscriptions
+      let monthRevenue = 0;
+      let monthCost = 0;
+      let monthProfit = 0;
+
+      // Filter subscriptions for this month
+      const monthSubscriptions = subscriptions.filter((sub) => {
+        const subDate = new Date(sub.createdAt);
+        return subDate >= monthStart && subDate <= monthEnd;
+      });
+      console.log(
+        `Month: ${monthName}, Subscriptions: ${monthSubscriptions.length}`,
+      );
+
+      // Log month name and number of subscriptions
+
+      // Calculate metrics from real data
+      monthSubscriptions.forEach((sub) => {
+        monthRevenue += sub.total || 0;
+
+        // Get cost from package if available
+        if (sub.packageID && typeof sub.packageID === "object") {
+          monthCost +=
+            sub.packageID.cost +
+              sub.shipping +
+              sub.shipping * 0.14 +
+              sub.total * 0.0275 +
+              sub.total * 0.0275 * 0.14 || 0;
+        }
+      });
+
+      monthProfit = monthRevenue - monthCost;
+
+      // Only add data if we have real subscriptions for this month
+      if (monthSubscriptions.length > 0) {
+        monthlyData.push({
+          month: monthName,
+          revenue: monthRevenue,
+          cost: monthCost,
+          profit: monthProfit,
+          isSample: false,
+        });
+      }
+    }
+
     return NextResponse.json(
       {
         data: {
@@ -178,6 +280,7 @@ export async function GET(request: Request) {
             _id: pkg._id,
             name: pkg.name,
           })),
+          monthlyData: monthlyData, // Add monthly data for the chart
         },
       },
       { status: 200 },
