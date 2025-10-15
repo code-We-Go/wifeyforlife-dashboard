@@ -165,7 +165,7 @@ const ChartSubscriptions: React.FC = () => {
           ) {
             const yearlyData = response.data.data.monthlyData;
 
-            // Arabic month names mapping to their index (0-based)
+            // Arabic month names mapping as fallback
             const arabicMonthsMap: {[key: string]: number} = {
               "يناير": 0,    // January
               "فبراير": 1,   // February
@@ -183,11 +183,17 @@ const ChartSubscriptions: React.FC = () => {
 
             // Process the yearly data and distribute among months
             yearlyData.forEach((monthData: any) => {
-              // Extract month from the month string (format: "MMM YYYY" in Arabic)
-              const monthStr = monthData.month.split(" ")[0]; // Get Arabic month name
+              // Extract month from the month string (format: "MMM YYYY")
+              const monthStr = monthData.month.split(" ")[0]; // Get month name
               
-              // Get month index from Arabic month name
-              const monthIndex = arabicMonthsMap[monthStr];
+              // Try to get month index from English month name first
+              let monthIndex = monthNames.findIndex(m => m === monthStr);
+              
+              // If not found, try Arabic month name as fallback
+              if (monthIndex === -1 && arabicMonthsMap[monthStr] !== undefined) {
+                monthIndex = arabicMonthsMap[monthStr];
+                console.log(`Using Arabic month fallback for: ${monthStr} -> ${monthIndex}`);
+              }
 
               if (monthIndex !== undefined && monthIndex >= 0 && monthIndex < 12) {
                 // Assign data to the correct month

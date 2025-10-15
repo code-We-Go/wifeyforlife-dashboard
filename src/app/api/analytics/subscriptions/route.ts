@@ -208,8 +208,9 @@ export async function GET(request: Request) {
     // Only show last 6 months for cleaner chart
     for (let i = 11; i >= 0; i--) {
       const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      // Ensure we use English month names consistently
       const monthName =
-        monthDate.toLocaleString("default", { month: "short" }) +
+        monthDate.toLocaleString("en-US", { month: "short" }) +
         " " +
         monthDate.getFullYear();
 
