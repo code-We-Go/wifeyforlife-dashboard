@@ -18,10 +18,11 @@ const VideosPage = () => {
   const fetchVideos = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Updated to fetch videos with likes and comments data
       const res = await axios.get(
-        `/api/videos?page=${page}&search=${searchQuery}`,
+        `/api/videos?page=${page}&search=${searchQuery}&includeDetails=true`,
       );
-      console.log("Videos data:", res.data);
+      console.log("Videos data with likes and comments:", res.data);
       setVideos(res.data.data);
       setTotalPages(res.data.totalPages);
     } catch (error) {

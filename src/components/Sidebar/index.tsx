@@ -197,6 +197,41 @@ const menuGroups = [
         route: "/pages/newsletters",
       },
       {
+        icon: (
+          <svg
+            className="fill-current"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16.3125 0H1.6875C0.759375 0 0 0.759375 0 1.6875V16.3125C0 17.2406 0.759375 18 1.6875 18H16.3125C17.2406 18 18 17.2406 18 16.3125V1.6875C18 0.759375 17.2406 0 16.3125 0ZM16.3125 16.3125H1.6875V1.6875H16.3125V16.3125Z"
+              fill=""
+            />
+            <path
+              d="M3.375 3.375H14.625V5.0625H3.375V3.375Z"
+              fill=""
+            />
+            <path
+              d="M3.375 6.75H14.625V8.4375H3.375V6.75Z"
+              fill=""
+            />
+            <path
+              d="M3.375 10.125H14.625V11.8125H3.375V10.125Z"
+              fill=""
+            />
+            <path
+              d="M3.375 13.5H9.5625V15.1875H3.375V13.5Z"
+              fill=""
+            />
+          </svg>
+        ),
+        label: "Interactions",
+        route: "/interactions",
+      },
+      {
         icon: <LiaShippingFastSolid />,
         label: "Shipping",
         route: "/pages/shipping",
