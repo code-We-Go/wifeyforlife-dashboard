@@ -11,7 +11,11 @@ interface AddPlaylistModalProps {
   setPlaylists: React.Dispatch<React.SetStateAction<Playlist[]>>;
 }
 
-const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setModalOpen, setPlaylists }) => {
+const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
+  isModalOpen,
+  setModalOpen,
+  setPlaylists,
+}) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -44,27 +48,32 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag);
-    setFormData(prev => ({ ...prev, tags }));
+    const tags = e.target.value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+    setFormData((prev) => ({ ...prev, tags }));
   };
 
   const handleVideoSelection = (videoId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       videos: prev.videos.includes(videoId)
-        ? prev.videos.filter(id => id !== videoId)
-        : [...prev.videos, videoId]
+        ? prev.videos.filter((id) => id !== videoId)
+        : [...prev.videos, videoId],
     }));
   };
 
@@ -74,7 +83,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
 
     try {
       const response = await axios.post("/api/playlists", formData);
-      setPlaylists(prev => [response.data.data, ...prev]);
+      setPlaylists((prev) => [response.data.data, ...prev]);
       setModalOpen(false);
       setFormData({
         title: "",
@@ -97,9 +106,9 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
   if (!isModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black md:pl-72.5 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 md:pl-72.5">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Add New Playlist</h2>
           <button
             onClick={() => setModalOpen(false)}
@@ -110,9 +119,9 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Title
               </label>
               <input
@@ -121,12 +130,12 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
                 value={formData.title}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Category
               </label>
               <input
@@ -134,13 +143,13 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -148,7 +157,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -167,7 +176,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
           </div> */}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-gray-700">
               Thumbnail Image *
             </label>
             <div className="flex flex-col gap-2">
@@ -177,15 +186,18 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
                   height={60}
                   src={formData.thumbnailUrl}
                   alt="Thumbnail Preview"
-                  className="w-40 h-30 object-cover rounded border border-gray-300 mt-2"
+                  className="mt-2 h-30 w-40 rounded border border-gray-300 object-cover"
                 />
               )}
               <UploadButton
-                className="bg-primary flex w-fit px-2 rounded-2xl"
+                className="flex w-fit rounded-2xl bg-primary px-2"
                 endpoint="mediaUploader"
                 onClientUploadComplete={(res) => {
                   if (res && res.length > 0) {
-                    setFormData(prev => ({ ...prev, thumbnailUrl: res[0].url }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      thumbnailUrl: res[0].url,
+                    }));
                   }
                 }}
                 onUploadError={(error: Error) => {
@@ -219,41 +231,40 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-gray-700">
               Select Videos ({formData.videos.length} selected)
             </label>
             {isLoadingVideos ? (
-              <div className="text-center py-4">Loading videos...</div>
+              <div className="py-4 text-center">Loading videos...</div>
             ) : availableVideos.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2">
+              <div className="grid max-h-60 grid-cols-1 gap-2 overflow-y-auto rounded-md border border-gray-300 p-2 md:grid-cols-2 lg:grid-cols-3">
                 {availableVideos.map((video) => (
                   <div
                     key={video._id}
-                    className={`flex items-center space-x-2 p-2 rounded cursor-pointer ${
+                    className={`flex cursor-pointer items-center space-x-2 rounded p-2 ${
                       formData.videos.includes(video._id || "")
-                        ? "bg-primary/10 border border-primary"
+                        ? "border border-primary bg-primary/10"
                         : "bg-gray-50 hover:bg-gray-100"
                     }`}
                     onClick={() => handleVideoSelection(video._id || "")}
                   >
                     <input
-                    onClick={(e)=>e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
                       type="checkbox"
                       checked={formData.videos.includes(video._id || "")}
                       onChange={() => handleVideoSelection(video._id || "")}
                       className="mr-2"
                     />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 truncate">{video.title}</p>
-                      {video.playlistHint && <p className="text-sm text-gray-900 truncate">({video.playlistHint})</p>}
-
-
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm text-gray-900">
+                        {video.title}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-4 text-gray-500">
+              <div className="py-4 text-center text-gray-500">
                 No videos available. Please create some videos first.
               </div>
             )}
@@ -263,14 +274,14 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="rounded-md border border-gray-300 px-4 py-2 text-gray-600 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
+              className="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {isSubmitting ? "Creating..." : "Create Playlist"}
             </button>
@@ -281,4 +292,4 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({ isModalOpen, setMod
   );
 };
 
-export default AddPlaylistModal; 
+export default AddPlaylistModal;
