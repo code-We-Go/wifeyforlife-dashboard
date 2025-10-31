@@ -4,6 +4,7 @@ import InteractionsModel from "@/app/models/interactionsModel";
 import mongoose from "mongoose";
 import UserModel from "@/app/models/userModel";
 import videoModel from "@/app/models/videoModel";
+import blogModel from "@/app/models/blogModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -75,6 +76,20 @@ export async function GET(request: Request) {
             _id: videoData._id,
             title: videoData.title,
             thumbnail: videoData.thumbnailUrl,
+          };
+          interactions[i] = interactions[i].toObject();
+          interactions[i].parentId = data;
+        }
+      } else if (interactions[i].parentType === "blog") {
+        const blogData = await blogModel
+          .findById(interactions[i].parentId)
+          .select("title featuredImage _id");
+
+        if (blogData) {
+          const data = {
+            _id: blogData._id,
+            title: blogData.title,
+            thumbnail: blogData.featuredImage,
           };
           interactions[i] = interactions[i].toObject();
           interactions[i].parentId = data;
