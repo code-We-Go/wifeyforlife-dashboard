@@ -92,8 +92,10 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ isOpen, onC
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border rounded-md"
+              onChange={(e) => setEmail(e.target.value.toLowerCase())}
+              className="w-full p-2 border rounded-md lowercase"
+              autoCapitalize="none"
+              spellCheck={false}
               required
             />
           </div>
@@ -209,8 +211,10 @@ const AddPointsModal: React.FC<AddPointsModalProps> = ({ isOpen, onClose, onSucc
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border rounded-md"
+              onChange={(e) => setEmail(e.target.value.toLowerCase())}
+              className="w-full p-2 border rounded-md lowercase"
+              autoCapitalize="none"
+              spellCheck={false}
               required
             />
           </div>
