@@ -83,6 +83,7 @@ export interface Playlist {
 }
 
 export interface Variant {
+  price?: number;
   name: string;
   attributeName: string;
   attributes: attribute[]; // e.g., [{ name: "Color", value: "Black" }, { name: "Capacity", value: "2L" }]
