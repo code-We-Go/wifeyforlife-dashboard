@@ -109,6 +109,7 @@ export interface SubCategory {
 export type attribute = {
   name: string;
   stock: number;
+  price?: number;
 };
 export type media = {
   url: string;

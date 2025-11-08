@@ -5,6 +5,7 @@ import mongoose, { Schema, Document } from "mongoose";
 const attributeSchema = new Schema({
     name: { type: String, required: true },
     stock: { type: Number, required: true },
+    price: { type: Number, required: false, min: 0 },
   }, { _id: false });
   
   const mediaSchema = new Schema({

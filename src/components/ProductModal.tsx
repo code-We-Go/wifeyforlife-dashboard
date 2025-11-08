@@ -34,9 +34,11 @@ const ProductModal = ({
     if (isDetailsModalOpen) {
       console.log("Modal opened, product:", product);
       console.log("Product subcategory:", product.subCategoryID);
-      
+
       // setSelectedCategory(product.subCategoryID.categoryID._id);
-      setSelectedSubCategory(product.subCategoryID?product.subCategoryID._id:"");
+      setSelectedSubCategory(
+        product.subCategoryID ? product.subCategoryID._id : "",
+      );
       setProduct(product);
     }
   }, [isDetailsModalOpen, product]);
@@ -49,13 +51,15 @@ const ProductModal = ({
           setCategories(res.data.data);
           console.log("Categories loaded:", res.data.data);
           console.log("Current selected category:", selectedCategory);
-          
+
           // Set the selected category and fetch subcategories
           const categoryId = product.subCategoryID?.categoryID?._id;
           console.log("Setting category to:", categoryId);
           setSelectedCategory(categoryId);
           await fetchSubCategories(categoryId);
-          setSelectedSubCategory(product.subCategoryID?product.subCategoryID._id:"");
+          setSelectedSubCategory(
+            product.subCategoryID ? product.subCategoryID._id : "",
+          );
         }
       } catch (err) {
         console.error(err);
@@ -98,7 +102,9 @@ const ProductModal = ({
   const updateFeild = async (field: string, value: any) => {
     if (field === "subCategoryID") {
       // Find the selected subcategory object from the subCategories array
-      const selectedSubCategory = subCategories.find(sub => sub._id === value);
+      const selectedSubCategory = subCategories.find(
+        (sub) => sub._id === value,
+      );
       if (selectedSubCategory) {
         setProducts((prevProducts) =>
           prevProducts.map((p) =>
@@ -123,7 +129,7 @@ const ProductModal = ({
       // Update local state optimistically
 
       // Send update request to backend
-      console.log("update" + productState.productDetails);
+      console.log("update" + productState.variations[0].attributes[0].price);
       const updatedProduct = await axios.put(
         `/api/products?productID=${product._id}`,
         productState,
@@ -132,7 +138,9 @@ const ProductModal = ({
       // Update state with the response from the backend
       setProducts((prevProducts) =>
         prevProducts.map((p) =>
-          p._id === updatedProduct.data._id ? updatedProduct.data : p,
+          p._id === updatedProduct.data?.data?._id
+            ? updatedProduct.data.data
+            : p,
         ),
       );
 
@@ -156,15 +164,15 @@ const ProductModal = ({
 
   // Update Variant Function
   const updateVariant = async (index: number, field: string, value: any) => {
-    // Create a copy of the product with the updated variant
-    const updatedVariations = [...product.variations];
+    // Create a copy based on the latest local state to avoid stale data
+    const updatedVariations = [...productState.variations];
     updatedVariations[index] = {
       ...updatedVariations[index],
       [field]: value,
     };
     setProduct((prev) => ({ ...prev, variations: updatedVariations }));
 
-    // Update local state optimistically
+    // Optimistically reflect changes in the products list
     setProducts((prevProducts) =>
       prevProducts.map((p) =>
         p._id === product._id ? { ...p, variations: updatedVariations } : p,
@@ -178,8 +186,8 @@ const ProductModal = ({
     setProduct((prev) => ({ ...prev, variations: updatedVariations }));
     setProducts((prevProducts) =>
       prevProducts.map((p) =>
-        p._id === product._id ? { ...p, variations: updatedVariations } : p
-      )
+        p._id === product._id ? { ...p, variations: updatedVariations } : p,
+      ),
     );
   };
 
@@ -213,7 +221,7 @@ const ProductModal = ({
               <label className="block font-semibold">Title:</label>
               <input
                 type="text"
-                value={product.title}
+                value={productState.title}
                 onChange={(e) => updateFeild("title", e.target.value)}
                 className="w-full border p-2"
               />
@@ -223,7 +231,7 @@ const ProductModal = ({
             <div>
               <label className="block font-semibold">Description:</label>
               <textarea
-                value={product.description}
+                value={productState.description}
                 onChange={(e) => updateFeild("description", e.target.value)}
                 className="w-full border p-2"
               />
@@ -252,13 +260,16 @@ const ProductModal = ({
                   </option>
                 ))}
               </select>
-
             </div>
 
             <div>
               <label className="block font-semibold">Subcategory:</label>
               <select
-                value={productState.subCategoryID? productState.subCategoryID._id:""}
+                value={
+                  productState.subCategoryID
+                    ? productState.subCategoryID._id
+                    : ""
+                }
                 onChange={(e) => updateFeild("subCategoryID", e.target.value)}
                 className="w-full border p-2"
               >
@@ -269,7 +280,6 @@ const ProductModal = ({
                   </option>
                 ))}
               </select>
-
             </div>
             <div>
               <label className="block font-semibold">Season:</label>
@@ -311,10 +321,10 @@ const ProductModal = ({
               <label className="block font-semibold">Price :</label>
               <input
                 type="number"
-                value={product.price.local}
+                value={productState.price.local}
                 onChange={(e) => {
                   const newPrice = {
-                    ...product.price,
+                    ...productState.price,
                     local: parseFloat(e.target.value),
                   };
                   updateFeild("price", newPrice);
@@ -328,7 +338,7 @@ const ProductModal = ({
               <label className="block font-semibold">Compare Price:</label>
               <input
                 type="number"
-                value={product.comparedPrice || ""}
+                value={productState.comparedPrice || ""}
                 onChange={(e) => {
                   updateFeild("comparedPrice", parseFloat(e.target.value));
                 }}
@@ -339,11 +349,11 @@ const ProductModal = ({
             {/* Variations */}
             <div>
               <label className="block font-semibold">Product Variants:</label>
-              {product.variations.map((variant, index) => (
+              {productState.variations.map((variant, index) => (
                 <ProductVariant
                   key={index}
                   index={index}
-                  product={product}
+                  product={productState}
                   variant={variant}
                   updateVariant={updateVariant}
                   onVariantChange={updateVariant}
@@ -353,8 +363,14 @@ const ProductModal = ({
               <button
                 onClick={() =>
                   updateFeild("variations", [
-                    ...product.variations,
-                    { color: "", stock: 0, featured: false, images: [] },
+                    ...productState.variations,
+                    {
+                      name: "",
+                      attributeName: "",
+                      attributes: [],
+                      images: [],
+                      price: 0,
+                    },
                   ])
                 }
                 className="px-4 py-2 text-accent underline"
@@ -366,13 +382,13 @@ const ProductModal = ({
             {/* Product Details */}
             <div>
               <label className="block font-semibold">Product Details:</label>
-              {product.productDetails.map((detail, index) => (
+              {productState.productDetails.map((detail, index) => (
                 <div key={index} className="mb-2 flex items-center gap-2">
                   <input
                     type="text"
                     value={detail}
                     onChange={(e) => {
-                      const newDetails = [...product.productDetails];
+                      const newDetails = [...productState.productDetails];
                       newDetails[index] = e.target.value;
                       updateFeild("productDetails", newDetails);
                     }}
@@ -381,7 +397,7 @@ const ProductModal = ({
                   <span
                     className="cursor-pointer text-red-500"
                     onClick={() => {
-                      const newDetails = product.productDetails.filter(
+                      const newDetails = productState.productDetails.filter(
                         (_, i) => i !== index,
                       );
                       updateFeild("productDetails", newDetails);
@@ -393,7 +409,10 @@ const ProductModal = ({
               ))}
               <button
                 onClick={() =>
-                  updateFeild("productDetails", [...product.productDetails, ""])
+                  updateFeild("productDetails", [
+                    ...productState.productDetails,
+                    "",
+                  ])
                 }
                 className="px-4 py-2 text-accent underline"
               >

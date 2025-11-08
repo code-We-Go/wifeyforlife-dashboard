@@ -159,6 +159,7 @@ const AddProductModal = ({
         attributeName: "",
         attributes: [],
         images: [],
+        price: 0,
       },
     ]);
   };
@@ -352,17 +353,7 @@ const AddProductModal = ({
                 <p className="text-sm text-red-500">{errors.variations}</p>
               )}
               <button
-                onClick={() =>
-                  updateField("variations", [
-                    ...productState.variations,
-                    {
-                      name: "",
-                      attributeName: "",
-                      attributes: [],
-                      images: [],
-                    },
-                  ])
-                }
+                onClick={addNewVariant}
                 className="px-4 py-2 text-accent underline"
               >
                 Add Variant

@@ -71,7 +71,7 @@ const ProductsComponent = ({ product, setProducts }: { product: Product; setProd
 
      setProducts((prevProducts) =>
        prevProducts.map((p) =>
-         p._id === updatedProduct.data._id ? updatedProduct.data : p
+         p._id === updatedProduct.data?.data?._id ? updatedProduct.data.data : p
        )
      );
 

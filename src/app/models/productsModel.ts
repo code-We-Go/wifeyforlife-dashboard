@@ -24,12 +24,16 @@ const mediaSchema = new Schema<media>({
 const attributeSchema = new Schema<attribute>({
   name: { type: String, required: true }, // e.g., "Color" or "Size"
   stock: { type: Number, required: true, min: 0 },
+  price: { type: Number, required: false, min: 0 }, // e.g., "Color" or "Size"
 });
 
 // Define the Variant schema
 const VariantSchema = new Schema<Variant>({
   name: { type: String, required: false }, // e.g., "Default Variant"
-  attributeName: { type: String, required: true }, // e.g., "Color" or "Size"
+  attributeName: { type: String, required: true },
+  price: { type: Number, required: false, min: 0 }, //, e.g., "Color" or "Size"
+
+  // e.g., "Color" or "Size"
   attributes: {
     type: [attributeSchema],
     required: true,
