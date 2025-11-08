@@ -88,6 +88,7 @@ const ProductSchema = new Schema({
   },
   featured: { type: Boolean, default: false },
   ratings: { type: Number, default: 0, min: 0 },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // Create and export the Product model
