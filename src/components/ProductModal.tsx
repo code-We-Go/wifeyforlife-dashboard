@@ -245,6 +245,17 @@ const ProductModal = ({
                 className="border p-2"
               />
             </div>
+            {/* Order */}
+            <div>
+              <label className="block font-semibold">Order:</label>
+              <input
+                type="number"
+                value={productState.order ?? 0}
+                onChange={(e) => updateFeild("order", Number(e.target.value))}
+                className="w-full border p-2"
+                min={0}
+              />
+            </div>
             {/* collections */}
             <div>
               <label className="block font-semibold">Category:</label>

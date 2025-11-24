@@ -34,7 +34,7 @@ const AddProductModal = ({
   const [productState, setProduct] = useState<AddProductType>({
     title: "",
     description: "",
-    price: { local: 0 ,global:0},
+    price: { local: 0, global: 0 },
     comparedPrice: 0,
     variations: [],
     subCategoryID: {
@@ -49,6 +49,7 @@ const AddProductModal = ({
     productCare: [],
     featured: false,
     ratings: 0,
+    order: 0,
   });
 
   const [errors, setErrors] = useState<any>({}); // For validation errors
@@ -166,7 +167,9 @@ const AddProductModal = ({
 
   // Add this function to handle variant deletion
   const deleteVariant = (index: number) => {
-    const updatedVariations = productState.variations.filter((_, i) => i !== index);
+    const updatedVariations = productState.variations.filter(
+      (_, i) => i !== index,
+    );
     setProduct((prev) => ({ ...prev, variations: updatedVariations }));
   };
 
@@ -196,6 +199,18 @@ const AddProductModal = ({
               {errors.title && (
                 <p className="text-sm text-red-500">{errors.title}</p>
               )}
+            </div>
+
+            {/* Order */}
+            <div>
+              <label className="block font-semibold">Order:</label>
+              <input
+                type="number"
+                value={productState.order ?? 0}
+                onChange={(e) => updateField("order", Number(e.target.value))}
+                className="w-full border p-2"
+                min={0}
+              />
             </div>
 
             {/* Description */}
@@ -438,13 +453,13 @@ const AddProductModal = ({
           {/* Buttons */}
           <div className="mt-6 flex justify-around">
             <button
-              className="border-[1px] rounded-2xl bg-secondary px-4 py-2 text-creamey"
+              className="rounded-2xl border-[1px] bg-secondary px-4 py-2 text-creamey"
               onClick={addProduct}
             >
               Add Product
             </button>
             <button
-              className="border-[1px] border-secondary rounded-2xl px-4 py-2 text-secondary"
+              className="rounded-2xl border-[1px] border-secondary px-4 py-2 text-secondary"
               onClick={() => setModalOpen(false)}
             >
               Cancel

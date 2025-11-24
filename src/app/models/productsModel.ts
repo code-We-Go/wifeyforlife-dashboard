@@ -77,6 +77,7 @@ const ProductSchema = new Schema({
   season: { type: String, required: false },
   price: { type: priceSchema, required: true },
   comparedPrice: { type: Number, required: false, min: 0 },
+  order: { type: Number, required: false, default: 0 },
   productDimensions: { type: [String], default: [] },
   productDetails: { type: [String], default: [] },
   productCare: { type: [String], default: [] },

@@ -9,7 +9,11 @@ import categoriesModel from "@/app/models/categoriesModel";
 const loadDB = async () => {
   await ConnectDB();
 };
-console.log("subCategoryModel + categoriesModel registered:", subCategoryModel ,categoriesModel);
+console.log(
+  "subCategoryModel + categoriesModel registered:",
+  subCategoryModel,
+  categoriesModel,
+);
 loadDB();
 export async function POST(req: Request, res: Response) {
   console.log("working");
@@ -90,26 +94,30 @@ export async function GET(req: Request) {
         // match: { _id: { $exists: true } },
         populate: {
           path: "categoryID",
-          model: "categories", 
+          model: "categories",
           options: { strictPopulate: false },
           // Handle orphaned categories as well
           // match: { _id: { $exists: true } }
         },
       })
-      .sort({ _id: -1 })
+      .sort({ order: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
     // Filter out products with null/undefined subCategoryID after populate
-    const validProducts = products.filter(product => 
-      product.subCategoryID && 
-      product.subCategoryID._id && 
-      product.subCategoryID.categoryID
+    const validProducts = products.filter(
+      (product) =>
+        product.subCategoryID &&
+        product.subCategoryID._id &&
+        product.subCategoryID.categoryID,
     );
 
     console.log("Valid products count:", validProducts.length);
     if (validProducts.length > 0) {
-      console.log("Sample product subCategoryID:", validProducts[0].subCategoryID);
+      console.log(
+        "Sample product subCategoryID:",
+        validProducts[0].subCategoryID,
+      );
     }
 
     return NextResponse.json(

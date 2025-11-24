@@ -158,6 +158,7 @@ export interface Product {
   season: string;
   featured: boolean;
   ratings: number;
+  order?: number;
 }
 
 export type AddProductType = Omit<Product, "_id">;
