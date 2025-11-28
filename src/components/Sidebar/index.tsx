@@ -11,7 +11,11 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
 import { GiClothes, GiThreeFriends } from "react-icons/gi";
 import { BiMailSend } from "react-icons/bi";
-import { MdOutlineLoyalty, MdPlaylistPlay } from "react-icons/md";
+import {
+  MdOutlineLoyalty,
+  MdOutlinePsychologyAlt,
+  MdPlaylistPlay,
+} from "react-icons/md";
 import { IoStarSharp } from "react-icons/io5";
 
 import { CiVideoOn } from "react-icons/ci";
@@ -21,6 +25,8 @@ import { FiLogOut } from "react-icons/fi";
 import { RiCoupon3Line } from "react-icons/ri";
 import { TiUserAddOutline } from "react-icons/ti";
 import { PiBooks, PiBooksLight } from "react-icons/pi";
+import { RiPsychotherapyLine } from "react-icons/ri";
+
 import { LuNotebookPen } from "react-icons/lu";
 import { FiKey } from "react-icons/fi";
 
@@ -111,6 +117,16 @@ const menuGroups = [
         icon: <GiThreeFriends />,
         label: "Partners",
         route: "/pages/partners",
+      },
+      {
+        icon: <MdOutlinePsychologyAlt />,
+        label: "Partner Sessions",
+        route: "/pages/partner-sessions",
+      },
+      {
+        icon: <RiPsychotherapyLine />,
+        label: "Session Orders",
+        route: "/pages/partner-session-orders",
       },
       {
         icon: <BsCollection />,
