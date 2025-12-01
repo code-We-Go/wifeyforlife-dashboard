@@ -34,8 +34,8 @@ export async function GET(req: Request) {
       ? {
           $or: [
             { username: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } }
-          ]
+            { email: { $regex: search, $options: "i" } },
+          ],
         }
       : {};
 
@@ -43,14 +43,13 @@ export async function GET(req: Request) {
     const totalUsers = await UserModel.countDocuments(searchQuery);
 
     // Get users with pagination
-    const users = await UserModel
-      .find(searchQuery)
-      .populate({  
+    const users = await UserModel.find(searchQuery)
+      .populate({
         path: "subscription",
         model: "subscriptions", // <-- this matches your model registration and ref
-        options: { strictPopulate: false }
+        options: { strictPopulate: false },
       })
-      .select('-password')
+      .select("-password")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -78,6 +77,9 @@ export async function POST(req: Request) {
     if (!data.username || !data.password || !data.email) {
       return errorResponse("Username, email and password are required", 400);
     }
+
+    // Normalize email to lowercase for consistent storage and comparisons
+    data.email = String(data.email).trim().toLowerCase();
 
     // Check if user already exists with same username or email
     const existingUser = await UserModel.findOne({
@@ -115,8 +117,9 @@ export async function PUT(request: Request) {
 
     const updateData = await request.json();
 
-    // If email is being updated, check for uniqueness
+    // If email is being updated, normalize and check for uniqueness
     if (updateData.email) {
+      updateData.email = String(updateData.email).trim().toLowerCase();
       const existingUser = await UserModel.findOne({
         email: updateData.email,
         _id: { $ne: userId }, // Exclude current user
