@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Ipackage } from "@/interfaces/interfaces";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import * as XLSX from "xlsx";
 
 interface Subscription {
   _id: string;
@@ -13,7 +14,7 @@ interface Subscription {
   expiryDate: string;
   createdAt: string;
   redeemedLoyaltyPoints?: number;
-  appliedDiscount?: string;
+  appliedDiscount?: string | { _id: string; code: string } | null;
   appliedDiscountAmount?: number;
   // User information
   firstName?: string;
@@ -59,6 +60,7 @@ const SubscriptionsPage = () => {
   const [selectedSubscription, setSelectedSubscription] =
     useState<Subscription | null>(null);
   const [search, setSearch] = useState("");
+  const [discountSearch, setDiscountSearch] = useState("");
   // Filter states
   const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -133,11 +135,16 @@ const SubscriptionsPage = () => {
   // Pagination logic
   const filteredSubscriptions = subscriptions.filter(
     (s) =>
-      s.email?.toLowerCase().includes(search.toLowerCase()) ||
-      s.paymentID?.toLowerCase().includes(search.toLowerCase()) ||
-      (s.firstName &&
-        s.firstName.toLowerCase().includes(search.toLowerCase())) ||
-      (s.lastName && s.lastName.toLowerCase().includes(search.toLowerCase())),
+      (s.email?.toLowerCase().includes(search.toLowerCase()) ||
+        s.paymentID?.toLowerCase().includes(search.toLowerCase()) ||
+        (s.firstName &&
+          s.firstName.toLowerCase().includes(search.toLowerCase())) ||
+        (s.lastName &&
+          s.lastName.toLowerCase().includes(search.toLowerCase()))) &&
+      (discountSearch === "" ||
+        (typeof s.appliedDiscount === "object" &&
+          s.appliedDiscount?.code?.toLowerCase() ===
+            discountSearch.toLowerCase())),
   );
 
   const totalPages = Math.ceil(filteredSubscriptions.length / itemsPerPage);
@@ -151,7 +158,7 @@ const SubscriptionsPage = () => {
   // Reset to first page when search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [search, discountSearch]);
 
   const fetchSubscriptions = async () => {
     setLoading(true);
@@ -179,6 +186,55 @@ const SubscriptionsPage = () => {
     } catch (error) {
       console.error("Error fetching packages:", error);
     }
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = filteredSubscriptions.map((sub) => ({
+      "Payment ID": sub.paymentID,
+      Email: sub.email,
+      Package: sub.packageID?.name || "",
+      Subscribed: sub.subscribed ? "Yes" : "No",
+      "Expiry Date": sub.expiryDate,
+      "Created At": sub.createdAt,
+      "First Name": sub.firstName || "",
+      "Last Name": sub.lastName || "",
+      Phone: sub.phone || "",
+      "WhatsApp Number": sub.whatsAppNumber || "",
+      "Is Gift": sub.isGift ? "Yes" : "No",
+      "Gift Recipient Email": sub.giftRecipientEmail || "",
+      "Gift Card Name": sub.giftCardName || "",
+      "Special Message": sub.specialMessage || "",
+      Country: sub.country || "",
+      Address: sub.address || "",
+      Apartment: sub.apartment || "",
+      City: sub.city || "",
+      State: sub.state || "",
+      "Postal/Zip": sub.postalZip || "",
+      "Billing Country": sub.billingCountry || "",
+      "Billing First Name": sub.billingFirstName || "",
+      "Billing Last Name": sub.billingLastName || "",
+      "Billing State": sub.billingState || "",
+      "Billing Address": sub.billingAddress || "",
+      "Billing Apartment": sub.billingApartment || "",
+      "Billing Postal/Zip": sub.billingPostalZip || "",
+      "Billing City": sub.billingCity || "",
+      "Billing Phone": sub.billingPhone || "",
+      Total: sub.total || 0,
+      SubTotal: sub.subTotal || 0,
+      Shipping: sub.shipping || 0,
+      Currency: sub.currency || "",
+      "Redeemed Loyalty Points": sub.redeemedLoyaltyPoints || 0,
+      "Applied Discount Code":
+        typeof sub.appliedDiscount === "object" && sub.appliedDiscount !== null
+          ? sub.appliedDiscount.code
+          : sub.appliedDiscount || "",
+      "Applied Discount Amount": sub.appliedDiscountAmount || 0,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Subscriptions");
+    XLSX.writeFile(workbook, "subscriptions_export.xlsx");
   };
 
   const openModal = (
@@ -227,7 +283,11 @@ const SubscriptionsPage = () => {
         shipping: subscription.shipping || 0,
         currency: subscription.currency || "",
         redeemedLoyaltyPoints: subscription.redeemedLoyaltyPoints || 0,
-        appliedDiscount: subscription.appliedDiscount || "",
+        appliedDiscount:
+          typeof subscription.appliedDiscount === "object" &&
+          subscription.appliedDiscount !== null
+            ? subscription.appliedDiscount.code
+            : subscription.appliedDiscount || "",
         appliedDiscountAmount: subscription.appliedDiscountAmount || 0,
       });
     } else if (type === "add") {
@@ -337,7 +397,7 @@ const SubscriptionsPage = () => {
     <DefaultLayout>
       <div className="flex min-h-[calc(100vh-124px)] w-full flex-col items-center p-4">
         <div className="mb-4 flex w-full flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 items-center gap-2 lg:grid-cols-3 2xl:grid-cols-4">
             <input
               type="text"
               placeholder="Search by email or paymentID..."
@@ -345,6 +405,7 @@ const SubscriptionsPage = () => {
               onChange={(e) => setSearch(e.target.value)}
               className="w-64 rounded border p-2"
             />
+
             <select
               value={subscribedFilter}
               onChange={(e) => setSubscribedFilter(e.target.value)}
@@ -375,13 +436,28 @@ const SubscriptionsPage = () => {
                 </option>
               ))}
             </select>
+            <input
+              type="text"
+              placeholder="Search by discount code..."
+              value={discountSearch}
+              onChange={(e) => setDiscountSearch(e.target.value)}
+              className="w-64 rounded border p-2"
+            />
           </div>
-          <button
-            className="rounded bg-primary px-4 py-2 text-white"
-            onClick={() => openModal("add")}
-          >
-            Add Subscription
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+              onClick={exportToExcel}
+            >
+              Export to Excel
+            </button>
+            <button
+              className="rounded bg-primary px-4 py-2 text-white"
+              onClick={() => openModal("add")}
+            >
+              Add Subscription
+            </button>
+          </div>
         </div>
         <div className="w-full overflow-x-auto">
           <table className="w-full border text-left">

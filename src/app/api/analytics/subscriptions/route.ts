@@ -30,20 +30,23 @@ export async function GET(request: Request) {
       startDate = new Date(yearNum, monthNum - 1, 1);
       endDate = new Date(yearNum, monthNum, 0); // Last day of month
     } else {
-      // Default to current month
-      const now = new Date();
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      // Default to All Time (no date filter)
+      startDate = null;
+      endDate = null;
     }
 
     // Build query
     let query: any = {
       subscribed: true,
-      createdAt: {
+    };
+
+    // Add date filter only if startDate and endDate are set
+    if (startDate && endDate) {
+      query.createdAt = {
         $gte: startDate,
         $lte: endDate,
-      },
-    };
+      };
+    }
 
     // Add package filter if provided
     if (packageId) {
@@ -62,7 +65,7 @@ export async function GET(request: Request) {
       .sort({ createdAt: -1 });
 
     // If no subscriptions found with the date filter, get the most recent ones
-    if (subscriptions.length === 0) {
+    if (subscriptions.length === 0 && startDate && endDate) {
       const modifiedQuery = { ...query };
       delete modifiedQuery.createdAt; // Fetch all subscriptions from the last 6 months for better data representation
       const twelveMonthsAgo = new Date();
@@ -109,6 +112,8 @@ export async function GET(request: Request) {
     let totalRedeemedPoints = 0;
     let totalRedeemedPointsValue = 0; // in pounds (20 points = 1 pound)
     let totalPaymobFees = 0; // 2.75% of total, 0 if isGift
+    let totalWifeyFull = 0;
+    let totalWifeyMini = 0;
 
     // Group by package
     const packageStats: Record<
@@ -131,6 +136,16 @@ export async function GET(request: Request) {
     subscriptions.forEach((sub) => {
       const pkg = sub.packageID as any;
       if (!pkg) return;
+
+      // Count Wifey Full vs Mini
+      const pkgName = pkg.name ? pkg.name.toLowerCase() : "";
+      if (pkgName.includes("mini")) {
+        totalWifeyMini++;
+      } else {
+        // Assuming if it's not mini, it's likely the full package
+        // Adjust this logic if there are other packages to exclude
+        totalWifeyFull++;
+      }
 
       // Calculate revenue from total, cost and profit
       const subTotal = sub.subTotal || 0;
@@ -280,6 +295,8 @@ export async function GET(request: Request) {
             totalRedeemedPoints,
             totalRedeemedPointsValue,
             totalPaymobFees,
+            totalWifeyFull,
+            totalWifeyMini,
           },
           packageStats: Object.values(packageStats),
           allPackages: allPackages.map((pkg) => ({
