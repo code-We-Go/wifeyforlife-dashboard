@@ -23,12 +23,14 @@ const AddProductModal = ({
   fetchProducts: () => Promise<void>;
 }) => {
   const updateVariant = async (index: number, field: string, value: any) => {
-    const updatedVariations = [...productState.variations];
-    updatedVariations[index] = {
-      ...updatedVariations[index],
-      [field]: value,
-    };
-    setProduct((prev) => ({ ...prev, variations: updatedVariations }));
+    setProduct((prev) => {
+      const updatedVariations = [...prev.variations];
+      updatedVariations[index] = {
+        ...updatedVariations[index],
+        [field]: value,
+      };
+      return { ...prev, variations: updatedVariations };
+    });
   };
   // testtest test
   const [productState, setProduct] = useState<AddProductType>({
@@ -72,6 +74,30 @@ const AddProductModal = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  useEffect(() => {
+    if (isModalOpen && productState.variations.length === 0) {
+      setProduct((prev) => ({
+        ...prev,
+        variations: [
+          {
+            name: "",
+            attributeName: "",
+            price: 0,
+            stock: 0,
+            images: [],
+            attributes: [
+              {
+                name: "",
+                stock: 0,
+                price: 0,
+              },
+            ],
+          },
+        ],
+      }));
+    }
+  }, [isModalOpen]);
 
   useEffect(() => {
     const fetchCategories = async () => {

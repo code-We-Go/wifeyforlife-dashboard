@@ -164,30 +164,46 @@ const ProductModal = ({
 
   // Update Variant Function
   const updateVariant = async (index: number, field: string, value: any) => {
-    // Create a copy based on the latest local state to avoid stale data
-    const updatedVariations = [...productState.variations];
-    updatedVariations[index] = {
-      ...updatedVariations[index],
-      [field]: value,
-    };
-    setProduct((prev) => ({ ...prev, variations: updatedVariations }));
+    setProduct((prev) => {
+      const updatedVariations = [...prev.variations];
+      updatedVariations[index] = {
+        ...updatedVariations[index],
+        [field]: value,
+      };
+      return { ...prev, variations: updatedVariations };
+    });
 
     // Optimistically reflect changes in the products list
     setProducts((prevProducts) =>
-      prevProducts.map((p) =>
-        p._id === product._id ? { ...p, variations: updatedVariations } : p,
-      ),
+      prevProducts.map((p) => {
+        if (p._id === product._id) {
+          const updatedVariations = [...p.variations];
+          updatedVariations[index] = {
+            ...updatedVariations[index],
+            [field]: value,
+          };
+          return { ...p, variations: updatedVariations };
+        }
+        return p;
+      }),
     );
   };
 
   // Add this function to handle variant deletion
   const deleteVariant = (index: number) => {
-    const updatedVariations = product.variations.filter((_, i) => i !== index);
-    setProduct((prev) => ({ ...prev, variations: updatedVariations }));
+    setProduct((prev) => {
+      const updatedVariations = prev.variations.filter((_, i) => i !== index);
+      return { ...prev, variations: updatedVariations };
+    });
+
     setProducts((prevProducts) =>
-      prevProducts.map((p) =>
-        p._id === product._id ? { ...p, variations: updatedVariations } : p,
-      ),
+      prevProducts.map((p) => {
+        if (p._id === product._id) {
+          const updatedVariations = p.variations.filter((_, i) => i !== index);
+          return { ...p, variations: updatedVariations };
+        }
+        return p;
+      }),
     );
   };
 

@@ -159,11 +159,20 @@ const ProductVariant = ({
 
       {/* Variant Name */}
       <div className="mb-4">
-        <label className="block font-semibold">Variant Name:</label>
+        <label className="block font-semibold">
+          Variant Name:{" "}
+          <span className="text-sm font-normal text-gray-400">
+            ex: Size,Color (doesn&apos;t appear on website on your demand ,but
+            don&apos;t let it empty. )
+          </span>
+        </label>
         <input
           type="text"
           value={variant.name}
-          onChange={(e) => onVariantChange(index, "name", e.target.value)}
+          onChange={(e) => {
+            onVariantChange(index, "name", e.target.value);
+            onVariantChange(index, "attributeName", e.target.value);
+          }}
           className="w-full border p-2"
           placeholder="e.g., Default Variant"
         />
@@ -187,20 +196,6 @@ const ProductVariant = ({
         />
       </div>
 
-      {/* Attribute Name */}
-      <div className="mb-4">
-        <label className="block font-semibold">Attribute Name:</label>
-        <input
-          type="text"
-          value={variant.attributeName}
-          onChange={(e) =>
-            onVariantChange(index, "attributeName", e.target.value)
-          }
-          className="w-full border p-2"
-          placeholder="e.g., Color or Size"
-        />
-      </div>
-
       {/* Attributes */}
       <div className="mb-4">
         <label className="block font-semibold">Attributes:</label>
@@ -208,7 +203,12 @@ const ProductVariant = ({
           <div key={attrIndex} className="mb-2 flex items-start gap-2">
             <div className="flex flex-1 gap-2">
               <div className="flex-1">
-                <label className="block text-xs font-semibold">Name</label>
+                <label className="block text-xs font-semibold">
+                  Name{" "}
+                  <span className="font-normal text-gray-500">
+                    ex: notebook only,notebook with stickers
+                  </span>
+                </label>
                 <input
                   type="text"
                   placeholder="Attribute Name"
@@ -242,7 +242,11 @@ const ProductVariant = ({
                   placeholder="Price"
                   min={0}
                   step="0.01"
-                  value={typeof attr.price === "number" ? attr.price : Number(attr.price ?? 0)}
+                  value={
+                    typeof attr.price === "number"
+                      ? attr.price
+                      : Number(attr.price ?? 0)
+                  }
                   onChange={(e) =>
                     updateAttribute(
                       attrIndex,
