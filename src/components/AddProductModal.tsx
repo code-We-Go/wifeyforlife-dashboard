@@ -227,18 +227,6 @@ const AddProductModal = ({
               )}
             </div>
 
-            {/* Order */}
-            <div>
-              <label className="block font-semibold">Order:</label>
-              <input
-                type="number"
-                value={productState.order ?? 0}
-                onChange={(e) => updateField("order", Number(e.target.value))}
-                className="w-full border p-2"
-                min={0}
-              />
-            </div>
-
             {/* Description */}
             <div>
               <label className="block font-semibold">Description:</label>
@@ -252,59 +240,77 @@ const AddProductModal = ({
               )}
             </div>
 
-            <label className="block font-semibold">Featured:</label>
-            <input
-              type="checkbox"
-              checked={productState.featured}
-              onChange={(e) => updateField("featured", e.target.checked)}
-              className="border p-2"
-            />
-            {errors.featured && (
-              <p className="text-sm text-red-500">{errors.featured}</p>
-            )}
+            <div className="flex gap-10">
+              <div className="w-1/2">
+                <label className="block font-semibold">Featured:</label>
+                <input
+                  type="checkbox"
+                  checked={productState.featured}
+                  onChange={(e) => updateField("featured", e.target.checked)}
+                  className="border p-2"
+                />
+                {errors.featured && (
+                  <p className="text-sm text-red-500">{errors.featured}</p>
+                )}
+              </div>
 
-            {/* Category and Subcategory */}
-            <div>
-              <label className="block font-semibold">Category:</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full border p-2"
-              >
-                <option value="">Select a category</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category._id}>
-                    {category.categoryName}
-                  </option>
-                ))}
-              </select>
-              {errors.category && (
-                <p className="text-sm text-red-500">{errors.category}</p>
-              )}
+              {/* Order */}
+              <div className="w-1/2">
+                <label className="block font-semibold">Order:</label>
+                <input
+                  type="number"
+                  value={productState.order ?? 0}
+                  onChange={(e) => updateField("order", Number(e.target.value))}
+                  className="w-full border p-2"
+                  min={0}
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block font-semibold">Subcategory:</label>
-              <select
-                value={productState.subCategoryID._id}
-                onChange={(e) => updateField("subCategoryID", e.target.value)}
-                className="w-full border p-2"
-                disabled={!selectedCategory}
-              >
-                <option value="">Select a subcategory</option>
-                {subCategories.map((subCategory, index) => (
-                  <option key={index} value={subCategory._id}>
-                    {subCategory.subCategoryName}
-                  </option>
-                ))}
-              </select>
-              {errors.subCategory && (
-                <p className="text-sm text-red-500">{errors.subCategory}</p>
-              )}
+            {/* Category and Subcategory */}
+            <div className="flex gap-10">
+              <div className="w-1/2">
+                <label className="block font-semibold">Category:</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full border p-2"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category, index) => (
+                    <option key={index} value={category._id}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p className="text-sm text-red-500">{errors.category}</p>
+                )}
+              </div>
+
+              <div className="w-1/2">
+                <label className="block font-semibold">Subcategory:</label>
+                <select
+                  value={productState.subCategoryID._id}
+                  onChange={(e) => updateField("subCategoryID", e.target.value)}
+                  className="w-full border p-2"
+                  disabled={!selectedCategory}
+                >
+                  <option value="">Select a subcategory</option>
+                  {subCategories.map((subCategory, index) => (
+                    <option key={index} value={subCategory._id}>
+                      {subCategory.subCategoryName}
+                    </option>
+                  ))}
+                </select>
+                {errors.subCategory && (
+                  <p className="text-sm text-red-500">{errors.subCategory}</p>
+                )}
+              </div>
             </div>
 
             {/* collections */}
-            <div>
+            {/* <div>
               <label className="block font-semibold">Season:</label>
               <div className="flex gap-4">
                 <div className="flex gap-2">
@@ -342,38 +348,45 @@ const AddProductModal = ({
               {errors.collection && (
                 <p className="text-sm text-red-500">{errors.collection}</p>
               )}
-            </div>
+            </div> */}
 
             {/* Price */}
-            <div>
-              <label className="block font-semibold">Price :</label>
-              <input
-                type="number"
-                value={productState.price.local}
-                onChange={(e) =>
-                  updateField("price", {
-                    ...productState.price,
-                    local: parseFloat(e.target.value),
-                  })
-                }
-                className="w-full border p-2"
-              />
-              {errors.localPrice && (
-                <p className="text-sm text-red-500">{errors.localPrice}</p>
-              )}
-            </div>
+            <div className="flex gap-10">
+              <div className="w-1/2">
+                <label className="block font-semibold">
+                  Price :{" "}
+                  <span className="text-sm font-normal text-gray-400">
+                    appears only on product card{" "}
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  value={productState.price.local}
+                  onChange={(e) =>
+                    updateField("price", {
+                      ...productState.price,
+                      local: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full border p-2"
+                />
+                {errors.localPrice && (
+                  <p className="text-sm text-red-500">{errors.localPrice}</p>
+                )}
+              </div>
 
-            {/* Compare Price */}
-            <div>
-              <label className="block font-semibold">Compare Price:</label>
-              <input
-                type="number"
-                value={productState.comparedPrice}
-                onChange={(e) =>
-                  updateField("comparedPrice", parseFloat(e.target.value))
-                }
-                className="w-full border p-2"
-              />
+              {/* Compare Price */}
+              <div className="w-1/2">
+                <label className="block font-semibold">Compare Price:</label>
+                <input
+                  type="number"
+                  value={productState.comparedPrice}
+                  onChange={(e) =>
+                    updateField("comparedPrice", parseFloat(e.target.value))
+                  }
+                  className="w-full border p-2"
+                />
+              </div>
             </div>
 
             {/* Product Variants */}

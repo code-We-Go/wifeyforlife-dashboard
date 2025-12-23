@@ -252,63 +252,67 @@ const ProductModal = ({
                 className="w-full border p-2"
               />
             </div>
-            <div className="flex gap-2">
-              <label className="block font-semibold">Featured:</label>
-              <input
-                type="checkbox"
-                checked={productState.featured}
-                onChange={(e) => updateFeild("featured", e.target.checked)}
-                className="border p-2"
-              />
-            </div>
-            {/* Order */}
-            <div>
-              <label className="block font-semibold">Order:</label>
-              <input
-                type="number"
-                value={productState.order ?? 0}
-                onChange={(e) => updateFeild("order", Number(e.target.value))}
-                className="w-full border p-2"
-                min={0}
-              />
+            <div className="flex gap-10">
+              <div className="w-1/2">
+                <label className="block font-semibold">Featured:</label>
+                <input
+                  type="checkbox"
+                  checked={productState.featured}
+                  onChange={(e) => updateFeild("featured", e.target.checked)}
+                  className="border p-2"
+                />
+              </div>
+              {/* Order */}
+              <div className="w-1/2">
+                <label className="block font-semibold">Order:</label>
+                <input
+                  type="number"
+                  value={productState.order ?? 0}
+                  onChange={(e) => updateFeild("order", Number(e.target.value))}
+                  className="w-full border p-2"
+                  min={0}
+                />
+              </div>
             </div>
             {/* collections */}
-            <div>
-              <label className="block font-semibold">Category:</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full border p-2"
-              >
-                <option value="">Select a category</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category._id}>
-                    {category.categoryName}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className="flex gap-10">
+              <div className="w-1/2">
+                <label className="block font-semibold">Category:</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full border p-2"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category, index) => (
+                    <option key={index} value={category._id}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <label className="block font-semibold">Subcategory:</label>
-              <select
-                value={
-                  productState.subCategoryID
-                    ? productState.subCategoryID._id
-                    : ""
-                }
-                onChange={(e) => updateFeild("subCategoryID", e.target.value)}
-                className="w-full border p-2"
-              >
-                <option value="">Select a subcategory</option>
-                {subCategories.map((subCategory, index) => (
-                  <option key={index} value={subCategory._id}>
-                    {subCategory.subCategoryName}
-                  </option>
-                ))}
-              </select>
+              <div className="w-1/2">
+                <label className="block font-semibold">Subcategory:</label>
+                <select
+                  value={
+                    productState.subCategoryID
+                      ? productState.subCategoryID._id
+                      : ""
+                  }
+                  onChange={(e) => updateFeild("subCategoryID", e.target.value)}
+                  className="w-full border p-2"
+                >
+                  <option value="">Select a subcategory</option>
+                  {subCategories.map((subCategory, index) => (
+                    <option key={index} value={subCategory._id}>
+                      {subCategory.subCategoryName}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
+            {/* <div>
               <label className="block font-semibold">Season:</label>
               <div className="flex gap-4">
                 <div className="flex gap-2">
@@ -342,35 +346,37 @@ const ProductModal = ({
                   ></input>
                 </div>
               </div>
-            </div>
+            </div> */}
             {/* Price */}
-            <div>
-              <label className="block font-semibold">Price :</label>
-              <input
-                type="number"
-                value={productState.price.local}
-                onChange={(e) => {
-                  const newPrice = {
-                    ...productState.price,
-                    local: parseFloat(e.target.value),
-                  };
-                  updateFeild("price", newPrice);
-                }}
-                className="w-full border p-2"
-              />
-            </div>
+            <div className="flex gap-10">
+              <div className="w-1/2">
+                <label className="block font-semibold">Price :</label>
+                <input
+                  type="number"
+                  value={productState.price.local}
+                  onChange={(e) => {
+                    const newPrice = {
+                      ...productState.price,
+                      local: parseFloat(e.target.value),
+                    };
+                    updateFeild("price", newPrice);
+                  }}
+                  className="w-full border p-2"
+                />
+              </div>
 
-            {/* Compare Price */}
-            <div>
-              <label className="block font-semibold">Compare Price:</label>
-              <input
-                type="number"
-                value={productState.comparedPrice || ""}
-                onChange={(e) => {
-                  updateFeild("comparedPrice", parseFloat(e.target.value));
-                }}
-                className="w-full border p-2"
-              />
+              {/* Compare Price */}
+              <div className="w-1/2">
+                <label className="block font-semibold">Compare Price:</label>
+                <input
+                  type="number"
+                  value={productState.comparedPrice || ""}
+                  onChange={(e) => {
+                    updateFeild("comparedPrice", parseFloat(e.target.value));
+                  }}
+                  className="w-full border p-2"
+                />
+              </div>
             </div>
 
             {/* Variations */}

@@ -179,7 +179,7 @@ const ProductVariant = ({
       </div>
 
       {/* Variant Price (optional) */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label className="block font-semibold">Variant Price (optional):</label>
         <input
           type="number"
@@ -194,7 +194,7 @@ const ProductVariant = ({
           className="w-full border p-2"
           placeholder="e.g., 19.99"
         />
-      </div>
+      </div> */}
 
       {/* Attributes */}
       <div className="mb-4">
