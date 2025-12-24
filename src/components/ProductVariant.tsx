@@ -223,13 +223,13 @@ const ProductVariant = ({
                 <label className="block text-xs font-semibold">Stock</label>
                 <input
                   type="number"
-                  placeholder="Stock"
-                  value={attr.stock}
+                  placeholder="0"
+                  value={attr.stock === 0 ? "" : attr.stock}
                   onChange={(e) =>
                     updateAttribute(
                       attrIndex,
                       "stock",
-                      parseInt(e.target.value) || 0,
+                      e.target.value === "" ? 0 : parseInt(e.target.value),
                     )
                   }
                   className="w-full border p-2"
@@ -239,13 +239,15 @@ const ProductVariant = ({
                 <label className="block text-xs font-semibold">Price</label>
                 <input
                   type="number"
-                  placeholder="Price"
+                  placeholder="0"
                   min={0}
                   step="0.01"
                   value={
-                    typeof attr.price === "number"
-                      ? attr.price
-                      : Number(attr.price ?? 0)
+                    attr.price === 0
+                      ? ""
+                      : typeof attr.price === "number"
+                        ? attr.price
+                        : Number(attr.price ?? 0)
                   }
                   onChange={(e) =>
                     updateAttribute(
