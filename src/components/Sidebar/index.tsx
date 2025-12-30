@@ -141,6 +141,11 @@ const menuGroups = [
         route: "/pages/blogs",
       },
       {
+        icon: <TfiNotepad />,
+        label: "Inspos",
+        route: "/pages/inspos",
+      },
+      {
         icon: <RiCoupon3Line />,
         label: "Discounts",
         route: "/discounts",

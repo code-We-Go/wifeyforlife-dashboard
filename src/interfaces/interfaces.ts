@@ -274,3 +274,17 @@ export interface ILoyaltyBonus {
   bonusPoints: number;
   active: boolean;
 }
+
+export interface InspoSection {
+  _id?: string;
+  title: string;
+  images: string[]; // public_ids from cloudinary
+}
+
+export interface Inspo {
+  _id: string;
+  title: string;
+  sections: InspoSection[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}

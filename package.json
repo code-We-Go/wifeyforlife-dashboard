@@ -27,6 +27,7 @@
     "mongodb": "^6.13.0",
     "mongoose": "^8.15.1",
     "next": "^14.2.4",
+    "next-cloudinary": "^6.17.5",
     "quill": "^2.0.3",
     "react": "^18",
     "react-apexcharts": "^1.7.0",
