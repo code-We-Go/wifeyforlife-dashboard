@@ -1,3 +1,4 @@
+import { Discount } from "@/types/discount";
 import mongoose from "mongoose";
 export interface PackageCard {
   image: string;
@@ -229,6 +230,8 @@ export interface IOrder {
   cart?: CartItem[]; // Assuming CartItem interface exists
   subTotal?: number;
   shipping: number;
+  appliedDiscount?: Discount;
+  appliedDiscountAmount?: number;
   total?: number;
   currency?: string;
   status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";

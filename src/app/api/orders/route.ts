@@ -1,6 +1,8 @@
 import ordersModel from "@/app/models/ordersModel";
 import { ConnectDB } from "@/config/db";
+import { DiscountModel } from "@/models/Discount";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -50,6 +52,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get("page");
   const search = searchParams.get("search") || "";
+  const discountCode = searchParams.get("discountCode");
   const orderDate = searchParams.get("orderDate");
   const email = searchParams.get("email");
   console.log("OrdersEmails" + email);
@@ -69,7 +72,7 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log("Search params:", { search, orderDate }); // Debug log
+  console.log("Search params:", { search, orderDate, discountCode }); // Debug log
 
   const limit = 10;
   const page = pageParam ? parseInt(pageParam) : 1;
@@ -77,6 +80,23 @@ export async function GET(req: Request) {
 
   // Build filter
   const filter: any = {};
+  if (discountCode) {
+    try {
+      const discount = await DiscountModel.findOne({
+        code: { $regex: new RegExp(discountCode, "i") },
+      });
+      if (discount) {
+        filter.appliedDiscount = discount._id;
+      } else {
+        // If discount code not found, return empty results for this filter
+        // We can do this by setting an impossible condition
+        filter.appliedDiscount = new mongoose.Types.ObjectId();
+      }
+    } catch (error) {
+      console.error("Error searching discount code:", error);
+    }
+  }
+
   if (search) {
     // Search by order ID, customer name, email, and phone (case-insensitive)
     const searchRegex = new RegExp(search, "i");
@@ -114,6 +134,11 @@ export async function GET(req: Request) {
   try {
     const orders = await ordersModel
       .find(filter)
+      .populate({
+        path: "appliedDiscount",
+        model: DiscountModel,
+        options: { strictPopulate: false },
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
