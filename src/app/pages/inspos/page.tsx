@@ -214,7 +214,7 @@ const InsposPage = () => {
         }
       } catch (error) {
         console.error(error);
-        Swal.fire("Error", "Failed to update title", "error");
+        Swal.fire("Error", "Failed to update the title", "error");
       }
     }
   };
