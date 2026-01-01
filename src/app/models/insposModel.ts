@@ -3,14 +3,21 @@ import mongoose, { Schema } from "mongoose";
 const InspoSchema = new Schema(
   {
     title: { type: String, required: true },
+    viewCount: { type: Number, default: 0 },
     sections: [
       {
         title: { type: String, required: true },
-        images: [{ type: String }], // Array of strings (public_ids)
+        viewCount: { type: Number, default: 0 },
+        images: [
+          {
+            public_id: { type: String, required: true },
+            downloadCount: { type: Number, default: 0 },
+          },
+        ],
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const InspoModel =

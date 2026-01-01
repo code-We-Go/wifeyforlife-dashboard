@@ -281,12 +281,14 @@ export interface ILoyaltyBonus {
 export interface InspoSection {
   _id?: string;
   title: string;
-  images: string[]; // public_ids from cloudinary
+  viewCount?: number;
+  images: { public_id: string; downloadCount: number }[];
 }
 
 export interface Inspo {
   _id: string;
   title: string;
+  viewCount?: number;
   sections: InspoSection[];
   createdAt?: Date;
   updatedAt?: Date;
