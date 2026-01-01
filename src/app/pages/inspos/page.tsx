@@ -137,15 +137,46 @@ const InsposPage = () => {
     if (!selectedInspo) return;
     if (result.event === "success") {
       const publicId = result.info.public_id;
-      const sections = [...selectedInspo.sections];
-      sections[sectionIndex].images.push(publicId);
 
       try {
         const res = await axios.put(`/api/inspos?id=${selectedInspo._id}`, {
-          sections,
+          $push: { [`sections.${sectionIndex}.images`]: publicId },
         });
+
         if (res.status === 200) {
-          updateInspoState(res.data.data);
+          setSelectedInspo((prev) => {
+            if (!prev) return null;
+            const newSections = [...prev.sections];
+            if (newSections[sectionIndex]) {
+              const currentImages = newSections[sectionIndex].images || [];
+              if (!currentImages.includes(publicId)) {
+                newSections[sectionIndex] = {
+                  ...newSections[sectionIndex],
+                  images: [...currentImages, publicId],
+                };
+              }
+            }
+            return { ...prev, sections: newSections };
+          });
+
+          setInspos((prevInspos) =>
+            prevInspos.map((inspo) => {
+              if (inspo._id === selectedInspo._id) {
+                const newSections = [...inspo.sections];
+                if (newSections[sectionIndex]) {
+                  const currentImages = newSections[sectionIndex].images || [];
+                  if (!currentImages.includes(publicId)) {
+                    newSections[sectionIndex] = {
+                      ...newSections[sectionIndex],
+                      images: [...currentImages, publicId],
+                    };
+                  }
+                }
+                return { ...inspo, sections: newSections };
+              }
+              return inspo;
+            }),
+          );
         }
       } catch (error) {
         console.error(error);
@@ -376,7 +407,7 @@ const InsposPage = () => {
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-gray-500">
                         {inspo.sections.length} Sections • {allImages.length}{" "}
-                        Pins
+                        Inspos
                       </p>
                       <button
                         onClick={(e) => {
