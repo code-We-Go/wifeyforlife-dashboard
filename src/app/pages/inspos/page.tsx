@@ -12,10 +12,19 @@ const InsposPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedInspo, setSelectedInspo] = useState<Inspo | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "boards" | "analytics" | "downloads"
+    "boards" | "analytics" | "downloads" | "favorites"
   >("boards");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"views" | "favorites" | "downloads">(
+    "views",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // Analytics Expanded State
+  // expandedBoards: list of board IDs that are expanded
+  const [expandedBoards, setExpandedBoards] = useState<string[]>([]);
+  // expandedSections: list of section IDs (or generated unique keys) that are expanded
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   // Modal States
   const [showAddInspoModal, setShowAddInspoModal] = useState(false);
@@ -306,6 +315,22 @@ const InsposPage = () => {
         Swal.fire("Error", "Failed to update section title", "error");
       }
     }
+  };
+
+  const toggleBoardExpansion = (boardId: string) => {
+    setExpandedBoards((prev) =>
+      prev.includes(boardId)
+        ? prev.filter((id) => id !== boardId)
+        : [...prev, boardId],
+    );
+  };
+
+  const toggleSectionExpansion = (sectionKey: string) => {
+    setExpandedSections((prev) =>
+      prev.includes(sectionKey)
+        ? prev.filter((id) => id !== sectionKey)
+        : [...prev, sectionKey],
+    );
   };
 
   const renderTabContent = () => {
@@ -601,14 +626,16 @@ const InsposPage = () => {
                         fillRule="evenodd"
                         clipRule="evenodd"
                         d="M11.958 11.958C12.2509 11.6651 12.7257 11.6651 13.0186 11.958L16.2811 15.2205C16.574 15.5134 16.574 15.9882 16.2811 16.2811C15.9882 16.574 15.5134 16.574 15.2205 16.2811L11.958 13.0186C11.6651 12.7257 11.6651 12.2509 11.958 11.958Z"
+                        fill=""
                       />
                     </svg>
                   </span>
                 </div>
               </div>
+
               <div className="flex flex-col">
-                <div className="grid grid-cols-3 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-4">
-                  <div className="p-2.5 xl:p-5">
+                <div className="grid grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-6">
+                  <div className="col-span-2 p-2.5 xl:p-5">
                     <h5 className="text-sm font-medium uppercase xsm:text-base">
                       Board / Section
                     </h5>
@@ -618,30 +645,86 @@ const InsposPage = () => {
                       Type
                     </h5>
                   </div>
+                  {/* Views Header */}
                   <div
                     className="cursor-pointer p-2.5 text-center hover:text-primary xl:p-5"
-                    onClick={() =>
-                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                    }
+                    onClick={() => {
+                      if (sortBy === "views") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("views");
+                        setSortOrder("desc");
+                      }
+                    }}
                   >
                     <h5 className="flex items-center justify-center gap-1 text-sm font-medium uppercase xsm:text-base">
                       Views
-                      <svg
-                        className={`h-4 w-4 fill-current transition-transform ${
-                          sortOrder === "asc" ? "rotate-180" : ""
-                        }`}
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                      </svg>
+                      {sortBy === "views" && (
+                        <svg
+                          className={`h-4 w-4 fill-current transition-transform ${
+                            sortOrder === "asc" ? "rotate-180" : ""
+                          }`}
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      )}
                     </h5>
                   </div>
-                  <div className="hidden p-2.5 text-center sm:block xl:p-5">
-                    <h5 className="text-sm font-medium uppercase xsm:text-base">
-                      Total Images
+                  {/* Favorites Header */}
+                  <div
+                    className="cursor-pointer p-2.5 text-center hover:text-primary xl:p-5"
+                    onClick={() => {
+                      if (sortBy === "favorites") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("favorites");
+                        setSortOrder("desc");
+                      }
+                    }}
+                  >
+                    <h5 className="flex items-center justify-center gap-1 text-sm font-medium uppercase xsm:text-base">
+                      Favorites
+                      {sortBy === "favorites" && (
+                        <svg
+                          className={`h-4 w-4 fill-current transition-transform ${
+                            sortOrder === "asc" ? "rotate-180" : ""
+                          }`}
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      )}
+                    </h5>
+                  </div>
+                  {/* Downloads Header */}
+                  <div
+                    className="hidden cursor-pointer p-2.5 text-center hover:text-primary sm:block xl:p-5"
+                    onClick={() => {
+                      if (sortBy === "downloads") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("downloads");
+                        setSortOrder("desc");
+                      }
+                    }}
+                  >
+                    <h5 className="flex items-center justify-center gap-1 text-sm font-medium uppercase xsm:text-base">
+                      Downloads
+                      {sortBy === "downloads" && (
+                        <svg
+                          className={`h-4 w-4 fill-current transition-transform ${
+                            sortOrder === "asc" ? "rotate-180" : ""
+                          }`}
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      )}
                     </h5>
                   </div>
                 </div>
+
                 {inspos
                   .filter(
                     (inspo) =>
@@ -655,72 +738,219 @@ const InsposPage = () => {
                       ),
                   )
                   .sort((a, b) => {
-                    const valA = a.viewCount || 0;
-                    const valB = b.viewCount || 0;
+                    let valA = 0;
+                    let valB = 0;
+
+                    if (sortBy === "views") {
+                      valA = a.viewCount || 0;
+                      valB = b.viewCount || 0;
+                    } else if (sortBy === "favorites") {
+                      valA = a.sections.reduce(
+                        (acc, s) =>
+                          acc +
+                          s.images.reduce(
+                            (sum, img) => sum + (img.favoriteCount || 0),
+                            0,
+                          ),
+                        0,
+                      );
+                      valB = b.sections.reduce(
+                        (acc, s) =>
+                          acc +
+                          s.images.reduce(
+                            (sum, img) => sum + (img.favoriteCount || 0),
+                            0,
+                          ),
+                        0,
+                      );
+                    } else if (sortBy === "downloads") {
+                      valA = a.sections.reduce(
+                        (acc, s) =>
+                          acc +
+                          s.images.reduce(
+                            (sum, img) => sum + (img.downloadCount || 0),
+                            0,
+                          ),
+                        0,
+                      );
+                      valB = b.sections.reduce(
+                        (acc, s) =>
+                          acc +
+                          s.images.reduce(
+                            (sum, img) => sum + (img.downloadCount || 0),
+                            0,
+                          ),
+                        0,
+                      );
+                    }
+
                     return sortOrder === "asc" ? valA - valB : valB - valA;
                   })
-                  .map((inspo, key) => (
-                    <React.Fragment key={key}>
-                      <div className="grid grid-cols-3 border-b border-stroke dark:border-strokedark sm:grid-cols-4">
-                        <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                          <p className="font-semibold text-black dark:text-white">
-                            {inspo.title}
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-center p-2.5 xl:p-5">
-                          <span className="rounded bg-primary bg-opacity-10 px-3 py-1 text-sm font-medium text-primary">
-                            Board
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-center p-2.5 xl:p-5">
-                          <p className="text-black dark:text-white">
-                            {inspo.viewCount || 0}
-                          </p>
-                        </div>
-                        <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                          <p className="text-black dark:text-white">
-                            {inspo.sections.reduce(
-                              (acc, s) => acc + s.images.length,
-                              0,
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      {inspo.sections
-                        .filter((s) =>
-                          s.title
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase()),
-                        )
-                        .map((section, sKey) => (
-                          <div
-                            key={`section-${sKey}`}
-                            className="grid grid-cols-3 border-b border-stroke bg-gray-50 dark:border-strokedark dark:bg-meta-4/20 sm:grid-cols-4"
-                          >
-                            <div className="flex items-center gap-3 p-2.5 pl-8 xl:p-5 xl:pl-12">
-                              <p className="text-sm text-black dark:text-white">
-                                {section.title}
-                              </p>
-                            </div>
-                            <div className="flex items-center justify-center p-2.5 xl:p-5">
-                              <span className="rounded bg-success bg-opacity-10 px-3 py-1 text-xs font-medium text-success">
-                                Section
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-center p-2.5 xl:p-5">
-                              <p className="text-sm text-black dark:text-white">
-                                {section.viewCount || 0}
-                              </p>
-                            </div>
-                            <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                              <p className="text-sm text-black dark:text-white">
-                                {section.images.length}
-                              </p>
-                            </div>
+                  .map((inspo, key) => {
+                    const totalFavorites = inspo.sections.reduce(
+                      (acc, s) =>
+                        acc +
+                        s.images.reduce(
+                          (sum, img) => sum + (img.favoriteCount || 0),
+                          0,
+                        ),
+                      0,
+                    );
+                    const totalDownloads = inspo.sections.reduce(
+                      (acc, s) =>
+                        acc +
+                        s.images.reduce(
+                          (sum, img) => sum + (img.downloadCount || 0),
+                          0,
+                        ),
+                      0,
+                    );
+
+                    return (
+                      <React.Fragment key={key}>
+                        {/* Board Row */}
+                        <div
+                          className="grid cursor-pointer grid-cols-5 border-b border-stroke hover:bg-gray-100 dark:border-strokedark dark:hover:bg-meta-4 sm:grid-cols-6"
+                          onClick={() => toggleBoardExpansion(inspo._id)}
+                        >
+                          <div className="col-span-2 flex items-center gap-3 p-2.5 xl:p-5">
+                            <span className="text-gray-500">
+                              {expandedBoards.includes(inspo._id) ? "▼" : "▶"}
+                            </span>
+                            <p className="font-semibold text-black dark:text-white">
+                              {inspo.title}
+                            </p>
                           </div>
-                        ))}
-                    </React.Fragment>
-                  ))}
+
+                          <div className="flex items-center justify-center p-2.5 xl:p-5">
+                            <span className="rounded bg-primary bg-opacity-10 px-3 py-1 text-sm font-medium text-primary">
+                              Board
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-center p-2.5 xl:p-5">
+                            <p className="text-black dark:text-white">
+                              {inspo.viewCount || 0}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-center p-2.5 xl:p-5">
+                            <p className="text-black dark:text-white">
+                              {totalFavorites}
+                            </p>
+                          </div>
+
+                          <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+                            <p className="text-black dark:text-white">
+                              {totalDownloads}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Section Rows (Collapsible) */}
+                        {expandedBoards.includes(inspo._id) &&
+                          inspo.sections
+                            .filter((s) =>
+                              s.title
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase()),
+                            )
+                            .map((section, sKey) => {
+                              const sectionKey = `${inspo._id}-section-${sKey}`;
+                              const sectionFavorites = section.images.reduce(
+                                (sum, img) => sum + (img.favoriteCount || 0),
+                                0,
+                              );
+                              const sectionDownloads = section.images.reduce(
+                                (sum, img) => sum + (img.downloadCount || 0),
+                                0,
+                              );
+
+                              return (
+                                <React.Fragment key={sectionKey}>
+                                  <div
+                                    className="grid cursor-pointer grid-cols-5 border-b border-stroke bg-gray-50 hover:bg-gray-100 dark:border-strokedark dark:bg-meta-4/20 dark:hover:bg-meta-4/40 sm:grid-cols-6"
+                                    onClick={() =>
+                                      toggleSectionExpansion(sectionKey)
+                                    }
+                                  >
+                                    <div className="col-span-2 flex items-center gap-3 p-2.5 pl-8 xl:p-5 xl:pl-12">
+                                      <span className="text-gray-500">
+                                        {expandedSections.includes(sectionKey)
+                                          ? "▼"
+                                          : "▶"}
+                                      </span>
+                                      <p className="text-sm text-black dark:text-white">
+                                        {section.title}
+                                      </p>
+                                    </div>
+
+                                    <div className="flex items-center justify-center p-2.5 xl:p-5">
+                                      <span className="rounded bg-success bg-opacity-10 px-3 py-1 text-xs font-medium text-success">
+                                        Section
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-center p-2.5 xl:p-5">
+                                      <p className="text-sm text-black dark:text-white">
+                                        {section.viewCount || 0}
+                                      </p>
+                                    </div>
+
+                                    <div className="flex items-center justify-center p-2.5 xl:p-5">
+                                      <p className="text-sm text-black dark:text-white">
+                                        {sectionFavorites}
+                                      </p>
+                                    </div>
+
+                                    <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+                                      <p className="text-sm text-black dark:text-white">
+                                        {sectionDownloads}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Images (Collapsible inside Section) */}
+                                  {expandedSections.includes(sectionKey) && (
+                                    <div className="col-span-5 border-b border-stroke bg-white p-4 dark:border-strokedark dark:bg-boxdark sm:col-span-6">
+                                      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                                        {section.images.map((img, imgIdx) => (
+                                          <div
+                                            key={`${sectionKey}-img-${imgIdx}`}
+                                            className="flex flex-col gap-1"
+                                          >
+                                            <CldImage
+                                              width="150"
+                                              height="150"
+                                              src={img.public_id}
+                                              alt="Inspo"
+                                              className="h-20 w-full rounded object-cover"
+                                            />
+                                            <div className="flex flex-col text-[10px] text-gray-500">
+                                              <div className="flex justify-between">
+                                                <span>Down:</span>
+                                                <span>
+                                                  {img.downloadCount || 0}
+                                                </span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span>Fav:</span>
+                                                <span>
+                                                  {img.favoriteCount || 0}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
+                      </React.Fragment>
+                    );
+                  })}
               </div>
             </div>
           </div>
@@ -778,6 +1008,59 @@ const InsposPage = () => {
             </div>
           </div>
         );
+      case "favorites":
+        return (
+          <div className="flex flex-col gap-6">
+            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+              <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
+                Top Favorite Images
+              </h4>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {inspos
+                  .flatMap((inspo) =>
+                    inspo.sections.flatMap((section) =>
+                      section.images.map((img) => ({
+                        ...img,
+                        boardTitle: inspo.title,
+                        sectionTitle: section.title,
+                      })),
+                    ),
+                  )
+                  .sort(
+                    (a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0),
+                  )
+                  .slice(0, 24)
+                  .map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="relative flex flex-col gap-2 rounded-lg border border-stroke p-3 dark:border-strokedark"
+                    >
+                      <CldImage
+                        width="200"
+                        height="200"
+                        src={img.public_id}
+                        alt="Inspo"
+                        className="h-32 w-full rounded object-cover"
+                      />
+                      <div className="flex flex-col">
+                        <p className="text-xs text-gray-500">
+                          {img.boardTitle} &gt; {img.sectionTitle}
+                        </p>
+                        <div className="mt-1 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-black dark:text-white">
+                            Favorites:
+                          </span>
+                          <span className="rounded bg-primary px-2 py-0.5 text-xs text-white">
+                            {img.favoriteCount || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -819,6 +1102,16 @@ const InsposPage = () => {
             }`}
           >
             Top Downloads
+          </button>
+          <button
+            onClick={() => setActiveTab("favorites")}
+            className={`px-4 py-2 text-lg font-medium transition-colors ${
+              activeTab === "favorites"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-primary"
+            }`}
+          >
+            Top Favorites
           </button>
         </div>
 

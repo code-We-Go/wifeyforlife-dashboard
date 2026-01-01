@@ -282,7 +282,11 @@ export interface InspoSection {
   _id?: string;
   title: string;
   viewCount?: number;
-  images: { public_id: string; downloadCount: number }[];
+  images: {
+    public_id: string;
+    downloadCount: number;
+    favoriteCount?: number;
+  }[];
 }
 
 export interface Inspo {

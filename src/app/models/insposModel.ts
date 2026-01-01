@@ -12,6 +12,7 @@ const InspoSchema = new Schema(
           {
             public_id: { type: String, required: true },
             downloadCount: { type: Number, default: 0 },
+            favoriteCount: { type: Number, default: 0, min: 0 },
           },
         ],
       },
