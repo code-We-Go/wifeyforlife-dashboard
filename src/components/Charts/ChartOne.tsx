@@ -108,44 +108,50 @@ const options: ApexOptions = {
 const ChartOne: React.FC = () => {
   const [series, setSeries] = useState<{ name: string; data: number[] }[]>([
     { name: "Orders", data: new Array(12).fill(0) },
-  ]);  const [categories, setCategories] = useState<string[]>([]);
+  ]);
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch("/api/orders");
+        const response = await fetch("/api/orders?limit=0");
         const result = await response.json();
 
         if (response.ok) {
           const orders = result.data;
-          console.log("orders"+orders)
+          console.log("orders" + orders);
 
-          // Prepare last 11 months' labels
+          // Prepare last 12 months
           const now = new Date();
-          const months = [];
+          const months: { key: string; label: string }[] = [];
+          const monthlyTotals: { [key: string]: number } = {};
+
           for (let i = 11; i >= 0; i--) {
             const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push(date.toLocaleString("en-US", { month: "short" }));
+            const key = `${date.getFullYear()}-${date.getMonth()}`;
+            const label = date.toLocaleString("en-US", { month: "short" });
+            months.push({ key, label });
+            monthlyTotals[key] = 0;
           }
-
-          // Initialize monthly totals
-          const monthlyTotals: { [key: string]: number } = {};
-          months.forEach((month) => (monthlyTotals[month] = 0));
 
           // Aggregate orders by month
           orders.forEach((order: any) => {
             const orderDate = new Date(order.createdAt);
-            const monthLabel = orderDate.toLocaleString("en-US", { month: "short" });
+            const key = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
 
-            if (monthlyTotals.hasOwnProperty(monthLabel)) {
-              
-              monthlyTotals[monthLabel] +=  order.subTotal; // Sum up order totals
+            if (monthlyTotals.hasOwnProperty(key)) {
+              monthlyTotals[key] += order.subTotal; // Sum up order totals
             }
           });
 
           // Update chart
-          setCategories(months);
-          setSeries([{ name: "Orders", data: months.map((m) => monthlyTotals[m] || 0) }]);
+          setCategories(months.map((m) => m.label));
+          setSeries([
+            {
+              name: "Orders",
+              data: months.map((m) => monthlyTotals[m.key] || 0),
+            },
+          ]);
         } else {
           console.error("Error fetching orders:", result.error);
         }
@@ -158,7 +164,7 @@ const ChartOne: React.FC = () => {
   }, []);
 
   return (
-    <div className="col-span-12  border rounded-2xl border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 ">
+    <div className="col-span-12  rounded-2xl border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 ">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
         <div className="flex w-full flex-wrap gap-3 sm:gap-5">
           <div className="flex min-w-47.5">
@@ -166,7 +172,11 @@ const ChartOne: React.FC = () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
             </span>
             <div className="w-full">
-              <p className={`${thirdFont.className} text-2xl tracking-normal font-semibold text-secondary`}>Monthly sales</p>
+              <p
+                className={`${thirdFont.className} text-2xl font-semibold tracking-normal text-secondary`}
+              >
+                Monthly sales
+              </p>
             </div>
           </div>
         </div>

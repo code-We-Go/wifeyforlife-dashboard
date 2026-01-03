@@ -52,12 +52,21 @@ const options: ApexOptions = {
 const ChartThree: React.FC = () => {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [duration, setDuration] = useState("today");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   // Fetch visits data from API using axios
   useEffect(() => {
     const fetchData = async (duration: string) => {
+      if (duration === "custom" && (!startDate || !endDate)) {
+        return;
+      }
+
       try {
         // Using axios to fetch the data
-        const response = await axios(`/api/visites?duration=${duration}`);
+        const response = await axios(
+          `/api/visites?duration=${duration}&startDate=${startDate}&endDate=${endDate}`,
+        );
         console.log("API response:", response.data.data); // Check the API response in the console
         if (Array.isArray(response.data.data)) {
           setVisits(response.data.data); // Ensure it's an array
@@ -70,7 +79,7 @@ const ChartThree: React.FC = () => {
     };
 
     fetchData(duration);
-  }, [duration]);
+  }, [duration, startDate, endDate]);
 
   // Ensure that visits is an array before using forEach
   const deviceCounts = {
@@ -112,7 +121,7 @@ const ChartThree: React.FC = () => {
             Visitors Analytics
           </h5>
         </div>
-        <div>
+        <div className="flex flex-col items-end gap-2">
           <div className="relative z-20 inline-block">
             <select
               onChange={(e) => setDuration(e.target.value)}
@@ -138,6 +147,9 @@ const ChartThree: React.FC = () => {
               <option value="thisYear" className="dark:bg-boxdark">
                 this year
               </option>
+              <option value="custom" className="dark:bg-boxdark">
+                Custom
+              </option>
             </select>
             <span className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
               <svg
@@ -160,6 +172,22 @@ const ChartThree: React.FC = () => {
               </svg>
             </span>
           </div>
+          {duration === "custom" && (
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="rounded border border-stroke bg-transparent px-2 py-1 text-sm outline-none dark:border-strokedark dark:text-white"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="rounded border border-stroke bg-transparent px-2 py-1 text-sm outline-none dark:border-strokedark dark:text-white"
+              />
+            </div>
+          )}
         </div>
       </div>
 

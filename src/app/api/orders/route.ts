@@ -74,7 +74,8 @@ export async function GET(req: Request) {
 
   console.log("Search params:", { search, orderDate, discountCode }); // Debug log
 
-  const limit = 10;
+  const limitParam = searchParams.get("limit");
+  const limit = limitParam ? parseInt(limitParam) : 10;
   const page = pageParam ? parseInt(pageParam) : 1;
   const skip = (page - 1) * limit;
 

@@ -17,8 +17,20 @@ export async function GET(req: Request) {
     // Extract query parameter for duration (thisWeek, lastWeek, thisMonth, lastMonth, thisYear)
     const url = new URL(req.url);
     const duration = url.searchParams.get("duration");
+    const startDateParam = url.searchParams.get("startDate");
+    const endDateParam = url.searchParams.get("endDate");
 
     switch (duration) {
+      case "custom":
+        if (!startDateParam || !endDateParam) {
+           return NextResponse.json({ error: "startDate and endDate are required for custom duration" }, { status: 400 });
+        }
+        startOfPeriod = new Date(startDateParam);
+        endOfPeriod = new Date(endDateParam);
+        // Set end of day for the end date to include the whole day
+        endOfPeriod.setHours(23, 59, 59, 999);
+        break;
+
       case "today":
         // Start of today
         startOfPeriod = new Date(today);
