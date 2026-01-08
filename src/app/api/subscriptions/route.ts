@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ConnectDB } from "@/config/db";
 import subscriptionsModel from "@/app/models/subscriptionsModel";
+import subscriptionPaymentModel from "@/app/models/subscriptionPaymentModel";
 import packageModel from "@/app/models/packageModel";
 import mongoose from "mongoose";
 import PackagesPage from "@/app/pages/packages/page";
@@ -20,43 +21,98 @@ export async function GET(request: Request) {
   const packageID = searchParams.get("packageID"); // Package ID for filtering
   await loadDB();
   let query: any = {};
+
   if (email) {
-    query.email = email;
+    query.email = { $regex: email, $options: "i" };
   }
-  if (subscribed === "true") {
-    query.subscribed = true;
-  } else if (subscribed === "false") {
-    query.subscribed = false;
-  }
+
   if (type === "real") {
     query.subTotal = { $gt: 1000 };
   } else if (type === "gift") {
     query.subTotal = { $lte: 1000 };
   }
+
   if (isGift === "true") {
     query.isGift = true;
   } else if (isGift === "false") {
     query.isGift = false;
   }
-  if (packageID) {
+
+  if (packageID && packageID !== "all") {
     query.packageID = new mongoose.Types.ObjectId(packageID);
   }
+
   try {
-    const subscriptions = await subscriptionsModel
-      .find(query)
-      .populate({
-        path: "packageID",
-        model: packageModel,
-        options: { strictPopulate: false },
-      })
-      .populate({
-        path: "appliedDiscount",
-        model: DiscountModel,
-        options: { strictPopulate: false },
-      })
-      .sort({ createdAt: -1 });
+    let subscriptions;
+//paymobFailed
+    if (subscribed === "false") {
+      // Fetch from subscriptionPaymentModel for failed/unconfirmed payments
+      // The user requested "records which status is not confirmed"
+      const paymentQuery = { ...query };
+      paymentQuery.status = { $ne: "confirmed" };
+
+      // Fetch from subscriptionsModel where subscribed is false
+      const subQuery = { ...query };
+      subQuery.subscribed = false;
+
+      const [paymentResults, subResults] = await Promise.all([
+        subscriptionPaymentModel
+          .find(paymentQuery)
+          .populate({
+            path: "packageID",
+            model: packageModel,
+            options: { strictPopulate: false },
+          })
+          .populate({
+            path: "appliedDiscount",
+            model: DiscountModel,
+            options: { strictPopulate: false },
+          })
+          .lean(),
+        subscriptionsModel
+          .find(subQuery)
+          .populate({
+            path: "packageID",
+            model: packageModel,
+            options: { strictPopulate: false },
+          })
+          .populate({
+            path: "appliedDiscount",
+            model: DiscountModel,
+            options: { strictPopulate: false },
+          })
+          .lean(),
+      ]);
+
+      // Combine and sort results
+      subscriptions = [...paymentResults, ...subResults].sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    } else {
+      // Default behavior: Fetch from subscriptionsModel
+      if (subscribed === "true") {
+        query.subscribed = true;
+      }
+
+      subscriptions = await subscriptionsModel
+        .find(query)
+        .populate({
+          path: "packageID",
+          model: packageModel,
+          options: { strictPopulate: false },
+        })
+        .populate({
+          path: "appliedDiscount",
+          model: DiscountModel,
+          options: { strictPopulate: false },
+        })
+        .sort({ createdAt: -1 });
+    }
+
     return NextResponse.json({ data: subscriptions }, { status: 200 });
   } catch (error) {
+    console.error("Error fetching subscriptions:", error);
     return NextResponse.json(
       { error: "Failed to fetch subscriptions" },
       { status: 500 },
@@ -71,15 +127,20 @@ export async function POST(request: Request) {
     // Convert empty strings to null for ObjectId fields
     if (body.appliedDiscount === "") body.appliedDiscount = null;
     if (body.packageID === "") body.packageID = null;
-    
-    if (body.appliedDiscount && typeof body.appliedDiscount === 'string') {
-       // Try to find by code
-       const discount = await DiscountModel.findOne({ code: body.appliedDiscount });
-       if (discount) {
-         body.appliedDiscount = discount._id;
-       } else if (!mongoose.Types.ObjectId.isValid(body.appliedDiscount)) {
-          return NextResponse.json({ error: "Invalid discount code" }, { status: 400 });
-       }
+
+    if (body.appliedDiscount && typeof body.appliedDiscount === "string") {
+      // Try to find by code
+      const discount = await DiscountModel.findOne({
+        code: body.appliedDiscount,
+      });
+      if (discount) {
+        body.appliedDiscount = discount._id;
+      } else if (!mongoose.Types.ObjectId.isValid(body.appliedDiscount)) {
+        return NextResponse.json(
+          { error: "Invalid discount code" },
+          { status: 400 },
+        );
+      }
     }
 
     // You can add more fields here if needed
@@ -115,14 +176,19 @@ export async function PUT(request: Request) {
     if (body.appliedDiscount === "") body.appliedDiscount = null;
     if (body.packageID === "") body.packageID = null;
 
-    if (body.appliedDiscount && typeof body.appliedDiscount === 'string') {
-       // Try to find by code
-       const discount = await DiscountModel.findOne({ code: body.appliedDiscount });
-       if (discount) {
-         body.appliedDiscount = discount._id;
-       } else if (!mongoose.Types.ObjectId.isValid(body.appliedDiscount)) {
-          return NextResponse.json({ error: "Invalid discount code" }, { status: 400 });
-       }
+    if (body.appliedDiscount && typeof body.appliedDiscount === "string") {
+      // Try to find by code
+      const discount = await DiscountModel.findOne({
+        code: body.appliedDiscount,
+      });
+      if (discount) {
+        body.appliedDiscount = discount._id;
+      } else if (!mongoose.Types.ObjectId.isValid(body.appliedDiscount)) {
+        return NextResponse.json(
+          { error: "Invalid discount code" },
+          { status: 400 },
+        );
+      }
     }
 
     // Validate apartment is a string
@@ -197,4 +263,3 @@ export async function DELETE(request: Request) {
     );
   }
 }
-
