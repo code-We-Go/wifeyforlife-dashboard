@@ -6,6 +6,7 @@ import packageModel from "@/app/models/packageModel";
 import mongoose from "mongoose";
 import PackagesPage from "@/app/pages/packages/page";
 import { DiscountModel } from "@/models/Discount";
+import UserModel from "@/app/models/userModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
 
   try {
     let subscriptions;
-//paymobFailed
+    //paymobFailed
     if (subscribed === "false") {
       // Fetch from subscriptionPaymentModel for failed/unconfirmed payments
       // The user requested "records which status is not confirmed"
@@ -146,6 +147,16 @@ export async function POST(request: Request) {
     // You can add more fields here if needed
     console.log(JSON.stringify(body));
     const newSubscription = await subscriptionsModel.create(body);
+
+    // Update user if email is provided
+    if (body.email) {
+      await UserModel.findOneAndUpdate(
+        { email: body.email },
+        { subscription: newSubscription._id },
+        { new: true },
+      );
+    }
+
     return NextResponse.json({ data: newSubscription }, { status: 201 });
   } catch (error: any) {
     // Return mongoose validation errors if present
