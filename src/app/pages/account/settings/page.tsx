@@ -64,7 +64,7 @@ export default function SettingsPage() {
                     type="email"
                     name="email"
                     id="email"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                    className="block lowercase w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   />
                 </div>
               </div>

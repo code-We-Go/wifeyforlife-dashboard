@@ -633,7 +633,7 @@ const SubscriptionsPage = () => {
                       setForm((f) => ({ ...f, email: e.target.value }))
                     }
                     required
-                    className="w-full rounded border p-2"
+                    className="w-full lowercase rounded border p-2"
                   />
                 </div>
                 <div>
@@ -777,7 +777,7 @@ const SubscriptionsPage = () => {
                         giftRecipientEmail: e.target.value,
                       }))
                     }
-                    className="w-full rounded border p-2"
+                    className="w-full lowercase rounded border p-2"
                   />
                 </div>
                 <div>

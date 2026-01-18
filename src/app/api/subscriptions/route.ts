@@ -147,13 +147,13 @@ export async function POST(request: Request) {
     // You can add more fields here if needed
     console.log(JSON.stringify(body));
     const newSubscription = await subscriptionsModel.create(body);
-
+    
     // Update user if email is provided
     if (body.email) {
       await UserModel.findOneAndUpdate(
         { email: body.email },
         { subscription: newSubscription._id },
-        { new: true },
+        { new: true }
       );
     }
 

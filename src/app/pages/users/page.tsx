@@ -282,7 +282,7 @@ const UsersPage = () => {
                     type="email"
                     name="email"
                     required
-                    className="w-full rounded border p-2"
+                    className="w-full lowercase rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">
@@ -378,7 +378,7 @@ const UsersPage = () => {
                     name="email"
                     defaultValue={selectedUser.email}
                     required
-                    className="w-full rounded border p-2"
+                    className="w-full lowercase rounded border p-2"
                   />
                 </div>
                 <div className="mb-4">

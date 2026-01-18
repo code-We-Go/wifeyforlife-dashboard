@@ -756,7 +756,7 @@ export default function AccountPage() {
                               email: e.target.value,
                             }))
                           }
-                          className="border-primary bg-creamey text-primary"
+                          className="border-primary lowercase bg-creamey text-primary"
                         />
                       ) : (
                         <p className=" text-sm text-primary">

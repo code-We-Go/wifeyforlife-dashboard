@@ -93,7 +93,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ isOpen, onC
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value.toLowerCase())}
-              className="w-full p-2 border rounded-md lowercase"
+              className="w-full p-2  border rounded-md lowercase"
               autoCapitalize="none"
               spellCheck={false}
               required
@@ -374,7 +374,7 @@ const LoyaltyTransactionsPage = () => {
               type="email"
               value={emailFilter}
               onChange={(e) => setEmailFilter(e.target.value)}
-              className="p-2 border rounded-md"
+              className="p-2 border lowercase rounded-md"
               placeholder="Enter email"
             />
           </div>
