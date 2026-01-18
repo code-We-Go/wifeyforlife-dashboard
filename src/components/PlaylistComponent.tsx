@@ -191,8 +191,17 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
           onChange={() => handleVideoSelection(video._id || "")}
           className="mr-2"
         />
+        <div className="relative h-12 w-16 flex-shrink-0">
+          <Image
+            src={video.thumbnailUrl}
+            alt={video.title}
+            fill
+            className="rounded object-cover"
+          />
+        </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm text-gray-900">{video.title}</p>
+          {video.playlistHint && <p className="text-xs text-gray-600 truncate">({video.playlistHint})</p>}
         </div>
         <button
           type="button"
@@ -361,7 +370,21 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                 Select Videos ({formData.videos.length} selected)
               </label>
               
-              <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+
+              {/* Drag-and-drop list for selected videos */}
+              {selectedVideoObjects.length > 0 && (
+                <div className="mb-4 max-h-40 overflow-y-auto rounded-md border border-primary/30 bg-primary/5 p-2">
+                  {selectedVideoObjects.map((video, idx) => (
+                    <DraggableVideo key={video._id} video={video} index={idx} />
+                  ))}
+                </div>
+              )}
+              {/* Available videos grid for selection */}
+              {isLoadingVideos ? (
+                <div className="py-4 text-center">Loading videos...</div>
+              ) : availableVideos.length > 0 ? (
+                <div>
+                                <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
                 <input
                   type="text"
                   placeholder="Filter videos by title..."
@@ -377,19 +400,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-              {/* Drag-and-drop list for selected videos */}
-              {selectedVideoObjects.length > 0 && (
-                <div className="mb-4 max-h-40 overflow-y-auto rounded-md border border-primary/30 bg-primary/5 p-2">
-                  {selectedVideoObjects.map((video, idx) => (
-                    <DraggableVideo key={video._id} video={video} index={idx} />
-                  ))}
-                </div>
-              )}
-              {/* Available videos grid for selection */}
-              {isLoadingVideos ? (
-                <div className="py-4 text-center">Loading videos...</div>
-              ) : availableVideos.length > 0 ? (
-                <div className="grid max-h-60 grid-cols-1 gap-2 overflow-y-auto rounded-md border border-gray-300 p-2 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid max-h-60 grid-cols-1 gap-2 overflow-y-auto rounded-md border border-gray-300 p-2 md:grid-cols-2 lg:grid-cols-3">
                   {filteredAvailableVideos.length > 0 ? (
                     filteredAvailableVideos.map((video) => (
                     <div
@@ -410,13 +421,22 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                         onChange={() => handleVideoSelection(video._id || "")}
                         className="mr-2"
                       />
+                      <div className="relative h-12 w-16 flex-shrink-0">
+                        <Image
+                          src={video.thumbnailUrl}
+                          alt={video.title}
+                          fill
+                          className="rounded object-cover"
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-gray-900">
                           {video.title}
                         </p>
-                         {video.playlistHint && <p className="text-sm text-gray-900 truncate">({video.playlistHint})</p>} 
+                         {video.playlistHint && <p className="text-xs text-gray-600 truncate">({video.playlistHint})</p>} 
                       </div>
                     </div>
+                    
                   ))
                   ) : (
                     <div className="col-span-1 py-4 text-center text-gray-500 md:col-span-2 lg:col-span-3">
@@ -424,6 +444,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                     </div>
                   )}
                 </div>
+              </div>
               ) : (
                 <div className="py-4 text-center text-gray-500">
                   No videos available. Please create some videos first.
