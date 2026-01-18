@@ -38,6 +38,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   });
   const [availableVideos, setAvailableVideos] = useState<Video[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
+  const [videoSearch, setVideoSearch] = useState("");
 
   useEffect(() => {
     if (isEditing) {
@@ -204,6 +205,10 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   };
 
   if (isEditing) {
+    const filteredAvailableVideos = availableVideos.filter((video) =>
+      video.title.toLowerCase().includes(videoSearch.toLowerCase()),
+    );
+
     return (
       <div
         onClick={() => setIsEditing(false)}
@@ -350,6 +355,14 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
               <label className="mb-2 block text-sm font-medium text-secondary">
                 Select Videos ({formData.videos.length} selected)
               </label>
+              
+              <input
+                type="text"
+                placeholder="Filter videos by title..."
+                value={videoSearch}
+                onChange={(e) => setVideoSearch(e.target.value)}
+                className="mb-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
               {/* Drag-and-drop list for selected videos */}
               {selectedVideoObjects.length > 0 && (
                 <div className="mb-4 max-h-40 overflow-y-auto rounded-md border border-primary/30 bg-primary/5 p-2">
@@ -363,7 +376,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                 <div className="py-4 text-center">Loading videos...</div>
               ) : availableVideos.length > 0 ? (
                 <div className="grid max-h-60 grid-cols-1 gap-2 overflow-y-auto rounded-md border border-gray-300 p-2 md:grid-cols-2 lg:grid-cols-3">
-                  {availableVideos.map((video) => (
+                  {filteredAvailableVideos.length > 0 ? (
+                    filteredAvailableVideos.map((video) => (
                     <div
                       key={video._id}
                       className={`flex cursor-pointer items-center space-x-2 rounded p-2 ${
@@ -389,7 +403,12 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                         {/* {video.playlistHint && <p className="text-sm text-gray-900 truncate">({video.playlistHint})</p>} */}
                       </div>
                     </div>
-                  ))}
+                  ))
+                  ) : (
+                    <div className="col-span-1 py-4 text-center text-gray-500 md:col-span-2 lg:col-span-3">
+                      No videos match &quot;{videoSearch}&quot;
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="py-4 text-center text-gray-500">
