@@ -179,20 +179,47 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Thumbnail URL *
+              Thumbnail *
             </label>
+            
+            {/* Image Preview */}
+            {formData.thumbnailUrl ? (
+              <div className="mb-3 relative">
+                <img
+                  src={formData.thumbnailUrl}
+                  alt="Thumbnail preview"
+                  className="w-72.5 h-54 object-cover rounded-md border border-gray-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, thumbnailUrl: "" }))}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                  title="Remove thumbnail"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div className="mb-3 w-full h-48 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                <p className="text-gray-400 text-sm">No thumbnail uploaded</p>
+              </div>
+            )}
+
+            {/* Hidden URL input for manual entry (optional) */}
             <input
               type="url"
               name="thumbnailUrl"
               value={formData.thumbnailUrl}
               onChange={handleInputChange}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Or paste thumbnail URL here"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-2"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Or upload an image using the button below
+            
+            <p className="mb-2 text-xs text-gray-500">
+              Upload an image using the button below
             </p>
-            <div className="mt-2">
+            <div>
               <UploadButton
                 className="w-fit rounded-2xl bg-primary p-2 text-creamey"
                 endpoint="mediaUploader"

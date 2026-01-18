@@ -66,6 +66,7 @@ export interface Video {
   comments?: VideoComment[]; // Array of comments
   createdAt: Date;
   updatedAt: Date;
+  playlistHint?: string;
 }
 
 // types/Playlist.ts

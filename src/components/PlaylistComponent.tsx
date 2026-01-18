@@ -39,6 +39,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   const [availableVideos, setAvailableVideos] = useState<Video[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
   const [videoSearch, setVideoSearch] = useState("");
+  const [playlistHintSearch, setPlaylistHintSearch] = useState("");
 
   useEffect(() => {
     if (isEditing) {
@@ -205,9 +206,13 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   };
 
   if (isEditing) {
-    const filteredAvailableVideos = availableVideos.filter((video) =>
-      video.title.toLowerCase().includes(videoSearch.toLowerCase()),
-    );
+    const filteredAvailableVideos = availableVideos.filter((video) => {
+      const matchesTitle = video.title.toLowerCase().includes(videoSearch.toLowerCase());
+      const matchesPlaylistHint = playlistHintSearch
+        ? video.playlistHint?.toLowerCase().includes(playlistHintSearch.toLowerCase())
+        : true;
+      return matchesTitle && matchesPlaylistHint;
+    });
 
     return (
       <div
@@ -356,13 +361,22 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                 Select Videos ({formData.videos.length} selected)
               </label>
               
-              <input
-                type="text"
-                placeholder="Filter videos by title..."
-                value={videoSearch}
-                onChange={(e) => setVideoSearch(e.target.value)}
-                className="mb-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+              <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Filter videos by title..."
+                  value={videoSearch}
+                  onChange={(e) => setVideoSearch(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <input
+                  type="text"
+                  placeholder="Filter by playlist hint..."
+                  value={playlistHintSearch}
+                  onChange={(e) => setPlaylistHintSearch(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
               {/* Drag-and-drop list for selected videos */}
               {selectedVideoObjects.length > 0 && (
                 <div className="mb-4 max-h-40 overflow-y-auto rounded-md border border-primary/30 bg-primary/5 p-2">
@@ -400,7 +414,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                         <p className="truncate text-sm text-gray-900">
                           {video.title}
                         </p>
-                        {/* {video.playlistHint && <p className="text-sm text-gray-900 truncate">({video.playlistHint})</p>} */}
+                         {video.playlistHint && <p className="text-sm text-gray-900 truncate">({video.playlistHint})</p>} 
                       </div>
                     </div>
                   ))

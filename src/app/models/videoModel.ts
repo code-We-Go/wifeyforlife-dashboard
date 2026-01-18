@@ -30,6 +30,7 @@ const VideoSchema = new Schema<Video>(
     isPublic: { type: Boolean, default: false },
     likes: [{ type: Schema.Types.ObjectId, ref: "users" }], // Array of user references who liked the video
     comments: [VideoCommentSchema], // Array of comments
+    playlistHint: { type: String, required: false },
   },
   {
     timestamps: true, // This will automatically add createdAt and updatedAt fields
