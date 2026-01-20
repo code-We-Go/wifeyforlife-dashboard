@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import * as XLSX from "xlsx";
+import Image from "next/image";
 import { FiEdit2, FiTrash2, FiDownload, FiCalendar, FiUser, FiMail, FiCheckCircle, FiXCircle, FiStar, FiClock, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -59,7 +60,7 @@ const WeddingTimelinePage = () => {
     fetchTimelines();
   }, [currentPage, searchTerm]);
 
-  const fetchTimelines = async () => {
+  const fetchTimelines = useCallback(async () => {
     try {
       setLoading(true);
       const searchQuery = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : "";
@@ -72,7 +73,7 @@ const WeddingTimelinePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -222,7 +223,7 @@ const WeddingTimelinePage = () => {
           </div>
           {searchTerm && (
             <p className="mt-2 text-sm text-gray-600">
-              Showing results for: <span className="font-semibold text-primary">"{searchTerm}"</span>
+              Showing results for: <span className="font-semibold text-primary">&quot;{searchTerm}&quot;</span>
             </p>
           )}
         </motion.div>
@@ -286,9 +287,11 @@ const WeddingTimelinePage = () => {
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-primaryLight text-white">
                       {timeline.user?.imageURL ? (
-                        <img
+                        <Image
                           src={timeline.user.imageURL}
                           alt={`${timeline.user.firstName} ${timeline.user.lastName}`}
+                          width={56}
+                          height={56}
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -437,7 +440,7 @@ const WeddingTimelinePage = () => {
                               {timeline.feedback.comment && (
                                 <div className="md:col-span-2">
                                   <p className="mb-1 text-sm font-medium text-gray-700">Comment</p>
-                                  <p className="italic text-gray-600">"{timeline.feedback.comment}"</p>
+                                  <p className="italic text-gray-600">&quot;{timeline.feedback.comment}&quot;</p>
                                 </div>
                               )}
                             </div>
