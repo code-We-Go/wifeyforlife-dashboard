@@ -25,7 +25,8 @@ export interface IWeddingTimeline extends Document {
     feelings: string[]; // Multiple selection: ["less_stressed", "more_organized", etc.]
     recommend: string; // "definitely_not" | "maybe" | "definitely_yes"
     comment?: string;
-  }; 
+  };
+  exported?: number; // Number of times the timeline has been exported
   createdAt: Date;
 }
 
@@ -37,6 +38,7 @@ const EventSchema = new Schema({
   groomsmenActivity: { type: String, default: "" },
   duration: { type: Number, required: true },
   timeLabel: { type: String },
+  
 });
 
 const SelectedFeatureSchema = new Schema({
@@ -60,6 +62,7 @@ const WeddingTimelineSchema = new Schema<IWeddingTimeline>(
       recommend: { type: String },
       comment: { type: String },
     },
+    exported:{type:Number,default:0},
   },
   { timestamps: true }
 );

@@ -4,8 +4,9 @@ import axios from "axios";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import * as XLSX from "xlsx";
 import Image from "next/image";
-import { FiEdit2, FiTrash2, FiDownload, FiCalendar, FiUser, FiMail, FiCheckCircle, FiXCircle, FiStar, FiClock, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiDownload, FiCalendar, FiUser, FiMail, FiCheckCircle, FiXCircle, FiStar, FiClock, FiChevronDown, FiChevronUp, FiBarChart2 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface WeddingTimelineFeedback {
   _id: string;
@@ -35,6 +36,7 @@ interface WeddingTimelineFeedback {
 }
 
 const WeddingTimelinePage = () => {
+  const router = useRouter();
   const [timelines, setTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -197,9 +199,17 @@ const WeddingTimelinePage = () => {
             <h1 className="text-3xl font-bold text-primary">Wedding Timelines</h1>
             <p className="mt-1 text-sm text-gray-600">View and manage user wedding timelines</p>
           </div>
-          <button onClick={exportToExcel} className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg hover:opacity-90">
-            <FiDownload /> Export to Excel
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => router.push('/pages/analytics/wedding-timeline')} 
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg hover:opacity-90"
+            >
+              <FiBarChart2 /> Analytics
+            </button>
+            <button onClick={exportToExcel} className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg hover:opacity-90">
+              <FiDownload /> Export to Excel
+            </button>
+          </div>
         </motion.div>
 
         {/* Search Bar */}
