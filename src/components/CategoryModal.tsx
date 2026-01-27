@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
-import UploadProductsImagesButton from "./UploadProductImagesButton";
+import UploadCategoryImageButton from "./UploadCategoryImageButton";
 import { Category, SubCategory } from "@/interfaces/interfaces";
 import mongoose from "mongoose";
 
@@ -31,6 +31,12 @@ const CategoryModal = ({
   const [categoryID, setCategoryID] = useState(
     subCategory?.categoryID._id || "",
   );
+  const [image, setImage] = useState(
+    category?.image || category?.imageURL || subCategory?.image || ""
+  );
+  const [homePage, setHomePage] = useState(
+    category?.HomePage || subCategory?.HomePage || false
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
@@ -40,6 +46,8 @@ const CategoryModal = ({
         await axios.put(`/api/categories?categoryID=${category?._id}`, {
           categoryName: name,
           description: description,
+          image: image,
+          HomePage: homePage,
         });
       } else if (type === "editSub") {
         await axios.put(
@@ -48,6 +56,8 @@ const CategoryModal = ({
             subCategoryName: name,
             description: description,
             categoryID: categoryID,
+            image: image,
+            HomePage: homePage,
           },
         );
       }
@@ -67,6 +77,8 @@ const CategoryModal = ({
         await axios.post(`/api/categories`, {
           categoryName: name,
           description: description,
+          image: image,
+          HomePage: homePage,
         });
       } else if (type === "addSub") {
         const categoryObjectId = new mongoose.Types.ObjectId(categoryID);
@@ -74,6 +86,8 @@ const CategoryModal = ({
           subCategoryName: name,
           description: description,
           categoryID: categoryObjectId,
+          image: image,
+          HomePage: homePage,
         });
       }
       refreshData();
@@ -132,7 +146,7 @@ const CategoryModal = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[95vh] w-full max-w-lg rounded-2xl bg-white p-6"
+        className="max-h-[95vh] overflow-y-scroll w-full max-w-lg rounded-2xl bg-white p-6"
       >
         <h2 className="mb-4 text-lg font-bold">{getTitle()}</h2>
         {type === "edit" ||
@@ -153,6 +167,33 @@ const CategoryModal = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+             <label className="mb-2 block">Image</label>
+             <div className="mb-4 flex flex-col items-center gap-4">
+              {image && (
+                <div className="relative h-40 w-40 overflow-hidden rounded-lg border">
+                  <Image
+                    src={image}
+                    alt="Category Image"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <UploadCategoryImageButton
+                imageUrl={image}
+                updateImageUrl={(url) => setImage(url)}
+              />
+            </div>
+            <div className="mb-4 flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="homePage"
+                checked={homePage}
+                onChange={(e) => setHomePage(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="homePage" className="text-sm font-medium">Show on Home Page</label>
+            </div>
             {(type === "editSub" || type === "addSub") && (
               <>
                 <label className="mb-2 block">Category</label>

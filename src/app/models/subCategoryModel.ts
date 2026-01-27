@@ -9,6 +9,8 @@ const subCategorySchema = new mongoose.Schema({
     // path: path.join(__dirname, "categoriesModel"),
   },
   description: { type: String },
+  image: { type: String },
+  HomePage: { type: Boolean, default: false },
 });
 console.log("Registering subCategoryModel");
 const subCategoryModel =

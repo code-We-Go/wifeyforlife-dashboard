@@ -1,5 +1,6 @@
 "use client";
 import { thirdFont } from "@/app/lib/fonts";
+import Image from "next/image";
 import CategoryModal from "@/components/CategoryModal";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { Category, SubCategory } from "@/interfaces/interfaces";
@@ -18,12 +19,15 @@ const CategoriesPage = () => {
     _id: "",
     categoryName: "",
     description: "",
-    imageURL: "",
+    image: "",
+    HomePage: false,
   });
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory>({
     _id: "",
     subCategoryName: "",
     description: "",
+    image: "",
+    HomePage: false,
     categoryID: {} as Category,
   });
 
@@ -83,6 +87,8 @@ const CategoriesPage = () => {
               <thead className="bg-secondary text-creamey text-sm">
                 <tr>
                   <th className="border p-2">#</th>
+                  <th className="border p-2">Image</th>
+                  <th className="border p-2">Home Page</th>
                   <th className="border p-2">Category Name</th>
                   <th className="border p-2">Description</th>
                   <th className="border p-2">Actions</th>
@@ -93,6 +99,31 @@ const CategoriesPage = () => {
                   <tr key={category._id} className="text-sm hover:bg-gray-50">
                     <td className="border p-2">
                       {(page - 1) * 10 + index + 1}
+                    </td>
+                    <td className="border p-2">
+                      {category.image || category.imageURL ? (
+                        <div className="relative h-12 w-12 overflow-hidden rounded">
+                          <Image
+                            src={category.image || category.imageURL || ""}
+                            alt={category.categoryName}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No Image</span>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                       {category.HomePage ? (
+                        <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-800">
+                          No
+                        </span>
+                      )}
                     </td>
                     <td className="border p-2">{category.categoryName}</td>
                     <td className="border p-2">{category.description}</td>
@@ -125,6 +156,8 @@ const CategoriesPage = () => {
               <thead className="bg-secondary text-creamey text-sm">
                 <tr>
                   <th className="border p-2">#</th>
+                  <th className="border p-2">Image</th>
+                  <th className="border p-2">Home Page</th>
                   <th className="border p-2">Subcategory Name</th>
                   <th className="border p-2">Description</th>
                   <th className="border p-2">Category</th>
@@ -139,6 +172,31 @@ const CategoriesPage = () => {
                   >
                     <td className="border p-2">
                       {(page - 1) * 10 + index + 1}
+                    </td>
+                    <td className="border p-2">
+                       {subCategory.image ? (
+                        <div className="relative h-12 w-12 overflow-hidden rounded">
+                          <Image
+                            src={subCategory.image}
+                            alt={subCategory.subCategoryName}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No Image</span>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                      {subCategory.HomePage ? (
+                        <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-800">
+                          No
+                        </span>
+                      )}
                     </td>
                     <td className="border p-2">
                       {subCategory.subCategoryName}

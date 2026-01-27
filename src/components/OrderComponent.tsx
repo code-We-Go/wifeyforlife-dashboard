@@ -314,6 +314,7 @@ const OrderComponent = ({
                 ))}
               </select>
 
+              <label className="mt-4 block font-semibold">Payment Method: {order.cash=== "cash" ? "Cash on delivery" : "card"} </label>
               {/* Payment Dropdown */}
               <label className="mt-4 block font-semibold">Payment:</label>
               <select

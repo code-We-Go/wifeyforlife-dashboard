@@ -8,6 +8,11 @@ const categoriesSchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  image: {
+    type: String,
+    required: true,
+  },
+  HomePage: { type: Boolean, default: false },
 });
 console.log('Registering CategoryModel');
 const categoriesModel =

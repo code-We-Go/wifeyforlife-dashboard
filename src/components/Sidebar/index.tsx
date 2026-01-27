@@ -283,6 +283,7 @@ const menuGroups = [
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
+  const [searchTerm, setSearchTerm] = useState("");
   const [pageName, setPageName] = useLocalStorage("selectedMenu", "dashboard");
 
   return (
@@ -331,20 +332,37 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <nav
             className={`${thirdFont.className} mt-5 px-4 py-4 lg:mt-9 lg:px-6`}
           >
-            {menuGroups.map((group, groupIndex) => (
-              <div key={groupIndex}>
-                <ul className="mb-6 flex flex-col gap-2">
-                  {group.menuItems.map((menuItem, menuIndex) => (
-                    <SidebarItem
-                      key={menuIndex}
-                      item={menuItem}
-                      pageName={pageName}
-                      setPageName={setPageName}
-                    />
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full placeholder:text-white/80 rounded-lg border-[1px] border-creamey bg-transparent px-4 py-2 text-sm text-creamey outline-none  focus:border-creamey"
+              />
+            </div>
+            {menuGroups.map((group, groupIndex) => {
+              const filteredItems = group.menuItems.filter((item) =>
+                item.label.toLowerCase().includes(searchTerm.toLowerCase())
+              );
+
+              if (filteredItems.length === 0) return null;
+
+              return (
+                <div key={groupIndex}>
+                  <ul className="mb-6 flex flex-col gap-2">
+                    {filteredItems.map((menuItem, menuIndex) => (
+                      <SidebarItem
+                        key={menuIndex}
+                        item={menuItem}
+                        pageName={pageName}
+                        setPageName={setPageName}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </nav>
           {/* <!-- Sidebar Menu --> */}
         </div>

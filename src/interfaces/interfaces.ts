@@ -70,11 +70,26 @@ export interface Video {
 }
 
 // types/Playlist.ts
+export interface SubPlaylist {
+  _id?: string;
+  title: string;
+  videos: Video[] | string[]; // Can be full Video objects or just IDs
+  thumbnailUrl: string;
+  order: number;
+}
+
+export interface PlaylistItem {
+  itemType: 'video' | 'subPlaylist';
+  video?: Video | string; // Video object or ID
+  subPlaylist?: SubPlaylist; // SubPlaylist object
+  order: number;
+}
+
 export interface Playlist {
   _id?: string;
   title: string;
   description?: string[];
-  videos: Video[] | string[]; // Can be full Video objects or just IDs
+  items: PlaylistItem[]; // Changed from videos to items
   thumbnailUrl: string;
   isPublic: boolean;
   category?: string;
@@ -92,21 +107,9 @@ export interface Variant {
   images: media[];
 }
 
-export interface Category {
-  _id: string;
-  categoryName: string;
-  description: string;
-  __v?: number; // optional if included in response
-}
 
-export interface SubCategory {
-  _id: string;
-  subCategoryName: string;
-  description: string;
-  categoryID: Category; // now a full object
-  createdAt?: string;
-  updatedAt?: string;
-}
+
+
 
 export type attribute = {
   name: string;
@@ -127,7 +130,10 @@ export interface Category {
   _id: string;
   categoryName: string;
   description: string;
-  imageURL: string;
+  image?: string;
+  HomePage?: boolean;
+  imageURL?: string; // @deprecated use image
+  __v?: number;
 }
 export interface Collection {
   _id: string;
@@ -140,6 +146,8 @@ export interface SubCategory {
   _id: string;
   subCategoryName: string;
   description: string;
+  image?: string;
+  HomePage?: boolean;
   categoryID: Category; // now a full object
   createdAt?: string;
   updatedAt?: string;
@@ -227,7 +235,7 @@ export interface IOrder {
   city?: string;
   state?: string;
   phone?: string;
-  cash?: boolean;
+  cash?: string;
   cart?: CartItem[]; // Assuming CartItem interface exists
   subTotal?: number;
   shipping: number;
