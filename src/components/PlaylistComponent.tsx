@@ -120,14 +120,14 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
     return 0;
   };
 
-  const getVideos = (): Video[] => {
-    if (Array.isArray(playlist.videos)) {
-      return playlist.videos.filter(
-        (video) => typeof video === "object" && video !== null,
-      ) as Video[];
-    }
-    return [];
-  };
+  // const getVideos = (): Video[] => {
+  //   if (Array.isArray(playlist.videos)) {
+  //     return playlist.videos.filter(
+  //       (video) => typeof video === "object" && video !== null,
+  //     ) as Video[];
+  //   }
+  //   return [];
+  // };
 
   const handleVideoSelection = (videoId: string) => {
     setFormData((prev) => ({

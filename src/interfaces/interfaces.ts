@@ -90,6 +90,7 @@ export interface Playlist {
   title: string;
   description?: string[];
   items: PlaylistItem[]; // Changed from videos to items
+  videos: (Video | string)[]; // Re-added to match current backend/frontend usage
   thumbnailUrl: string;
   isPublic: boolean;
   category?: string;
