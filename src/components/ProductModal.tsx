@@ -35,9 +35,9 @@ const ProductModal = ({
       console.log("Modal opened, product:", product);
       console.log("Product subcategory:", product.subCategoryID);
 
-      // setSelectedCategory(product.subCategoryID.categoryID._id);
+      // Safely set selected subcategory
       setSelectedSubCategory(
-        product.subCategoryID ? product.subCategoryID._id : "",
+        product.subCategoryID?._id || "",
       );
       setProduct(product);
     }
@@ -52,13 +52,15 @@ const ProductModal = ({
           console.log("Categories loaded:", res.data.data);
           console.log("Current selected category:", selectedCategory);
 
-          // Set the selected category and fetch subcategories
-          const categoryId = product.subCategoryID?.categoryID?._id;
+          // Set the selected category and fetch subcategories (safely handle deleted references)
+          const categoryId = product.subCategoryID?.categoryID?._id || "";
           console.log("Setting category to:", categoryId);
-          setSelectedCategory(categoryId);
-          await fetchSubCategories(categoryId);
+          if (categoryId) {
+            setSelectedCategory(categoryId);
+            await fetchSubCategories(categoryId);
+          }
           setSelectedSubCategory(
-            product.subCategoryID ? product.subCategoryID._id : "",
+            product.subCategoryID?._id || "",
           );
         }
       } catch (err) {
@@ -69,6 +71,10 @@ const ProductModal = ({
   }, []);
 
   const fetchSubCategories = async (categoryId: string) => {
+    if (!categoryId) {
+      setSubCategories([]);
+      return;
+    }
     try {
       const res = await axios(`/api/subcategories?categoryID=${categoryId}`);
       if (res.status === 200) {
@@ -76,6 +82,7 @@ const ProductModal = ({
       }
     } catch (err) {
       console.error(err);
+      setSubCategories([]);
     }
   };
 
@@ -296,14 +303,15 @@ const ProductModal = ({
                 <label className="block font-semibold">Subcategory:</label>
                 <select
                   value={
-                    productState.subCategoryID
-                      ? productState.subCategoryID._id
-                      : ""
+                    productState.subCategoryID?._id || ""
                   }
                   onChange={(e) => updateFeild("subCategoryID", e.target.value)}
                   className="w-full border p-2"
+                  disabled={!selectedCategory}
                 >
-                  <option value="">Select a subcategory</option>
+                  <option value="">
+                    {selectedCategory ? "Select a subcategory" : "Select a category first"}
+                  </option>
                   {subCategories.map((subCategory, index) => (
                     <option key={index} value={subCategory._id}>
                       {subCategory.subCategoryName}

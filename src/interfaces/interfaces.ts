@@ -135,6 +135,7 @@ export interface Category {
   HomePage?: boolean;
   imageURL?: string; // @deprecated use image
   __v?: number;
+  active?: boolean;
 }
 export interface Collection {
   _id: string;
@@ -152,6 +153,7 @@ export interface SubCategory {
   categoryID: Category; // now a full object
   createdAt?: string;
   updatedAt?: string;
+  active?: boolean;
 }
 
 export interface Product {

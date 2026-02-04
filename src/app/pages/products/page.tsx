@@ -21,10 +21,17 @@ const ProductsPage = () => {
       const res = await axios.get(
         `/api/products?page=${page}&search=${searchQuery}`,
       );
-      console.log("formatedData" + res.data.data[0].subCategoryID._id);
-      console.log(
-        "formatedData" + res.data.data[0].subCategoryID.subCategoryName,
-      );
+      
+      // Safely log subcategory data if it exists
+      if (res.data.data.length > 0 && res.data.data[0].subCategoryID) {
+        console.log("formatedData subCategoryID:", res.data.data[0].subCategoryID._id);
+        console.log(
+          "formatedData subCategoryName:", res.data.data[0].subCategoryID.subCategoryName,
+        );
+      } else {
+        console.log("Product has no subcategory or subcategory was deleted");
+      }
+      
       setProducts(res.data.data);
       setTotalPages(res.data.totalPages);
     } catch (error) {

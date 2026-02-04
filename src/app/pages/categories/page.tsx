@@ -21,6 +21,7 @@ const CategoriesPage = () => {
     description: "",
     image: "",
     HomePage: false,
+    active: true,
   });
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory>({
     _id: "",
@@ -28,6 +29,7 @@ const CategoriesPage = () => {
     description: "",
     image: "",
     HomePage: false,
+    active: true,
     categoryID: {} as Category,
   });
 
@@ -89,6 +91,7 @@ const CategoriesPage = () => {
                   <th className="border p-2">#</th>
                   <th className="border p-2">Image</th>
                   <th className="border p-2">Home Page</th>
+                  <th className="border p-2">Active</th>
                   <th className="border p-2">Category Name</th>
                   <th className="border p-2">Description</th>
                   <th className="border p-2">Actions</th>
@@ -116,6 +119,17 @@ const CategoriesPage = () => {
                     </td>
                     <td className="border p-2">
                        {category.HomePage ? (
+                        <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-800">
+                          No
+                        </span>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                      {category.active !== false ? (
                         <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
                           Yes
                         </span>
@@ -158,6 +172,7 @@ const CategoriesPage = () => {
                   <th className="border p-2">#</th>
                   <th className="border p-2">Image</th>
                   <th className="border p-2">Home Page</th>
+                  <th className="border p-2">Active</th>
                   <th className="border p-2">Subcategory Name</th>
                   <th className="border p-2">Description</th>
                   <th className="border p-2">Category</th>
@@ -189,6 +204,17 @@ const CategoriesPage = () => {
                     </td>
                     <td className="border p-2">
                       {subCategory.HomePage ? (
+                        <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-800">
+                          No
+                        </span>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                      {subCategory.active ? (
                         <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
                           Yes
                         </span>

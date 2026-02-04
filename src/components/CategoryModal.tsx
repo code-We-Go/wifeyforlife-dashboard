@@ -37,6 +37,9 @@ const CategoryModal = ({
   const [homePage, setHomePage] = useState(
     category?.HomePage || subCategory?.HomePage || false
   );
+  const [active, setActive] = useState(
+    category?.active !== false && subCategory?.active !== false
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
@@ -48,6 +51,7 @@ const CategoryModal = ({
           description: description,
           image: image,
           HomePage: homePage,
+          active: active,
         });
       } else if (type === "editSub") {
         await axios.put(
@@ -58,6 +62,7 @@ const CategoryModal = ({
             categoryID: categoryID,
             image: image,
             HomePage: homePage,
+            active: active,
           },
         );
       }
@@ -79,6 +84,7 @@ const CategoryModal = ({
           description: description,
           image: image,
           HomePage: homePage,
+          active: active,
         });
       } else if (type === "addSub") {
         const categoryObjectId = new mongoose.Types.ObjectId(categoryID);
@@ -88,6 +94,7 @@ const CategoryModal = ({
           categoryID: categoryObjectId,
           image: image,
           HomePage: homePage,
+          active: active,
         });
       }
       refreshData();
@@ -193,6 +200,16 @@ const CategoryModal = ({
                 className="h-4 w-4 rounded border-gray-300"
               />
               <label htmlFor="homePage" className="text-sm font-medium">Show on Home Page</label>
+            </div>
+            <div className="mb-4 flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="active"
+                checked={active}
+                onChange={(e) => setActive(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="active" className="text-sm font-medium">Active</label>
             </div>
             {(type === "editSub" || type === "addSub") && (
               <>

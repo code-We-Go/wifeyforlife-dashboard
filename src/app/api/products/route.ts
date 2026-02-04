@@ -104,19 +104,12 @@ export async function GET(req: Request) {
       .skip(skip)
       .limit(limit);
 
-    // Filter out products with null/undefined subCategoryID after populate
-    const validProducts = products.filter(
-      (product) =>
-        product.subCategoryID &&
-        product.subCategoryID._id &&
-        product.subCategoryID.categoryID,
-    );
-
-    console.log("Valid products count:", validProducts.length);
-    if (validProducts.length > 0) {
+    // Log products info for debugging
+    console.log("Total products fetched:", products.length);
+    if (products.length > 0 && products[0].subCategoryID) {
       console.log(
         "Sample product subCategoryID:",
-        validProducts[0].subCategoryID,
+        products[0].subCategoryID,
       );
     }
 

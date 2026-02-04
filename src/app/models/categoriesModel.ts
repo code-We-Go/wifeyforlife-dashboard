@@ -13,6 +13,7 @@ const categoriesSchema = new mongoose.Schema({
     required: true,
   },
   HomePage: { type: Boolean, default: false },
+  active: { type: Boolean, default: true },
 });
 console.log('Registering CategoryModel');
 const categoriesModel =
