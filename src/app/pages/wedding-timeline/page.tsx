@@ -42,6 +42,11 @@ const WeddingTimelinePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState({
+    subscribedUsersCount: 0,
+    avgEaseOfUse: 0,
+    avgSatisfaction: 0,
+  });
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"edit" | "delete">("edit");
@@ -70,6 +75,11 @@ const WeddingTimelinePage = () => {
       setTimelines(response.data.data);
       setTotal(response.data.pagination.total);
       setTotalPages(response.data.pagination.totalPages);
+      setStats(response.data.stats || {
+        subscribedUsersCount: 0,
+        avgEaseOfUse: 0,
+        avgSatisfaction: 0,
+      });
     } catch (error) {
       console.error("Error fetching wedding timelines:", error);
     } finally {
@@ -246,30 +256,18 @@ const WeddingTimelinePage = () => {
           </div>
           <div className="rounded-lg bg-primary  p-5 text-white shadow-lg">
             <p className="text-sm opacity-90">Subscribed Users</p>
-            <p className="mt-2 text-3xl font-bold">{timelines.filter((t) => t.subscription?.hasSubscription).length}</p>
+            <p className="mt-2 text-3xl font-bold">{stats.subscribedUsersCount}</p>
           </div>
           <div className="rounded-lg bg-primary p-5 text-white shadow-lg">
             <p className="text-sm">Avg Ease of Use</p>
             <p className="mt-2 text-3xl font-bold">
-              {(() => {
-                const timelinesWithFeedback = timelines.filter((t) => t.feedback?.easeOfUse && t.feedback.easeOfUse > 0);
-                if (timelinesWithFeedback.length === 0) return "0";
-                const avg = timelinesWithFeedback.reduce((acc, t) => acc + (t.feedback?.easeOfUse || 0), 0) / timelinesWithFeedback.length;
-                return avg.toFixed(1);
-              })()}
-              /5
+              {stats.avgEaseOfUse}/5
             </p>
           </div>
           <div className="rounded-lg bg-primary p-5 text-white shadow-lg">
             <p className="text-sm">Avg Satisfaction</p>
             <p className="mt-2 text-3xl font-bold">
-              {(() => {
-                const timelinesWithFeedback = timelines.filter((t) => t.feedback?.satisfaction && t.feedback.satisfaction > 0);
-                if (timelinesWithFeedback.length === 0) return "0";
-                const avg = timelinesWithFeedback.reduce((acc, t) => acc + (t.feedback?.satisfaction || 0), 0) / timelinesWithFeedback.length;
-                return avg.toFixed(1);
-              })()}
-              /5
+              {stats.avgSatisfaction}/5
             </p>
           </div>
         </div>

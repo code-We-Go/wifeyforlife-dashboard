@@ -90,6 +90,25 @@ export async function GET(request: Request) {
     const total = filteredTimelines.length;
     const paginatedTimelines = filteredTimelines.slice(skip, skip + limit);
 
+    // Calculate stats from all filtered timelines (not just current page)
+    const subscribedUsersCount = filteredTimelines.filter(
+      (t) => t.subscription?.hasSubscription
+    ).length;
+
+    const timelinesWithEaseOfUse = filteredTimelines.filter(
+      (t) => (t as any).feedback?.easeOfUse && (t as any).feedback.easeOfUse > 0
+    );
+    const avgEaseOfUse = timelinesWithEaseOfUse.length > 0
+      ? timelinesWithEaseOfUse.reduce((acc, t) => acc + ((t as any).feedback?.easeOfUse || 0), 0) / timelinesWithEaseOfUse.length
+      : 0;
+
+    const timelinesWithSatisfaction = filteredTimelines.filter(
+      (t) => (t as any).feedback?.satisfaction && (t as any).feedback.satisfaction > 0
+    );
+    const avgSatisfaction = timelinesWithSatisfaction.length > 0
+      ? timelinesWithSatisfaction.reduce((acc, t) => acc + ((t as any).feedback?.satisfaction || 0), 0) / timelinesWithSatisfaction.length
+      : 0;
+
     return NextResponse.json({
       success: true,
       data: paginatedTimelines,
@@ -98,6 +117,11 @@ export async function GET(request: Request) {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
+      },
+      stats: {
+        subscribedUsersCount,
+        avgEaseOfUse: parseFloat(avgEaseOfUse.toFixed(1)),
+        avgSatisfaction: parseFloat(avgSatisfaction.toFixed(1)),
       },
     });
   } catch (error: any) {

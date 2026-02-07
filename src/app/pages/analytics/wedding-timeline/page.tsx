@@ -61,11 +61,17 @@ const WeddingTimelineAnalyticsPage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("users");
   const [timelines, setTimelines] = useState<WeddingTimelineFeedback[]>([]);
+  const [allTimelines, setAllTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [filteredTimelines, setFilteredTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [apiStats, setApiStats] = useState({
+    subscribedUsersCount: 0,
+    avgEaseOfUse: 0,
+    avgSatisfaction: 0,
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [subscriptionFilter, setSubscriptionFilter] = useState<SubscriptionFilter>("all");
   const [exportSortOrder, setExportSortOrder] = useState<"desc" | "asc">("desc");
@@ -75,6 +81,7 @@ const WeddingTimelineAnalyticsPage = () => {
 
   useEffect(() => {
     fetchTimelines();
+    fetchAllTimelines();
   }, [currentPage]);
 
   useEffect(() => {
@@ -88,12 +95,27 @@ const WeddingTimelineAnalyticsPage = () => {
       setTimelines(response.data.data);
       setTotal(response.data.pagination.total);
       setTotalPages(response.data.pagination.totalPages);
+      setApiStats(response.data.stats || {
+        subscribedUsersCount: 0,
+        avgEaseOfUse: 0,
+        avgSatisfaction: 0,
+      });
     } catch (error) {
       console.error("Error fetching wedding timelines:", error);
     } finally {
       setLoading(false);
     }
   }, [currentPage]);
+
+  const fetchAllTimelines = useCallback(async () => {
+    try {
+      // Fetch all timelines without pagination for accurate stats
+      const response = await axios.get(`/api/wedding-timeline?page=1&limit=10000`);
+      setAllTimelines(response.data.data);
+    } catch (error) {
+      console.error("Error fetching all wedding timelines:", error);
+    }
+  }, []);
 
   const applyFilters = () => {
     let filtered = [...timelines];
@@ -144,31 +166,22 @@ const WeddingTimelineAnalyticsPage = () => {
   };
 
   const calculateStats = () => {
-    const subscribedCount = timelines.filter((t) => t.subscription?.hasSubscription).length;
-    const notSubscribedCount = timelines.length - subscribedCount;
+    // Use API stats for all-time data
+    const subscribedCount = apiStats.subscribedUsersCount;
+    const notSubscribedCount = total - subscribedCount;
     
-    const timelinesWithFeedback = timelines.filter((t) => t.feedback?.easeOfUse && t.feedback.easeOfUse > 0);
-    const avgEaseOfUse = timelinesWithFeedback.length > 0
-      ? (timelinesWithFeedback.reduce((acc, t) => acc + (t.feedback?.easeOfUse || 0), 0) / timelinesWithFeedback.length).toFixed(1)
-      : "0";
-
-    const timelinesWithSatisfaction = timelines.filter((t) => t.feedback?.satisfaction && t.feedback.satisfaction > 0);
-    const avgSatisfaction = timelinesWithSatisfaction.length > 0
-      ? (timelinesWithSatisfaction.reduce((acc, t) => acc + (t.feedback?.satisfaction || 0), 0) / timelinesWithSatisfaction.length).toFixed(1)
-      : "0";
-
-    // Export statistics
-    const totalExports = timelines.reduce((acc, t) => acc + (t.exported || 0), 0);
-    const timelinesExported = timelines.filter((t) => t.exported && t.exported > 0).length;
-    const exportRate = timelines.length > 0 ? ((timelinesExported / timelines.length) * 100).toFixed(1) : "0";
+    // Export statistics from all timelines
+    const totalExports = allTimelines.reduce((acc, t) => acc + (t.exported || 0), 0);
+    const timelinesExported = allTimelines.filter((t) => t.exported && t.exported > 0).length;
+    const exportRate = total > 0 ? ((timelinesExported / total) * 100).toFixed(1) : "0";
 
     return {
-      total: timelines.length,
+      total: total,
       subscribedCount,
       notSubscribedCount,
-      avgEaseOfUse,
-      avgSatisfaction,
-      subscriptionRate: timelines.length > 0 ? ((subscribedCount / timelines.length) * 100).toFixed(1) : "0",
+      avgEaseOfUse: apiStats.avgEaseOfUse.toString(),
+      avgSatisfaction: apiStats.avgSatisfaction.toString(),
+      subscriptionRate: total > 0 ? ((subscribedCount / total) * 100).toFixed(1) : "0",
       totalExports,
       timelinesExported,
       exportRate
@@ -196,51 +209,89 @@ const WeddingTimelineAnalyticsPage = () => {
   const renderUsersTab = () => (
     <div className="space-y-6">
       {/* Subscription Breakdown Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-lg bg-white p-6 shadow-lg"
-        >
-          <h3 className="mb-4 text-lg font-bold text-primary">Subscription Breakdown</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded-full bg-green-500"></div>
-                <span className="text-gray-700">Subscribed Users</span>
+      {loading ? (
+        // Skeleton loaders
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Subscription Breakdown Skeleton */}
+          <div className="rounded-lg bg-white p-6 shadow-lg">
+            <div className="mb-4 h-6 w-48 animate-pulse rounded bg-gray-200"></div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-pulse rounded-full bg-gray-200"></div>
+                  <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+                </div>
+                <div className="h-6 w-12 animate-pulse rounded bg-gray-200"></div>
               </div>
-              <span className="font-bold text-gray-900">{stats.subscribedCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded-full bg-red-500"></div>
-                <span className="text-gray-700">Not Subscribed</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-pulse rounded-full bg-gray-200"></div>
+                  <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+                </div>
+                <div className="h-6 w-12 animate-pulse rounded bg-gray-200"></div>
               </div>
-              <span className="font-bold text-gray-900">{stats.notSubscribedCount}</span>
             </div>
           </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-lg bg-white p-6 shadow-lg"
-        >
-          <h3 className="mb-4 text-lg font-bold text-primary">Quick Stats</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Total Timelines</span>
-              <span className="font-bold text-gray-900">{stats.total}</span>
+          {/* Quick Stats Skeleton */}
+          <div className="rounded-lg bg-white p-6 shadow-lg">
+            <div className="mb-4 h-6 w-32 animate-pulse rounded bg-gray-200"></div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+                <div className="h-6 w-12 animate-pulse rounded bg-gray-200"></div>
+              </div>
             </div>
-            {/* <div className="flex items-center justify-between">
-              <span className="text-gray-700">Conversion Rate</span>
-              <span className="font-bold text-gray-900">{stats.subscriptionRate}%</span>
-            </div> */}
           </div>
-        </motion.div>
-      </div>
+        </div>
+      ) : (
+        // Actual stats cards
+        <div className="grid gap-6 md:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-lg bg-white p-6 shadow-lg"
+          >
+            <h3 className="mb-4 text-lg font-bold text-primary">Subscription Breakdown</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded-full bg-green-500"></div>
+                  <span className="text-gray-700">Subscribed Users</span>
+                </div>
+                <span className="font-bold text-gray-900">{stats.subscribedCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded-full bg-red-500"></div>
+                  <span className="text-gray-700">Not Subscribed</span>
+                </div>
+                <span className="font-bold text-gray-900">{stats.notSubscribedCount}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-lg bg-white p-6 shadow-lg"
+          >
+            <h3 className="mb-4 text-lg font-bold text-primary">Quick Stats</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700">Total Timelines</span>
+                <span className="font-bold text-gray-900">{stats.total}</span>
+              </div>
+              {/* <div className="flex items-center justify-between">
+                <span className="text-gray-700">Conversion Rate</span>
+                <span className="font-bold text-gray-900">{stats.subscriptionRate}%</span>
+              </div> */}
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="grid gap-4 md:grid-cols-2">
@@ -531,54 +582,71 @@ const WeddingTimelineAnalyticsPage = () => {
       {/* Export Analytics */}
       <div>
         {/* <h2 className="mb-4 text-xl font-bold text-gray-800">Export Analytics</h2> */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Total Exports Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="rounded-lg bg-primary p-6 text-white shadow-lg"
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Total Exports</h3>
-              <FiDownload size={24} />
-            </div>
-            <p className="text-4xl font-bold">{stats.totalExports}</p>
-            <p className="mt-2 text-sm opacity-90">All-time PDF exports</p>
-          </motion.div>
+        {loading ? (
+          // Skeleton loaders for export cards
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-lg bg-primary p-6 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="h-6 w-32 animate-pulse rounded bg-white/20"></div>
+                  <div className="h-6 w-6 animate-pulse rounded-full bg-white/20"></div>
+                </div>
+                <div className="h-10 w-24 animate-pulse rounded bg-white/20"></div>
+                <div className="mt-2 h-4 w-40 animate-pulse rounded bg-white/20"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Actual export cards
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Total Exports Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="rounded-lg bg-primary p-6 text-white shadow-lg"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Total Exports</h3>
+                <FiDownload size={24} />
+              </div>
+              <p className="text-4xl font-bold">{stats.totalExports}</p>
+              <p className="mt-2 text-sm opacity-90">All-time PDF exports</p>
+            </motion.div>
 
-          {/* Export Rate Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="rounded-lg bg-primary p-6 text-white shadow-lg"
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Export Rate</h3>
-              <FiTrendingUp size={24} />
-            </div>
-            <p className="text-4xl font-bold">{stats.exportRate}%</p>
-            <p className="mt-2 text-sm opacity-90">
-              {stats.timelinesExported} of {stats.total} timelines exported
-            </p>
-          </motion.div>
+            {/* Export Rate Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="rounded-lg bg-primary p-6 text-white shadow-lg"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Export Rate</h3>
+                <FiTrendingUp size={24} />
+              </div>
+              <p className="text-4xl font-bold">{stats.exportRate}%</p>
+              <p className="mt-2 text-sm opacity-90">
+                {stats.timelinesExported} of {stats.total} timelines exported
+              </p>
+            </motion.div>
 
-          {/* Timelines Exported Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="rounded-lg bg-primary p-6 text-white shadow-lg"
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Unique Exports</h3>
-              <FiCheckCircle size={24} />
-            </div>
-            <p className="text-4xl font-bold">{stats.timelinesExported}</p>
-            <p className="mt-2 text-sm opacity-90">Timelines exported at least once</p>
-          </motion.div>
-        </div>
+            {/* Timelines Exported Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="rounded-lg bg-primary p-6 text-white shadow-lg"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Unique Exports</h3>
+                <FiCheckCircle size={24} />
+              </div>
+              <p className="text-4xl font-bold">{stats.timelinesExported}</p>
+              <p className="mt-2 text-sm opacity-90">Timelines exported at least once</p>
+            </motion.div>
+          </div>
+        )}
         
         {/* Timeline Export List */}
         <div className="mt-8">
@@ -603,7 +671,7 @@ const WeddingTimelineAnalyticsPage = () => {
           </div>
 
           <div className="space-y-3">
-            {[...timelines]
+            {[...allTimelines]
               .sort((a, b) => {
                 const aExports = a.exported || 0;
                 const bExports = b.exported || 0;
@@ -796,8 +864,8 @@ const WeddingTimelineAnalyticsPage = () => {
   );
 
   const renderFeedbackTab = () => {
-    // Filter for timelines with real user feedback (not default values)
-    const timelinesWithFeedback = timelines.filter((t) => 
+    // Filter for timelines with real user feedback (not default values) from ALL timelines
+    const timelinesWithFeedback = allTimelines.filter((t) => 
       t.feedback && (
         (t.feedback.easeOfUse && t.feedback.easeOfUse > 0) ||
         (t.feedback.satisfaction && t.feedback.satisfaction > 0) ||
