@@ -103,7 +103,6 @@ const ChartSubscriptions: React.FC = () => {
     { name: "Profit", data: [] },
   ]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [year, setYear] = useState(new Date().getFullYear().toString());
   const [isSampleData, setIsSampleData] = useState<boolean>(false);
 
   // Define interface for monthly data item
@@ -133,27 +132,47 @@ const ChartSubscriptions: React.FC = () => {
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
-        // Generate all months for the selected year
-        const allMonths = [];
+        // Generate the last 12 months ending with current month
+        const currentDate = new Date();
+        const rolling12Months: MonthlyDataItem[] = [];
+        const monthLabels: string[] = [];
+        
+        // Create a map to store data by "MMM YYYY" key
+        const dataMap = new Map<string, MonthlyDataItem>();
 
-        // Create full year data structure
-        const fullYearData: MonthlyDataItem[] = [];
-        for (let i = 0; i < 12; i++) {
-          const monthName = monthNames[i]; // Only use month name without year
-          allMonths.push(monthName);
-
+        // Generate the last 12 months (11 months ago + current month)
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          const monthIndex = date.getMonth();
+          const year = date.getFullYear();
+          const monthName = monthNames[monthIndex];
+          const key = `${monthName} ${year}`;
+          
+          monthLabels.push(monthName);
+          
           // Initialize with zero values
-          fullYearData.push({
-            month: monthName,
+          rolling12Months.push({
+            month: key,
+            revenue: 0,
+            cost: 0,
+            profit: 0,
+          });
+          
+          dataMap.set(key, {
+            month: key,
             revenue: 0,
             cost: 0,
             profit: 0,
           });
         }
 
-        // Fetch data for the entire year with a single API call
+        // Fetch data for the rolling 12-month period
         try {
-          const url = `/api/analytics/subscriptions?year=${year}`;
+          // Calculate start and end dates for the rolling period
+          const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // Last day of current month
+          const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 11, 1); // First day of 11 months ago
+          
+          const url = `/api/analytics/subscriptions?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
           const response = await axios.get(url);
           console.log(JSON.stringify(response.data.data.monthlyData));
           let hasSampleData = false;
@@ -163,46 +182,19 @@ const ChartSubscriptions: React.FC = () => {
             response.data.data &&
             response.data.data.monthlyData
           ) {
-            const yearlyData = response.data.data.monthlyData;
+            const monthlyData = response.data.data.monthlyData;
 
-            // Arabic month names mapping as fallback
-            const arabicMonthsMap: {[key: string]: number} = {
-              "يناير": 0,    // January
-              "فبراير": 1,   // February
-              "مارس": 2,     // March
-              "أبريل": 3,    // April
-              "مايو": 4,     // May
-              "يونيو": 5,    // June
-              "يوليو": 6,    // July
-              "أغسطس": 7,    // August
-              "سبتمبر": 8,   // September
-              "أكتوبر": 9,   // October
-              "نوفمبر": 10,  // November
-              "ديسمبر": 11   // December
-            };
-
-            // Process the yearly data and distribute among months
-            yearlyData.forEach((monthData: any) => {
-              // Extract month from the month string (format: "MMM YYYY")
-              const monthStr = monthData.month.split(" ")[0]; // Get month name
+            // Process the monthly data
+            monthlyData.forEach((monthData: any) => {
+              const monthKey = monthData.month; // Should be in "MMM YYYY" format
               
-              // Try to get month index from English month name first
-              let monthIndex = monthNames.findIndex(m => m === monthStr);
-              
-              // If not found, try Arabic month name as fallback
-              if (monthIndex === -1 && arabicMonthsMap[monthStr] !== undefined) {
-                monthIndex = arabicMonthsMap[monthStr];
-                console.log(`Using Arabic month fallback for: ${monthStr} -> ${monthIndex}`);
-              }
-
-              if (monthIndex !== undefined && monthIndex >= 0 && monthIndex < 12) {
-                // Assign data to the correct month
-                fullYearData[monthIndex] = {
-                  month: monthNames[monthIndex],
+              if (dataMap.has(monthKey)) {
+                dataMap.set(monthKey, {
+                  month: monthKey,
                   revenue: monthData.revenue || 0,
                   cost: monthData.cost || 0,
                   profit: monthData.profit || 0,
-                };
+                });
               }
 
               // Check if this is sample data
@@ -210,22 +202,29 @@ const ChartSubscriptions: React.FC = () => {
                 hasSampleData = true;
               }
             });
+            
+            // Update rolling12Months with fetched data
+            rolling12Months.forEach((item, index) => {
+              const data = dataMap.get(item.month);
+              if (data) {
+                rolling12Months[index] = data;
+              }
+            });
           }
 
           setIsSampleData(hasSampleData);
         } catch (error) {
-          console.error("Error fetching yearly subscription data:", error);
+          console.error("Error fetching subscription data:", error);
           // Keep the default zero values for all months
         }
 
         // Extract data for chart
-        const months = fullYearData.map((item) => item.month);
-        const revenueData = fullYearData.map((item) => item.revenue);
-        const costData = fullYearData.map((item) => item.cost);
-        const profitData = fullYearData.map((item) => item.profit);
+        const revenueData = rolling12Months.map((item) => item.revenue);
+        const costData = rolling12Months.map((item) => item.cost);
+        const profitData = rolling12Months.map((item) => item.profit);
 
         // Update chart data
-        setCategories(months);
+        setCategories(monthLabels);
         setSeries([
           { name: "Revenue", data: revenueData },
           { name: "Cost", data: costData },
@@ -235,7 +234,13 @@ const ChartSubscriptions: React.FC = () => {
         console.error("Error fetching subscription data:", error);
 
         // Set default data with zeros if API doesn't return expected format
-        const defaultMonths = monthNames.map((month) => `${month} ${year}`);
+        const currentDate = new Date();
+        const defaultMonths: string[] = [];
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          defaultMonths.push(monthNames[date.getMonth()]);
+        }
+        
         setCategories(defaultMonths);
         setSeries([
           {
@@ -258,17 +263,9 @@ const ChartSubscriptions: React.FC = () => {
     };
 
     fetchSubscriptionData();
-  }, [year]);
+  }, []);
 
-  // Get available years (current year and 5 years back)
-  const getYearOptions = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = 0; i < 2; i++) {
-      years.push(currentYear - i);
-    }
-    return years;
-  };
+
 
   return (
     <div className="col-span-12 rounded-2xl border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5">
@@ -291,33 +288,7 @@ const ChartSubscriptions: React.FC = () => {
           </div>
         </div>
         <div>
-          <div className="relative z-20 inline-block">
-            <select
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
-            >
-              {getYearOptions().map((year) => (
-                <option key={year} value={year} className="dark:bg-boxdark">
-                  {year}
-                </option>
-              ))}
-            </select>
-            <span className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
-              <svg
-                width="10"
-                height="6"
-                viewBox="0 0 10 6"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M0.47072 1.08816C0.47072 1.02932 0.500141 0.955772 0.54427 0.911642C0.647241 0.808672 0.809051 0.808672 0.912022 0.896932L4.85431 4.60386C4.92785 4.67741 5.06025 4.67741 5.14851 4.60386L9.09079 0.896932C9.19376 0.793962 9.35557 0.808672 9.45854 0.911642C9.56151 1.01461 9.5468 1.17642 9.44383 1.27939L5.50155 4.98632C5.22206 5.23639 4.78076 5.23639 4.50127 4.98632L0.558987 1.27939C0.50014 1.22055 0.47072 1.16171 0.47072 1.08816Z"
-                  fill="#637381"
-                />
-              </svg>
-            </span>
-          </div>
+          <p className="text-sm text-gray-500">Last 12 Months</p>
         </div>
       </div>
 
