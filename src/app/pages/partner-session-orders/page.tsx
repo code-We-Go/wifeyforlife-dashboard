@@ -1,5 +1,6 @@
 "use client";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import PartnerSessionOrderModal from "@/components/PartnerSessionOrderModal";
 import axios from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -56,6 +57,7 @@ const emptyOrder: PartnerSessionOrder = {
   ourProfitAmount: 0,
   paymentID: "",
   status: "pending",
+  createdAt: new Date().toISOString().split('T')[0],
 };
 
 export default function PartnerSessionOrdersPage() {
@@ -177,7 +179,14 @@ export default function PartnerSessionOrdersPage() {
 
   const startEdit = (order: PartnerSessionOrder) => {
     setEditing(order);
-    setForm({ ...order });
+    // Format createdAt to YYYY-MM-DD if it exists
+    const formattedOrder = {
+      ...order,
+      createdAt: order.createdAt
+        ? new Date(order.createdAt).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
+    };
+    setForm(formattedOrder);
     setShowAdd(true);
   };
 
@@ -208,246 +217,31 @@ export default function PartnerSessionOrdersPage() {
             <button
               className="rounded bg-primary px-4 py-2 text-white"
               onClick={() => {
-                setShowAdd((s) => !s);
+                setShowAdd(true);
                 setEditing(null);
-                setForm(emptyOrder);
+                setForm({
+                  ...emptyOrder,
+                  createdAt: new Date().toISOString().split('T')[0],
+                });
               }}
             >
-              {showAdd ? "Close Form" : "Add Order"}
+              Add Order
             </button>
           </div>
         </div>
 
-        {showAdd && (
-          <div className="rounded bg-white p-4 shadow">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium">
-                  Session
-                </label>
-                <select
-                  className="w-full rounded border p-2"
-                  value={form.sessionId}
-                  onChange={(e) => onSelectSession(e.target.value)}
-                >
-                  <option value="">Select a session</option>
-                  {sessions.map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.title} — {s.partnerName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Client First Name
-                </label>
-                <input
-                  className="w-full rounded border p-2"
-                  value={form.clientFirstName}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, clientFirstName: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Client Last Name
-                </label>
-                <input
-                  className="w-full rounded border p-2"
-                  value={form.clientLastName}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, clientLastName: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Client Email
-                </label>
-                <input
-                  className="w-full rounded border p-2"
-                  value={form.clientEmail}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, clientEmail: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Client Phone
-                </label>
-                <input
-                  className="w-full rounded border p-2"
-                  value={form.clientPhone}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, clientPhone: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Applied Discount Code
-                </label>
-                <input
-                  className="w-full rounded border p-2"
-                  value={form.appliedDiscountCode}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      appliedDiscountCode: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Base Price
-                </label>
-                <input
-                  type="number"
-                  className="w-full rounded border p-2"
-                  value={form.basePrice}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      basePrice: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Final Price
-                </label>
-                <input
-                  type="number"
-                  className="w-full rounded border p-2"
-                  value={form.finalPrice}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      finalPrice: parseFloat(e.target.value) || 0,
-                      ourProfitAmount: recomputeProfit(
-                        parseFloat(e.target.value) || 0,
-                        f.profitPercentage,
-                      ),
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Subscription Discount Amount
-                </label>
-                <input
-                  type="number"
-                  className="w-full rounded border p-2"
-                  value={form.subscriptionDiscountAmount}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      subscriptionDiscountAmount:
-                        parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Profit %
-                </label>
-                <input
-                  type="number"
-                  className="w-full rounded border p-2"
-                  value={form.profitPercentage}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      profitPercentage: parseFloat(e.target.value) || 0,
-                      ourProfitAmount: recomputeProfit(
-                        f.finalPrice,
-                        parseFloat(e.target.value) || 0,
-                      ),
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Our Profit Amount
-                </label>
-                <input
-                  type="number"
-                  className="w-full rounded border p-2"
-                  value={form.ourProfitAmount}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      ourProfitAmount: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Payment ID
-                </label>
-                <input
-                  className="w-full rounded border p-2"
-                  value={form.paymentID}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, paymentID: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Status</label>
-                <select
-                  className="w-full rounded border p-2"
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      status: e.target.value as OrderStatus,
-                    }))
-                  }
-                >
-                  <option value="pending">Pending</option>
-                  <option value="paid">Paid</option>
-                  {/* <option value="failed">Failed</option> */}
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-end gap-2">
-              {editing ? (
-                <>
-                  <button
-                    className="rounded bg-gray-200 px-4 py-2"
-                    onClick={resetForm}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="rounded bg-primary px-4 py-2 text-white"
-                    onClick={handleUpdate}
-                  >
-                    Save Changes
-                  </button>
-                </>
-              ) : (
-                <button
-                  className="rounded bg-primary px-4 py-2 text-white"
-                  onClick={handleCreate}
-                >
-                  Create Order
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+        <PartnerSessionOrderModal
+          isOpen={showAdd}
+          onClose={resetForm}
+          form={form}
+          setForm={setForm}
+          sessions={sessions}
+          editing={editing}
+          onSelectSession={onSelectSession}
+          recomputeProfit={recomputeProfit}
+          handleCreate={handleCreate}
+          handleUpdate={handleUpdate}
+        />
 
         <div className="rounded bg-white p-4 shadow">
           {loading ? (
