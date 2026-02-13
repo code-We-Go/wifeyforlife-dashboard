@@ -157,6 +157,49 @@ export async function POST(request: Request) {
       );
     }
 
+    // Add email to Brevo list based on package type
+    if (body.email && body.packageID) {
+      console.log("Adding email to Brevo list" + body.email);
+      try {
+        // Fetch package details to determine which list to use
+        const packageDetails = await packageModel.findById(body.packageID);
+        
+        if (packageDetails) {
+          const brevoApiKey2 = process.env.BREVO_API_KEY;
+          if (brevoApiKey2) {
+            // Determine list ID based on package name
+            // listIds [4] for miniExperience 
+            // listIds [5] for fullWifeyExperience
+            const packageName = packageDetails.name.toLowerCase();
+            let listId: number;
+            
+            if (packageName.includes("mini")) {
+              listId = 4; // Mini Experience
+            } else {
+              listId = 5; // Full Wifey Experience
+            }
+            
+            await fetch("https://api.brevo.com/v3/contacts", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "api-key": brevoApiKey2,
+              },
+              body: JSON.stringify({
+                email: body.email,
+                listIds: [listId],
+                updateEnabled: true,
+              }),
+            });
+          }
+        }
+      } catch (brevoError) {
+        // Log error but don't fail the subscription creation
+        console.error("Failed to add email to Brevo list:", brevoError);
+      }
+    }
+
     return NextResponse.json({ data: newSubscription }, { status: 201 });
   } catch (error: any) {
     // Return mongoose validation errors if present
