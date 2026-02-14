@@ -936,6 +936,21 @@ const WeddingTimelineAnalyticsPage = () => {
                       {timeline.feedback.recommend?.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
                     </p>
                   </div>
+                  {timeline.feedback.feelings && timeline.feedback.feelings.length > 0 && (
+                    <div className="md:col-span-2">
+                      <p className="mb-2 text-sm font-medium text-gray-700">Feelings</p>
+                      <div className="flex flex-wrap gap-2">
+                        {timeline.feedback.feelings.map((feeling) => (
+                          <span
+                            key={feeling}
+                            className="rounded-full bg-primaryLight bg-opacity-20 px-3 py-1 text-sm font-medium text-primary"
+                          >
+                            {formatFeeling(feeling)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {timeline.feedback.comment && (
                     <div className="md:col-span-2">
                       <p className="mb-1 text-sm font-medium text-gray-700">Comment</p>
