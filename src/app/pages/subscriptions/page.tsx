@@ -1537,7 +1537,7 @@ const SubscriptionsPage = () => {
                         <span className="font-medium break-all">{selectedSubscription.giftRecipientEmail}</span>
                         
                         <span className="text-gray-500">Gift Message:</span>
-                        <span className="font-medium italic">"{selectedSubscription.specialMessage}"</span>
+                        <span className="font-medium italic">{selectedSubscription.specialMessage}</span>
                       </>
                     )}
                   </div>
