@@ -65,7 +65,7 @@ const SubscriptionsPage = () => {
   const [newPlaylistId, setNewPlaylistId] = useState("");
   const [newPlaylistExpiry, setNewPlaylistExpiry] = useState("");
   
-  const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(
+  const [modalType, setModalType] = useState<"add" | "edit" | "delete" | "view" | null>(
     null,
   );
   const [selectedSubscription, setSelectedSubscription] =
@@ -76,6 +76,10 @@ const SubscriptionsPage = () => {
   const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
+
+  const [activeTab, setActiveTab] = useState<"all" | "mini">("all");
+  const [miniActivationFilter, setMiniActivationFilter] = useState<string>("all");
+  const [miniStats, setMiniStats] = useState({ total: 0, activated: 0 });
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -129,22 +133,16 @@ const SubscriptionsPage = () => {
   useEffect(() => {
     fetchPackages();
     fetchPlaylists();
-    fetchSubscriptions(); // Initial fetch of subscriptions
+    // fetchSubscriptions(); // Initial fetch handled by the other useEffect
   }, []);
 
-  // Use a ref to track if this is the first render
-  // const isInitialMount = React.useRef(true);
-
   useEffect(() => {
-    // Skip the first render to prevent double fetching
-    // if (isInitialMount.current) {
-    //   isInitialMount.current = false;
-    //   return;
-    // }
-
     fetchSubscriptions();
+    if (activeTab === "mini") {
+      fetchMiniStats();
+    }
     setCurrentPage(1); // Reset to first page when filters change
-  }, [subscribedFilter, typeFilter, packageFilter]);
+  }, [subscribedFilter, typeFilter, packageFilter, activeTab, miniActivationFilter]);
 
   // Pagination logic
   const filteredSubscriptions = subscriptions.filter(
@@ -181,6 +179,15 @@ const SubscriptionsPage = () => {
       if (subscribedFilter !== "all") params.subscribed = subscribedFilter;
       if (typeFilter !== "all") params.type = typeFilter;
       if (packageFilter !== "all") params.packageID = packageFilter;
+      
+      if (activeTab === "mini") {
+        params.startDate = "2026-02-01";
+        params.isMini = "true";
+        if (miniActivationFilter !== "all") {
+          params.miniSubscriptionActivated = miniActivationFilter;
+        }
+      }
+
       const query = new URLSearchParams(params).toString();
       const res = await axios.get(
         `/api/subscriptions${query ? `?${query}` : ""}`,
@@ -190,6 +197,23 @@ const SubscriptionsPage = () => {
       console.error("Error fetching subscriptions:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMiniStats = async () => {
+    try {
+      // Fetch all mini subscriptions since Feb 1st 2026 to calculate stats
+      const params = { startDate: "2026-02-01", isMini: "true" };
+      const query = new URLSearchParams(params).toString();
+      const res = await axios.get(`/api/subscriptions?${query}`);
+      const data: Subscription[] = res.data.data || [];
+      
+      const total = data.length;
+      const activated = data.filter(s => s.miniSubscriptionActivated).length;
+      
+      setMiniStats({ total, activated });
+    } catch (error) {
+      console.error("Error fetching mini stats:", error);
     }
   };
 
@@ -287,7 +311,7 @@ const SubscriptionsPage = () => {
   };
 
   const openModal = (
-    type: "add" | "edit" | "delete",
+    type: "add" | "edit" | "delete" | "view",
     subscription?: Subscription,
   ) => {
     setModalType(type);
@@ -460,8 +484,58 @@ const SubscriptionsPage = () => {
   return (
     <DefaultLayout>
       <div className="flex min-h-[calc(100vh-124px)] w-full flex-col items-center p-4">
+        {/* Tabs */}
+        <div className="mb-6 flex w-full space-x-4 border-b">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "all"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            All Subscriptions
+          </button>
+          <button
+            onClick={() => setActiveTab("mini")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "mini"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Mini Experience
+          </button>
+        </div>
+
+        {/* Insights for Mini Experience */}
+        {activeTab === "mini" && (
+          <div className="mb-6 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-500">
+                Total Mini Subscriptions
+              </h3>
+              <p className="mt-1 text-2xl font-semibold">{miniStats.total}</p>
+              <p className="text-xs text-gray-400">Since Feb 1st, 2026</p>
+            </div>
+            <div className="rounded-lg border bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-500">
+                Activated Mini Subscriptions
+              </h3>
+              <p className="mt-1 text-2xl font-semibold text-green-600">
+                {miniStats.activated}
+              </p>
+              <p className="text-xs text-gray-400">
+                {miniStats.total > 0
+                  ? `${Math.round((miniStats.activated / miniStats.total) * 100)}% Activation Rate`
+                  : "0% Activation Rate"}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="mb-4 flex w-full flex-wrap items-center justify-between gap-4">
-          <div className="grid grid-cols-2 items-center gap-2 lg:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid grid-cols-2 items-center gap-2 lg:grid-cols-3 2xl:grid-cols-5">
             <input
               type="text"
               placeholder="Search by email or paymentID..."
@@ -500,6 +574,20 @@ const SubscriptionsPage = () => {
                 </option>
               ))}
             </select>
+
+            {/* Mini Activation Filter */}
+            {activeTab === "mini" && (
+              <select
+                value={miniActivationFilter}
+                onChange={(e) => setMiniActivationFilter(e.target.value)}
+                className="rounded border p-2 border-blue-500"
+              >
+                <option value="all">All Activation Status</option>
+                <option value="true">Activated</option>
+                <option value="false">Not Activated</option>
+              </select>
+            )}
+
             <input
               type="text"
               placeholder="Search by discount code..."
@@ -507,6 +595,7 @@ const SubscriptionsPage = () => {
               onChange={(e) => setDiscountSearch(e.target.value)}
               className="w-64 rounded border p-2"
             />
+            
           </div>
           <div className="flex gap-2">
             <button
@@ -560,7 +649,11 @@ const SubscriptionsPage = () => {
                 </tr>
               ) : (
                 paginatedSubscriptions.map((sub, idx) => (
-                  <tr key={sub._id} className="hover:bg-gray-50">
+                  <tr 
+                    key={sub._id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => openModal("view", sub)}
+                  >
                     <td className="border p-2">{startIndex + idx + 1}</td>
                     <td className="border p-2">{sub.email || "-"}</td>
                     <td className="border p-2">
@@ -581,7 +674,7 @@ const SubscriptionsPage = () => {
                         ? new Date(sub.expiryDate).toLocaleDateString()
                         : "-"}
                     </td>
-                    <td className="space-x-2 border p-2">
+                    <td className="space-x-2 border p-2" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => openModal("edit", sub)}
                         className="text-blue-600 underline"
@@ -1360,6 +1453,194 @@ const SubscriptionsPage = () => {
                   className="rounded bg-red-600 px-4 py-2 text-white"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* View Modal */}
+        {modalType === "view" && selectedSubscription && (
+          <div
+            onClick={closeModal}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 md:pl-72.5"
+          >
+            <div
+              className="max-h-[90vh] w-[800px] overflow-y-auto rounded-lg bg-white p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 className="text-2xl font-bold">Subscription Details</h2>
+                <button 
+                  onClick={() => closeModal()}
+                  className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-gray-500">Email:</span>
+                    <span className="font-medium break-all">{selectedSubscription.email}</span>
+                    
+                    <span className="text-gray-500">Name:</span>
+                    <span className="font-medium">{`${selectedSubscription.firstName || ""} ${selectedSubscription.lastName || ""}`}</span>
+                    
+                    <span className="text-gray-500">Phone:</span>
+                    <span className="font-medium">{selectedSubscription.phone || "-"}</span>
+                    
+                    <span className="text-gray-500">WhatsApp:</span>
+                    <span className="font-medium">{selectedSubscription.whatsAppNumber || "-"}</span>
+                    
+                    <span className="text-gray-500">Payment ID:</span>
+                    <span className="font-medium">{selectedSubscription.paymentID}</span>
+                    
+                    <span className="text-gray-500">Success:</span>
+                    <span className={`font-medium ${selectedSubscription.subscribed ? "text-green-600" : "text-red-600"}`}>
+                      {selectedSubscription.subscribed ? "Yes" : "No"}
+                    </span>
+                    
+                    <span className="text-gray-500">Mini Activated:</span>
+                    <span className={`font-medium ${selectedSubscription.miniSubscriptionActivated ? "text-green-600" : "text-gray-600"}`}>
+                      {selectedSubscription.miniSubscriptionActivated ? "Yes" : "No"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Package Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Package & Status</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-gray-500">Package:</span>
+                    <span className="font-medium">{selectedSubscription.packageID?.name || "-"}</span>
+                    
+                    <span className="text-gray-500">Expiry Date:</span>
+                    <span className="font-medium">
+                      {selectedSubscription.expiryDate ? new Date(selectedSubscription.expiryDate).toLocaleDateString() : "-"}
+                    </span>
+                    
+                    <span className="text-gray-500">Created At:</span>
+                    <span className="font-medium">
+                      {selectedSubscription.createdAt ? new Date(selectedSubscription.createdAt).toLocaleString() : "-"}
+                    </span>
+                    
+                    <span className="text-gray-500">Is Gift:</span>
+                    <span className="font-medium">{selectedSubscription.isGift ? "Yes" : "No"}</span>
+                    
+                    {selectedSubscription.isGift && (
+                      <>
+                        <span className="text-gray-500">Gift Recipient:</span>
+                        <span className="font-medium break-all">{selectedSubscription.giftRecipientEmail}</span>
+                        
+                        <span className="text-gray-500">Gift Message:</span>
+                        <span className="font-medium italic">"{selectedSubscription.specialMessage}"</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Address Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Address</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-gray-500">Address:</span>
+                    <span className="font-medium col-span-2">{selectedSubscription.address} {selectedSubscription.apartment}</span>
+                    
+                    <span className="text-gray-500">City/State:</span>
+                    <span className="font-medium">{selectedSubscription.city}, {selectedSubscription.state}</span>
+                    
+                    <span className="text-gray-500">Country:</span>
+                    <span className="font-medium">{selectedSubscription.country}</span>
+                    
+                    <span className="text-gray-500">Postal Code:</span>
+                    <span className="font-medium">{selectedSubscription.postalZip}</span>
+                  </div>
+                </div>
+
+                {/* Billing Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Billing Information</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-gray-500">Name:</span>
+                    <span className="font-medium">{`${selectedSubscription.billingFirstName || ""} ${selectedSubscription.billingLastName || ""}`}</span>
+                    
+                    <span className="text-gray-500">Address:</span>
+                    <span className="font-medium col-span-2">{selectedSubscription.billingAddress} {selectedSubscription.billingApartment}</span>
+                    
+                    <span className="text-gray-500">City/State:</span>
+                    <span className="font-medium">{selectedSubscription.billingCity}, {selectedSubscription.billingState}</span>
+                    
+                    <span className="text-gray-500">Country:</span>
+                    <span className="font-medium">{selectedSubscription.billingCountry}</span>
+                    
+                    <span className="text-gray-500">Phone:</span>
+                    <span className="font-medium">{selectedSubscription.billingPhone}</span>
+                  </div>
+                </div>
+                
+                {/* Financial Info */}
+                <div className="space-y-4 md:col-span-2">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Financial Details</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-gray-50 p-4 rounded">
+                     <div>
+                       <span className="block text-gray-500">Subtotal</span>
+                       <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.subTotal}</span>
+                     </div>
+                     <div>
+                       <span className="block text-gray-500">Shipping</span>
+                       <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.shipping}</span>
+                     </div>
+                     <div>
+                       <span className="block text-gray-500">Discount</span>
+                       <span className="font-bold text-red-500">
+                         {selectedSubscription.appliedDiscountAmount ? `-${selectedSubscription.currency} ${selectedSubscription.appliedDiscountAmount}` : "0"}
+                         {selectedSubscription.appliedDiscount && (
+                           <span className="text-xs text-gray-400 block">
+                             (Code: {typeof selectedSubscription.appliedDiscount === 'object' ? selectedSubscription.appliedDiscount.code : 'Yes'})
+                           </span>
+                         )}
+                       </span>
+                     </div>
+                     <div>
+                       <span className="block text-gray-500">Total</span>
+                       <span className="font-bold text-lg text-green-700">{selectedSubscription.currency} {selectedSubscription.total}</span>
+                     </div>
+                  </div>
+                </div>
+
+                {/* Allowed Playlists */}
+                {selectedSubscription.allowedPlaylists && selectedSubscription.allowedPlaylists.length > 0 && (
+                  <div className="space-y-4 md:col-span-2">
+                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Allowed Playlists</h3>
+                    <div className="space-y-2">
+                      {selectedSubscription.allowedPlaylists.map((item: any, idx) => (
+                        <div key={idx} className="flex items-center gap-4 bg-gray-50 p-2 rounded">
+                          <img 
+                            src={typeof item.playlistID === 'object' ? item.playlistID.thumbnailUrl : ''} 
+                            alt="Thumbnail" 
+                            className="w-16 h-10 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-medium">{typeof item.playlistID === 'object' ? item.playlistID.title : 'Unknown Playlist'}</p>
+                            <p className="text-xs text-gray-500">Expires: {new Date(item.expiryDate).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-8 flex justify-end">
+                <button
+                  onClick={() => closeModal()}
+                  className="rounded bg-primary px-6 py-2 text-white hover:bg-opacity-90 transition"
+                >
+                  Close
                 </button>
               </div>
             </div>

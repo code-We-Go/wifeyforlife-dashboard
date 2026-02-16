@@ -44,6 +44,30 @@ export async function GET(request: Request) {
     query.packageID = new mongoose.Types.ObjectId(packageID);
   }
 
+  // New filters for Mini Experience
+  const startDate = searchParams.get("startDate");
+  const miniSubscriptionActivated = searchParams.get("miniSubscriptionActivated");
+
+  if (startDate) {
+    query.createdAt = { $gte: new Date(startDate) };
+  }
+
+  const isMini = searchParams.get("isMini");
+  if (isMini === "true" && (!packageID || packageID === "all")) {
+    const miniPackages = await packageModel.find({
+      name: { $regex: "mini", $options: "i" },
+    });
+    if (miniPackages.length > 0) {
+      query.packageID = { $in: miniPackages.map((p) => p._id) };
+    }
+  }
+
+  if (miniSubscriptionActivated === "true") {
+    query.miniSubscriptionActivated = true;
+  } else if (miniSubscriptionActivated === "false") {
+    query.miniSubscriptionActivated = { $ne: true };
+  }
+
   try {
     let subscriptions;
     //paymobFailed
