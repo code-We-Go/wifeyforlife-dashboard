@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Ipackage } from "@/interfaces/interfaces";
+import { Ipackage, Playlist } from "@/interfaces/interfaces";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import * as XLSX from "xlsx";
 
@@ -16,6 +16,11 @@ interface Subscription {
   redeemedLoyaltyPoints?: number;
   appliedDiscount?: string | { _id: string; code: string } | null;
   appliedDiscountAmount?: number;
+  miniSubscriptionActivated?: boolean;
+  allowedPlaylists?: {
+    playlistID: { _id: string; title: string; thumbnailUrl: string } | string; // It could be string if not populated or object if populated
+    expiryDate: string;
+  }[];
   // User information
   firstName?: string;
   lastName?: string;
@@ -53,7 +58,13 @@ interface Subscription {
 const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [packages, setPackages] = useState<(Ipackage & { _id: string })[]>([]);
+  const [allPlaylists, setAllPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // New playlist form state
+  const [newPlaylistId, setNewPlaylistId] = useState("");
+  const [newPlaylistExpiry, setNewPlaylistExpiry] = useState("");
+  
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(
     null,
   );
@@ -77,6 +88,7 @@ const SubscriptionsPage = () => {
     email: "",
     subscribed: false,
     expiryDate: "",
+    miniSubscriptionActivated: false,
     // User information
     firstName: "",
     lastName: "",
@@ -112,9 +124,11 @@ const SubscriptionsPage = () => {
     redeemedLoyaltyPoints: 0,
     appliedDiscount: "",
     appliedDiscountAmount: 0,
+    allowedPlaylists: [] as any[],
   });
   useEffect(() => {
     fetchPackages();
+    fetchPlaylists();
     fetchSubscriptions(); // Initial fetch of subscriptions
   }, []);
 
@@ -188,6 +202,41 @@ const SubscriptionsPage = () => {
     }
   };
 
+  const fetchPlaylists = async () => {
+    try {
+      const res = await axios.get("/api/playlists?all=true");
+      setAllPlaylists(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching playlists:", error);
+    }
+  };
+
+  const handleAddPlaylist = () => {
+    if (!newPlaylistId || !newPlaylistExpiry) return;
+    const playlistToAdd = allPlaylists.find(p => p._id === newPlaylistId);
+    if (!playlistToAdd) return;
+
+    setForm(f => ({
+      ...f,
+      allowedPlaylists: [
+        ...f.allowedPlaylists,
+        {
+          playlistID: playlistToAdd, // Store full object for UI
+          expiryDate: newPlaylistExpiry
+        }
+      ]
+    }));
+    setNewPlaylistId("");
+    setNewPlaylistExpiry("");
+  };
+
+  const handleRemovePlaylist = (index: number) => {
+    setForm(f => ({
+      ...f,
+      allowedPlaylists: f.allowedPlaylists.filter((_, i) => i !== index)
+    }));
+  };
+
   const exportToExcel = () => {
     const dataToExport = filteredSubscriptions.map((sub) => ({
       "Payment ID": sub.paymentID,
@@ -243,6 +292,8 @@ const SubscriptionsPage = () => {
   ) => {
     setModalType(type);
     setSelectedSubscription(subscription || null);
+    setNewPlaylistId("");
+    setNewPlaylistExpiry("");
     if (type === "edit" && subscription) {
       setForm({
         paymentID: subscription.paymentID,
@@ -250,6 +301,8 @@ const SubscriptionsPage = () => {
         email: subscription.email,
         subscribed: subscription.subscribed,
         expiryDate: subscription.expiryDate?.slice(0, 10) || "",
+        miniSubscriptionActivated: subscription.miniSubscriptionActivated || false,
+        allowedPlaylists: subscription.allowedPlaylists || [],
         // User information
         firstName: subscription.firstName || "",
         lastName: subscription.lastName || "",
@@ -297,6 +350,8 @@ const SubscriptionsPage = () => {
         email: "",
         subscribed: false,
         expiryDate: "",
+        miniSubscriptionActivated: false,
+        allowedPlaylists: [],
         // User information
         firstName: "",
         lastName: "",
@@ -361,12 +416,21 @@ const SubscriptionsPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Prepare payload to ensure only IDs are sent for allowedPlaylists
+      const payload = {
+        ...form,
+        allowedPlaylists: form.allowedPlaylists.map((item: any) => ({
+          playlistID: item.playlistID._id || item.playlistID,
+          expiryDate: item.expiryDate,
+        })),
+      };
+
       if (modalType === "add") {
-        await axios.post("/api/subscriptions", form);
+        await axios.post("/api/subscriptions", payload);
       } else if (modalType === "edit" && selectedSubscription) {
         await axios.put(
           `/api/subscriptions?subscriptionID=${selectedSubscription._id}`,
-          form,
+          payload,
         );
       }
       closeModal();
@@ -630,7 +694,7 @@ const SubscriptionsPage = () => {
                     type="email"
                     value={form.email}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, email: e.target.value }))
+                      setForm((f) => ({ ...f, email: e.target.value.toLowerCase() }))
                     }
                     required
                     className="w-full lowercase rounded border p-2"
@@ -687,6 +751,22 @@ const SubscriptionsPage = () => {
                   </select>
                 </div>
                 <div>
+                  <label className="mb-1 block text-sm font-medium">Mini Subscription Activated</label>
+                  <select
+                    value={form.miniSubscriptionActivated ? "true" : "false"}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        miniSubscriptionActivated: e.target.value === "true",
+                      }))
+                    }
+                    className="w-full rounded border p-2"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+                <div>
                   <label className="mb-1 block text-sm font-medium">
                     Expiry Date
                   </label>
@@ -698,6 +778,78 @@ const SubscriptionsPage = () => {
                     }
                     className="w-full rounded border p-2"
                   />
+                </div>
+
+                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                  <h3 className="text-lg font-medium mb-2">Allowed Playlists</h3>
+                  
+                  {/* List of allowed playlists */}
+                  <div className="space-y-3 mb-4">
+                    {form.allowedPlaylists.map((playlist: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between border p-2 rounded bg-white shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={playlist.playlistID?.thumbnailUrl} 
+                            alt={playlist.playlistID?.title || "Playlist"}
+                            className="w-16 h-10 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-medium text-sm">{playlist.playlistID?.title || "Unknown Playlist"}</p>
+                            <p className="text-xs text-gray-500">Expires: {playlist.expiryDate ? new Date(playlist.expiryDate).toLocaleDateString() : ""}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePlaylist(idx)}
+                          className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    {form.allowedPlaylists.length === 0 && (
+                      <p className="text-sm text-gray-500 italic">No playlists allowed specifically.</p>
+                    )}
+                  </div>
+
+                  {/* Add new playlist */}
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end border-t pt-3 mt-2">
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Select Playlist</label>
+                      <select
+                        value={newPlaylistId}
+                        onChange={(e) => setNewPlaylistId(e.target.value)}
+                        className="w-full rounded border p-1 text-sm"
+                      >
+                        <option value="">Select playlist...</option>
+                        {allPlaylists
+                          .filter(p => !form.allowedPlaylists.some((ap: any) => (ap.playlistID._id || ap.playlistID) === p._id))
+                          .map(p => (
+                            <option key={p._id} value={p._id}>{p.title}</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Expiry Date</label>
+                      <input
+                        type="date"
+                        value={newPlaylistExpiry}
+                        onChange={(e) => setNewPlaylistExpiry(e.target.value)}
+                        className="w-full rounded border p-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={handleAddPlaylist}
+                        disabled={!newPlaylistId || !newPlaylistExpiry}
+                        className="w-full bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <h3 className="mt-6 text-lg font-medium">User Information</h3>
@@ -774,7 +926,7 @@ const SubscriptionsPage = () => {
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        giftRecipientEmail: e.target.value,
+                        giftRecipientEmail: e.target.value.toLowerCase(),
                       }))
                     }
                     className="w-full lowercase rounded border p-2"

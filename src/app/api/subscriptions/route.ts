@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import PackagesPage from "@/app/pages/packages/page";
 import { DiscountModel } from "@/models/Discount";
 import UserModel from "@/app/models/userModel";
+import playlistModel from "@/app/models/playlistModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -78,6 +79,12 @@ export async function GET(request: Request) {
             options: { strictPopulate: false },
           })
           .populate({
+            path: "allowedPlaylists.playlistID",
+            model: playlistModel,
+            select: "title thumbnailUrl",
+            options: { strictPopulate: false },
+          })
+          .populate({
             path: "appliedDiscount",
             model: DiscountModel,
             options: { strictPopulate: false },
@@ -101,6 +108,12 @@ export async function GET(request: Request) {
         .populate({
           path: "packageID",
           model: packageModel,
+          options: { strictPopulate: false },
+        })
+        .populate({
+          path: "allowedPlaylists.playlistID",
+          model: playlistModel,
+          select: "title thumbnailUrl",
           options: { strictPopulate: false },
         })
         .populate({

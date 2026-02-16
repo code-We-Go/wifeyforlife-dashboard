@@ -1,19 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
-
-// Define the Subscription interface
-export interface ISubscription extends Document {
-  paymentID: string;
-  packageID: Types.ObjectId;
-  email?: string;
-  subscribed: boolean;
-  // Gift information
-  isGift: boolean;
-  giftRecipientEmail: string;
-  specialMessage: string;
-  expiryDate: Date;
-  createdAt: Date;
-  updatedAt: Date; // Because of timestamps: true
-}
+import mongoose, { Schema, Document } from "mongoose";
 
 // Define the Subscription schema with TTL
 const SubscriptionSchema = new Schema(
@@ -31,6 +16,7 @@ const SubscriptionSchema = new Schema(
       required: false,
       ref: "discounts",
     },
+    
     appliedDiscountAmount: { type: Number, required: false },
     // User information
     firstName: { type: String, required: false },
@@ -42,8 +28,7 @@ const SubscriptionSchema = new Schema(
     giftRecipientEmail: { type: String, required: false },
     specialMessage: { type: String, required: false },
     giftCardName: { type: String, required: false },
-
-    // Address information
+    // Lovely Bride's address information
     country: { type: String, required: false },
     address: { type: String, required: false },
     apartment: { type: String, required: false },
@@ -66,33 +51,62 @@ const SubscriptionSchema = new Schema(
     shipping: { type: Number, required: false },
     currency: { type: String, required: false },
     expiryDate: { type: Date, default: Date.now },
+
+    allowedPlaylists: {
+      type: [
+        {
+          playlistID: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "playlists",
+            required: true,
+          },
+          expiryDate: { type: Date, required: true },
+        },
+      ],
+      default: [],
+    },
+    miniSubscriptionActivated:{
+      type: Boolean,
+      required: false,
+    },
+    bostaCity: { type: String, required: false },
+    bostaCityName: { type: String, required: false },
+    bostaZone: { type: String, required: false },
+    bostaZoneName: { type: String, required: false },
+    bostaDistrict: { type: String, required: false },
+    bostaDistrictName: { type: String, required: false },
+    shipmentID: { type: String, required: false, default: "" }, // Bosta shipment ID
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "returned",
+      ],
+      default: "pending",
+    },
+    // process: {
+    //   type: String,
+    //   enum: ["new", "upgrade", "renew"],
+    //   default: "new",
+    // },
     createdAt: {
       type: Date,
       default: Date.now,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-// Add static filter methods
-SubscriptionSchema.statics.filterBySubscribed = function (subscribed) {
-  return this.find({ subscribed });
-};
-
-SubscriptionSchema.statics.filterByType = function (type) {
-  if (type === "real") {
-    return this.find({ subTotal: { $gt: 1000 } });
-  } else if (type === "gift") {
-    return this.find({
-      $or: [{ subTotal: { $lt: 1000 } }, { subTotal: { $exists: false } }],
-    });
-  } else {
-    return this.find();
-  }
-};
-
+// Define the Subscription model
 const subscriptionsModel =
   mongoose.models.subscriptions ||
-  mongoose.model("subscriptions", SubscriptionSchema);
+  mongoose.model<Document & mongoose.Model<any>>(
+    "subscriptions",
+    SubscriptionSchema
+  );
 
 export default subscriptionsModel;
