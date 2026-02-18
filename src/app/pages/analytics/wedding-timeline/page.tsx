@@ -21,7 +21,9 @@ import {
   FiArrowDown,
   FiStar,
   FiChevronDown,
-  FiChevronUp
+  FiChevronUp,
+  FiChevronLeft,
+  FiChevronRight
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,13 +62,12 @@ type SubscriptionFilter = "all" | "subscribed" | "not_subscribed";
 const WeddingTimelineAnalyticsPage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("users");
-  const [timelines, setTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [allTimelines, setAllTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [filteredTimelines, setFilteredTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [filteredCount, setFilteredCount] = useState(0);
   const [apiStats, setApiStats] = useState({
     subscribedUsersCount: 0,
     avgEaseOfUse: 0,
@@ -80,45 +81,38 @@ const WeddingTimelineAnalyticsPage = () => {
   const limit = 10;
 
   useEffect(() => {
-    fetchTimelines();
     fetchAllTimelines();
-  }, [currentPage]);
+  }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [timelines, searchTerm, subscriptionFilter]);
+  }, [allTimelines, searchTerm, subscriptionFilter, currentPage]);
 
-  const fetchTimelines = useCallback(async () => {
+  useEffect(() => {
+    // Reset to page 1 when search or filters change
+    setCurrentPage(1);
+  }, [searchTerm, subscriptionFilter]);
+
+  const fetchAllTimelines = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/wedding-timeline?page=${currentPage}&limit=${limit}`);
-      setTimelines(response.data.data);
-      setTotal(response.data.pagination.total);
-      setTotalPages(response.data.pagination.totalPages);
+      // Fetch all timelines without pagination for accurate stats and client-side manipulation
+      const response = await axios.get(`/api/wedding-timeline?page=1&limit=10000`);
+      setAllTimelines(response.data.data);
       setApiStats(response.data.stats || {
         subscribedUsersCount: 0,
         avgEaseOfUse: 0,
         avgSatisfaction: 0,
       });
     } catch (error) {
-      console.error("Error fetching wedding timelines:", error);
+      console.error("Error fetching all wedding timelines:", error);
     } finally {
       setLoading(false);
-    }
-  }, [currentPage]);
-
-  const fetchAllTimelines = useCallback(async () => {
-    try {
-      // Fetch all timelines without pagination for accurate stats
-      const response = await axios.get(`/api/wedding-timeline?page=1&limit=10000`);
-      setAllTimelines(response.data.data);
-    } catch (error) {
-      console.error("Error fetching all wedding timelines:", error);
     }
   }, []);
 
   const applyFilters = () => {
-    let filtered = [...timelines];
+    let filtered = [...allTimelines];
 
     // Apply search filter
     if (searchTerm) {
@@ -138,11 +132,38 @@ const WeddingTimelineAnalyticsPage = () => {
       filtered = filtered.filter((timeline) => !timeline.subscription?.hasSubscription);
     }
 
-    setFilteredTimelines(filtered);
+    // Update pagination stats for filtered results
+    setFilteredCount(filtered.length);
+    setTotalPages(Math.ceil(filtered.length / limit) || 1);
+
+    // Slice for current page
+    const startIndex = (currentPage - 1) * limit;
+    const itemsForPage = filtered.slice(startIndex, startIndex + limit);
+
+    setFilteredTimelines(itemsForPage);
   };
 
   const exportToExcel = () => {
-    const exportData = filteredTimelines.map((timeline) => ({
+    // Re-apply filters to get ALL matching records for export, not just current page
+    let exportFiltered = [...allTimelines];
+    
+    if (searchTerm) {
+      exportFiltered = exportFiltered.filter((timeline) => {
+        const firstName = timeline.user?.firstName?.toLowerCase() || "";
+        const lastName = timeline.user?.lastName?.toLowerCase() || "";
+        const email = timeline.user?.email?.toLowerCase() || "";
+        const search = searchTerm.toLowerCase();
+        return firstName.includes(search) || lastName.includes(search) || email.includes(search);
+      });
+    }
+
+    if (subscriptionFilter === "subscribed") {
+      exportFiltered = exportFiltered.filter((timeline) => timeline.subscription?.hasSubscription);
+    } else if (subscriptionFilter === "not_subscribed") {
+      exportFiltered = exportFiltered.filter((timeline) => !timeline.subscription?.hasSubscription);
+    }
+
+    const exportData = exportFiltered.map((timeline) => ({
       "First Name": timeline.user?.firstName || "N/A",
       "Last Name": timeline.user?.lastName || "N/A",
       Email: timeline.user?.email || "N/A",
@@ -166,22 +187,23 @@ const WeddingTimelineAnalyticsPage = () => {
   };
 
   const calculateStats = () => {
-    // Use API stats for all-time data
-    const subscribedCount = apiStats.subscribedUsersCount;
-    const notSubscribedCount = total - subscribedCount;
+    // Calculate stats from client-side allTimelines to ensure consistency
+    const totalRecords = allTimelines.length;
+    const subscribedCount = allTimelines.filter(t => t.subscription?.hasSubscription).length;
+    const notSubscribedCount = totalRecords - subscribedCount;
     
     // Export statistics from all timelines
     const totalExports = allTimelines.reduce((acc, t) => acc + (t.exported || 0), 0);
     const timelinesExported = allTimelines.filter((t) => t.exported && t.exported > 0).length;
-    const exportRate = total > 0 ? ((timelinesExported / total) * 100).toFixed(1) : "0";
+    const exportRate = totalRecords > 0 ? ((timelinesExported / totalRecords) * 100).toFixed(1) : "0";
 
     return {
-      total: total,
+      total: totalRecords,
       subscribedCount,
       notSubscribedCount,
       avgEaseOfUse: apiStats.avgEaseOfUse.toString(),
       avgSatisfaction: apiStats.avgSatisfaction.toString(),
-      subscriptionRate: total > 0 ? ((subscribedCount / total) * 100).toFixed(1) : "0",
+      subscriptionRate: totalRecords > 0 ? ((subscribedCount / totalRecords) * 100).toFixed(1) : "0",
       totalExports,
       timelinesExported,
       exportRate
@@ -332,7 +354,7 @@ const WeddingTimelineAnalyticsPage = () => {
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
           Showing <span className="font-semibold text-primary">{filteredTimelines.length}</span> of{" "}
-          <span className="font-semibold text-primary">{timelines.length}</span> users
+          <span className="font-semibold text-primary">{filteredCount}</span> users
         </p>
         <button
           onClick={exportToExcel}
@@ -523,6 +545,42 @@ const WeddingTimelineAnalyticsPage = () => {
               </AnimatePresence>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {!loading && totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-4">
+          <p className="text-sm text-gray-500">
+            Page <span className="font-semibold text-gray-900">{currentPage}</span> of{" "}
+            <span className="font-semibold text-gray-900">{totalPages}</span>
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                currentPage === 1
+                  ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-primary"
+              }`}
+            >
+              <FiChevronLeft size={16} />
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                currentPage === totalPages
+                  ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-primary"
+              }`}
+            >
+              Next
+              <FiChevronRight size={16} />
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -13,6 +13,8 @@ export interface IUser extends Document {
   firstName?:string;
   lastName?:string;
   subscription:ISubscription;
+    weddingDate?: Date;
+
   // isSubscribed: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -81,6 +83,11 @@ const UserSchema = new Schema<IUser>(
       default: 0,
       required: false,
     },
+        weddingDate: {
+      type: Date,
+      required: false,
+    },
+
 
   },
   { timestamps: true }
