@@ -9,6 +9,7 @@ import ChatCard from "../Chat/ChatCard";
 import TableOne from "../Tables/TableOne";
 import CardDataStats from "../CardDataStats";
 import RecentOrders from "../RecentOrders";
+import UpcomingWeddings from "../UpcomingWeddings";
 
 const MapOne = dynamic(() => import("@/components/Maps/MapOne"), {
   ssr: false,
@@ -312,6 +313,8 @@ const ECommerce: React.FC = () => {
         </div> */}
         {/* <ChatCard /> */}
       </div>
+      
+      <UpcomingWeddings />
       <RecentOrders />
     </div>
   );
