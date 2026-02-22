@@ -1,6 +1,8 @@
 import { ConnectDB } from "@/config/db";
 import UserModel from "@/app/models/userModel";
 import { NextResponse } from "next/server";
+import subscriptionsModel from "@/app/models/subscriptionsModel";
+import packageModel from "@/app/models/packageModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -29,7 +31,7 @@ export async function GET(req: Request) {
     const query = {
       weddingDate: { $gte: today },
     };
-
+console.log("registering subscription + packages"+subscriptionsModel +packageModel)
     const totalUsers = await UserModel.countDocuments(query);
 
     const users = await UserModel.find(query)
