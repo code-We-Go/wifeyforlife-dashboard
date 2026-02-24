@@ -5,6 +5,13 @@ export interface PackageCard {
   points: string[];
 }
 
+export interface SupportCard {
+  id: number;
+  title: string;
+  description: string[];
+  imagePath: string;
+}
+
 export interface PackageItem {
   value: string;
   included: boolean;
@@ -19,7 +26,8 @@ export interface Ipackage {
   items: PackageItem[];
   notes: string[];
   cost?: string;
-  cards: PackageCard[]; // Array of cards with image and points
+  cards: PackageCard[];
+  supportCards: SupportCard[]; // Array of cards with image and points
 }
 // types/Video.ts
 export interface CommentUser {

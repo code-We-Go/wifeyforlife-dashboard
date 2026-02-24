@@ -1,5 +1,5 @@
 "use client";
-import { Ipackage, PackageCard, PackageItem } from "@/interfaces/interfaces";
+import { Ipackage, PackageCard, PackageItem, SupportCard } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -23,6 +23,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     items: [],
     notes: [],
     cards: [],
+    supportCards: [],
   });
 
   const [newItem, setNewItem] = useState("");
@@ -36,6 +37,23 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   const [editingCardImage, setEditingCardImage] = useState("");
   const [editingCardPoints, setEditingCardPoints] = useState<string[]>([]);
   const [editingPointText, setEditingPointText] = useState("");
+
+  // Support card state
+  const [newSupportCard, setNewSupportCard] = useState<Omit<SupportCard, 'id'>>({
+    title: "",
+    description: [],
+    imagePath: "",
+  });
+  const [newSupportCardDesc, setNewSupportCardDesc] = useState("");
+  const [editingSupportCardIndex, setEditingSupportCardIndex] = useState<number | null>(null);
+  const [editingSupportCard, setEditingSupportCard] = useState<SupportCard | null>(null);
+  const [editingSupportCardDesc, setEditingSupportCardDesc] = useState("");
+  // inline desc line editing – for the editing support card form
+  const [editingDescLineIndex, setEditingDescLineIndex] = useState<number | null>(null);
+  const [editingDescLineText, setEditingDescLineText] = useState("");
+  // inline desc line editing – for the new support card form
+  const [newDescLineIndex, setNewDescLineIndex] = useState<number | null>(null);
+  const [newDescLineText, setNewDescLineText] = useState("");
 
   useEffect(() => {
     if (packageItem) {
@@ -60,6 +78,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         items: formattedItems,
         notes: [...packageItem.notes],
         cards: packageItem.cards || [],
+        supportCards: packageItem.supportCards || [],
       });
     } else {
       setFormData({
@@ -71,6 +90,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         items: [],
         notes: [],
         cards: [],
+        supportCards: [],
       });
     }
   }, [packageItem, isOpen]);
@@ -299,6 +319,112 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+  // Support card handlers
+  const addSupportCard = () => {
+    if (newSupportCard.title.trim() && newSupportCard.imagePath.trim()) {
+      const nextId = formData.supportCards.length > 0
+        ? Math.max(...formData.supportCards.map(sc => sc.id)) + 1
+        : 1;
+      const card: SupportCard = {
+        id: nextId,
+        title: newSupportCard.title.trim(),
+        description: [...newSupportCard.description],
+        imagePath: newSupportCard.imagePath.trim(),
+      };
+      setFormData(prev => ({ ...prev, supportCards: [...prev.supportCards, card] }));
+      setNewSupportCard({ title: "", description: [], imagePath: "" });
+      setNewSupportCardDesc("");
+    }
+  };
+
+  const addDescToNewSupportCard = () => {
+    if (newSupportCardDesc.trim()) {
+      setNewSupportCard(prev => ({ ...prev, description: [...prev.description, newSupportCardDesc.trim()] }));
+      setNewSupportCardDesc("");
+    }
+  };
+
+  const removeDescFromNewSupportCard = (index: number) => {
+    setNewSupportCard(prev => ({ ...prev, description: prev.description.filter((_, i) => i !== index) }));
+  };
+
+  const removeSupportCard = (index: number) => {
+    setFormData(prev => ({ ...prev, supportCards: prev.supportCards.filter((_, i) => i !== index) }));
+  };
+
+  const startEditSupportCard = (index: number, card: SupportCard) => {
+    setEditingSupportCardIndex(index);
+    setEditingSupportCard({ ...card, description: [...card.description] });
+    setEditingSupportCardDesc("");
+  };
+
+  const saveEditSupportCard = (index: number) => {
+    if (editingSupportCard && editingSupportCard.title.trim() && editingSupportCard.imagePath.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        supportCards: prev.supportCards.map((sc, i) => i === index ? editingSupportCard : sc)
+      }));
+      setEditingSupportCardIndex(null);
+      setEditingSupportCard(null);
+      setEditingSupportCardDesc("");
+    }
+  };
+
+  const cancelEditSupportCard = () => {
+    setEditingSupportCardIndex(null);
+    setEditingSupportCard(null);
+    setEditingSupportCardDesc("");
+  };
+
+  const addDescToEditingSupportCard = () => {
+    if (editingSupportCardDesc.trim() && editingSupportCard) {
+      setEditingSupportCard(prev => prev ? { ...prev, description: [...prev.description, editingSupportCardDesc.trim()] } : prev);
+      setEditingSupportCardDesc("");
+    }
+  };
+
+  const removeDescFromEditingSupportCard = (index: number) => {
+    setEditingSupportCard(prev => prev ? { ...prev, description: prev.description.filter((_, i) => i !== index) } : prev);
+  };
+
+  const startEditDescLine = (li: number, text: string) => {
+    setEditingDescLineIndex(li);
+    setEditingDescLineText(text);
+  };
+  const saveEditDescLine = (li: number) => {
+    if (editingDescLineText.trim() && editingSupportCard) {
+      setEditingSupportCard(prev => prev ? {
+        ...prev,
+        description: prev.description.map((d, i) => i === li ? editingDescLineText.trim() : d)
+      } : prev);
+      setEditingDescLineIndex(null);
+      setEditingDescLineText("");
+    }
+  };
+  const cancelEditDescLine = () => {
+    setEditingDescLineIndex(null);
+    setEditingDescLineText("");
+  };
+
+  const startEditNewDescLine = (li: number, text: string) => {
+    setNewDescLineIndex(li);
+    setNewDescLineText(text);
+  };
+  const saveEditNewDescLine = (li: number) => {
+    if (newDescLineText.trim()) {
+      setNewSupportCard(prev => ({
+        ...prev,
+        description: prev.description.map((d, i) => i === li ? newDescLineText.trim() : d)
+      }));
+      setNewDescLineIndex(null);
+      setNewDescLineText("");
+    }
+  };
+  const cancelEditNewDescLine = () => {
+    setNewDescLineIndex(null);
+    setNewDescLineText("");
   };
 
   if (!isOpen) return null;
@@ -763,6 +889,223 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                   Add Card
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Support Cards Section */}
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1">
+              Support Cards
+            </label>
+
+            {/* Existing support cards */}
+            <div className="space-y-4 mb-4">
+              {formData.supportCards.map((sc, index) => (
+                <div key={sc.id} className="p-3 border border-primary/50 rounded bg-creamey">
+                  {editingSupportCardIndex === index && editingSupportCard ? (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-medium text-primary mb-1">Title *</label>
+                          <input
+                            type="text"
+                            value={editingSupportCard.title}
+                            onChange={(e) => setEditingSupportCard(prev => prev ? { ...prev, title: e.target.value } : prev)}
+                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-primary mb-1">ID</label>
+                          <input
+                            type="number"
+                            value={editingSupportCard.id}
+                            onChange={(e) => setEditingSupportCard(prev => prev ? { ...prev, id: parseInt(e.target.value) || prev.id } : prev)}
+                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-primary mb-1">Image *</label>
+                        {editingSupportCard.imagePath && (
+                          <img
+                            src={editingSupportCard.imagePath}
+                            alt="Support card preview"
+                            className="w-24 h-24 object-cover rounded border border-primary/50 mb-2"
+                          />
+                        )}
+                        <UploadButton
+                          endpoint="mediaUploader"
+                          onClientUploadComplete={(res) => {
+                            if (res && res.length > 0) {
+                              setEditingSupportCard(prev => prev ? { ...prev, imagePath: res[0].url } : prev);
+                            }
+                          }}
+                          onUploadError={(error: Error) => {
+                            console.error("Upload error:", error);
+                            alert(`ERROR! ${error.message}`);
+                          }}
+                          className="bg-primary w-fit rounded-md px-2 text-white text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-primary mb-1">Description Lines</label>
+                        <div className="space-y-1 mb-2">
+                          {editingSupportCard.description.map((line, li) => (
+                            <div key={li} className="flex items-center gap-2">
+                              {editingDescLineIndex === li ? (
+                                <>
+                                  <input
+                                    type="text"
+                                    value={editingDescLineText}
+                                    onChange={(e) => setEditingDescLineText(e.target.value)}
+                                    className="flex-1 px-2 py-0.5 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-1 focus:ring-primaryLight text-sm"
+                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), saveEditDescLine(li))}
+                                    onKeyDown={(e) => e.key === 'Escape' && cancelEditDescLine()}
+                                    autoFocus
+                                  />
+                                  <button type="button" onClick={() => saveEditDescLine(li)} className="text-green-500 hover:text-green-700 text-xs" title="Save">✓</button>
+                                  <button type="button" onClick={cancelEditDescLine} className="text-gray-500 hover:text-gray-700 text-xs" title="Cancel">✗</button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="flex-1 text-sm">{line}</span>
+                                  <button type="button" onClick={() => startEditDescLine(li, line)} className="text-blue-500 hover:text-blue-700 text-xs" title="Edit">✎</button>
+                                  <button type="button" onClick={() => removeDescFromEditingSupportCard(li)} className="text-red-500 hover:text-red-700 text-xs" title="Remove">✕</button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editingSupportCardDesc}
+                            onChange={(e) => setEditingSupportCardDesc(e.target.value)}
+                            placeholder="Add a description line"
+                            className="flex-1 px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDescToEditingSupportCard())}
+                          />
+                          <button type="button" onClick={addDescToEditingSupportCard} className="px-2 py-1 bg-primary text-white rounded-md text-xs">Add</button>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => saveEditSupportCard(index)} className="px-3 py-1 bg-green-600 text-white rounded-md text-sm">Save</button>
+                        <button type="button" onClick={cancelEditSupportCard} className="px-3 py-1 bg-gray-500 text-white rounded-md text-sm">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3">
+                      {sc.imagePath && (
+                        <div className="w-16 h-16 flex-shrink-0">
+                          <img
+                            src={sc.imagePath}
+                            alt={sc.title}
+                            className="w-full h-full object-cover rounded border border-primary/50"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-grow">
+                        <p className="text-sm font-semibold">{sc.title} <span className="text-xs text-primary/50">(ID: {sc.id})</span></p>
+                        <ul className="list-disc pl-4 text-sm">
+                          {sc.description.map((line, li) => <li key={li}>{line}</li>)}
+                        </ul>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <button type="button" onClick={() => startEditSupportCard(index, sc)} className="text-blue-500 hover:text-blue-700 text-sm">Edit</button>
+                        <button type="button" onClick={() => removeSupportCard(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Add new support card */}
+            <div className="p-3 border border-dashed border-primary/40 rounded bg-creamey space-y-2">
+              <p className="text-xs font-semibold text-primary/70">New Support Card</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-primary mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={newSupportCard.title}
+                    onChange={(e) => setNewSupportCard(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Card title"
+                    className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">Image *</label>
+                {newSupportCard.imagePath && (
+                  <img
+                    src={newSupportCard.imagePath}
+                    alt="Support card preview"
+                    className="w-24 h-24 object-cover rounded border border-primary/50 mb-2"
+                  />
+                )}
+                <UploadButton
+                  endpoint="mediaUploader"
+                  onClientUploadComplete={(res) => {
+                    if (res && res.length > 0) {
+                      setNewSupportCard(prev => ({ ...prev, imagePath: res[0].url }));
+                    }
+                  }}
+                  onUploadError={(error: Error) => {
+                    console.error("Upload error:", error);
+                    alert(`ERROR! ${error.message}`);
+                  }}
+                  className="bg-primary w-fit rounded-md px-2 text-white text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">Description Lines</label>
+                <div className="space-y-1 mb-2">
+                  {newSupportCard.description.map((line, li) => (
+                    <div key={li} className="flex items-center gap-2">
+                      {newDescLineIndex === li ? (
+                        <>
+                          <input
+                            type="text"
+                            value={newDescLineText}
+                            onChange={(e) => setNewDescLineText(e.target.value)}
+                            className="flex-1 px-2 py-0.5 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-1 focus:ring-primaryLight text-sm"
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), saveEditNewDescLine(li))}
+                            onKeyDown={(e) => e.key === 'Escape' && cancelEditNewDescLine()}
+                            autoFocus
+                          />
+                          <button type="button" onClick={() => saveEditNewDescLine(li)} className="text-green-500 hover:text-green-700 text-xs" title="Save">✓</button>
+                          <button type="button" onClick={cancelEditNewDescLine} className="text-gray-500 hover:text-gray-700 text-xs" title="Cancel">✗</button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="flex-1 text-sm">{line}</span>
+                          <button type="button" onClick={() => startEditNewDescLine(li, line)} className="text-blue-500 hover:text-blue-700 text-xs" title="Edit">✎</button>
+                          <button type="button" onClick={() => removeDescFromNewSupportCard(li)} className="text-red-500 hover:text-red-700 text-xs" title="Remove">✕</button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSupportCardDesc}
+                    onChange={(e) => setNewSupportCardDesc(e.target.value)}
+                    placeholder="Add a description line"
+                    className="flex-1 px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDescToNewSupportCard())}
+                  />
+                  <button type="button" onClick={addDescToNewSupportCard} className="px-2 py-1 bg-primary text-white rounded-md text-xs">Add</button>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={addSupportCard}
+                className="px-3 py-1 bg-primary text-white rounded-md text-sm"
+              >
+                Add Support Card
+              </button>
             </div>
           </div>
 

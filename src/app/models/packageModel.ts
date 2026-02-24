@@ -1,10 +1,17 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { Ipackage, PackageCard, PackageItem } from "@/interfaces/interfaces";
+import { Ipackage, PackageCard, PackageItem, SupportCard } from "@/interfaces/interfaces";
 
 // Define the Package Card schema
 const PackageCardSchema = new Schema<PackageCard>({
   image: { type: String, required: true },
   points: { type: [String], required: true },
+});
+
+const SupportCardSchema = new Schema<SupportCard>({
+  id: { type: Number, required: true },
+  title: { type: String, required: true },
+  description: { type: [String], required: true },
+  imagePath: { type: String, required: true },
 });
 
 // Define the Package schema
@@ -22,7 +29,9 @@ const PackageSchema = new Schema<Ipackage>(
       default: [],
     },
     notes: { type: [String], required: true, default: [] },
+
     cards: { type: [PackageCardSchema], required: false, default: [] },
+    supportCards: { type: [SupportCardSchema], required: false, default: [] },
   },
   {
     timestamps: true,
