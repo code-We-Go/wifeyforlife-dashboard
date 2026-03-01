@@ -31,6 +31,7 @@ const VideoSchema = new Schema<Video>(
     likes: [{ type: Schema.Types.ObjectId, ref: "users" }], // Array of user references who liked the video
     comments: [VideoCommentSchema], // Array of comments
     playlistHint: { type: String, required: false },
+    playlistFolder: { type: String, required: false }, // slug of the folder this video belongs to within its playlist
   },
   {
     timestamps: true, // This will automatically add createdAt and updatedAt fields

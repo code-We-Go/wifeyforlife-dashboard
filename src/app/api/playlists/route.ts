@@ -92,7 +92,7 @@ export async function GET(req: Request) {
       .populate({
         path: "videos",
         model: "videos",
-        select: "title description thumbnailUrl duration isPublished"
+        select: "title description thumbnailUrl url isPublic playlistHint playlistFolder"
       })
       .sort({ order: 1, createdAt: -1 })
       // .skip(skip)

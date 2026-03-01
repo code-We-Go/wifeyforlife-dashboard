@@ -7,9 +7,16 @@ const PlaylistSchema = new Schema({
   description: { type: [String], required: false },
   category:{type:String,required:false},
   isPublic:{type:Boolean,default:false},
+  folders: [
+    {
+      name: { type: String, required: true },   // display label, e.g. "Behind the Scenes"
+      slug: { type: String, required: true },   // URL-safe key, e.g. "behind-the-scenes"
+    }
+  ],
   videos: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "videos",
+    model: "videos",
     required: false
   }],
   thumbnailUrl: { type: String, required: true },
