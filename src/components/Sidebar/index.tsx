@@ -9,6 +9,7 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { BsHandbag } from "react-icons/bs";
+import { BsShopWindow } from "react-icons/bs";
 import { GiClothes, GiThreeFriends } from "react-icons/gi";
 import { BiMailSend } from "react-icons/bi";
 import {
@@ -92,6 +93,11 @@ const menuGroups = [
         icon: <BsHandbag />,
         label: "Products",
         route: "/pages/products",
+      },
+      {
+        icon: <BsShopWindow />,
+        label: "Shopping Bestie",
+        route: "/pages/shopping-bestie",
       },
       {
         icon: <GiClothes />,
