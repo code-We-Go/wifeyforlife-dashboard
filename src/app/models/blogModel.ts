@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from "mongoose";
 
 // Define the Blog interface
 export interface IBlog extends Document {
-  _id: string;
   title: string;
   slug: string;
   content: string; // Rich text content (HTML)
