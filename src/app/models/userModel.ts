@@ -4,7 +4,7 @@ import { ISubscription } from "./subscriptionsModel";
 
 // Define the User interface
 export interface IUser extends Document {
-  _id: string;
+  // _id: string;
   username: string;
   email: string;
   password: string;
