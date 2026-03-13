@@ -29,7 +29,7 @@ const UpcomingWeddings = () => {
       <div className="flex flex-col h-auto w-full gap-4 items-center">
         {users.length > 0 ? (
           users.map((user, index) => (
-            <UserWeddingComponent key={user._id || index} user={user} />
+            <UserWeddingComponent key={user._id as string || index} user={user} />
           ))
         ) : (
           <h1>No Upcoming Weddings</h1>

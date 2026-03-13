@@ -71,7 +71,7 @@ const UpcomingWeddingsPage = () => {
                 </tr>
               ) : users.length > 0 ? (
                 users.map((user, index) => (
-                  <tr key={user._id} className="text-sm hover:bg-gray-50">
+                  <tr key={user._id as string} className="text-sm hover:bg-gray-50">
                     <td className="border p-2">{(page - 1) * limit + index + 1}</td>
                     <td className="border p-2 font-bold text-accent">
                       {user.weddingDate

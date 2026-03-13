@@ -192,7 +192,7 @@ const UsersPage = () => {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(user._id)}
+                      onClick={() => handleDelete(user._id as string)}
                       className="text-red-600 underline"
                     >
                       Delete
