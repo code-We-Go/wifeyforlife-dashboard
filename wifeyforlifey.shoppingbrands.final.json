@@ -1,0 +1,1121 @@
+[
+  {
+    "_id": {
+      "$oid": "69aeb119e7aab7bba59f1c2a"
+    },
+    "name": "Home Pro",
+    "logo": "https://utfs.io/f/33h5308O79UZhpNou2bGm5xBdg9F4YWJCizbrcItuVpSHnOU",
+    "description": "Home Pro Egypt is a local Egyptian brand offering elegant porcelain dinner sets designed for both everyday use and special occasions, making it a practical and stylish option for brides building their new home kitchen. 💍🍽️",
+    "link": "https://homeproeg.com",
+    "tags": [
+      "Dinning Sets",
+      "Premium quality",
+      "Physical shop"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:38:01.789Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:39:55.482Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb2826ee6e8fd28a57a82"
+    },
+    "name": "Fathy Mahmoud",
+    "logo": "https://utfs.io/f/33h5308O79UZ7l6pGJqw1kPlpHbjgDr3OI9n5ca48iBCmzSK",
+    "description": "Fathy Mahmoud is a well-known Egyptian brand specializing in classic and elegant dinnerware sets, often chosen by brides for their timeless designs and wide variety of porcelain and glass collections suitable for both everyday dining and formal occasions. 🍽️",
+    "link": "https://shop.fathymahmoud.com/",
+    "tags": [
+      "Luxury",
+      "Dinnerware"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:44:02.303Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:44:02.303Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb3151b789642cb06b69a"
+    },
+    "name": "Home Hive",
+    "logo": "https://utfs.io/f/33h5308O79UZ0Tf9AY7J7h9knX2olNwaOvZYDz53PuKTIxj6",
+    "description": "Home Hive Egypt is an Egyptian homeware brand offering modern and stylish dinner sets and tableware pieces, designed to add a contemporary touch to everyday dining while remaining practical for newlyweds building their first home. 🍽️✨",
+    "link": "https://homehiveeg.com/",
+    "tags": [
+      "Dinning Sets",
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:46:29.490Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:46:29.490Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb3896ee6e8fd28a57a86"
+    },
+    "name": "Dishes N’ More",
+    "logo": "https://utfs.io/f/33h5308O79UZyrA4ynvFxqwHVuaLyvSPnZT0EXohOR7pj4gM",
+    "description": "Dishes N’ More is an Egyptian brand offering a wide range of stylish dinner sets, glassware, and serving pieces designed to elevate everyday dining and special gatherings, making it a great option for brides building a complete and elegant dining collection.",
+    "link": "https://www.dishesnmore.com",
+    "tags": [
+      "Affordable",
+      "Dinning Sets"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:48:25.463Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:48:37.348Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb4466ee6e8fd28a57a97"
+    },
+    "name": "Tulipe",
+    "logo": "https://utfs.io/f/33h5308O79UZQzZd6HNBqhj0lPNTobRUAsdWE9v25LI7rcK8",
+    "description": "Tulipe is a popular homeware brand in Egypt offering a wide variety of dinner sets, tableware, and kitchen essentials with modern and elegant designs, making it a convenient one-stop option for brides building a stylish and practical dining collection.",
+    "link": "https://tulipe.com/",
+    "tags": [
+      "Dinning Sets",
+      "Premium quality",
+      "Physical shop"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:51:34.493Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:51:34.493Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb5271b789642cb06b6ac"
+    },
+    "name": "Aswaq Elmorshedy",
+    "logo": "https://utfs.io/f/33h5308O79UZsrQwknd4OlQwkbA73Pfyg9qSEi5vUMmtLdeW",
+    "description": "Aswaq El Morshedy (Al Morshedy Marts) is an Egyptian retail store offering a wide range of home essentials, including dinner sets, kitchenware, appliances, and furniture, making it a convenient place for brides to shop for many household items in one place.",
+    "link": "https://www.almorshedymarts.net/ar-EG",
+    "tags": [
+      "Dinning Sets",
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:55:19.622Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:55:19.622Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb5ba6ee6e8fd28a57a9b"
+    },
+    "name": "Dubai Centre - Elnozha",
+    "logo": "https://utfs.io/f/33h5308O79UZ6NWL78PeYKeOCqSEvbpy9QkHaZMIjhxd28Ai",
+    "description": "Centre Dubai – El Nozha is a popular homeware store in Cairo offering a wide range of affordable household items including dinner sets, glassware, kitchen tools, and home essentials, making it a convenient place for brides to find many “رفايع البيت” and dining items in one location.",
+    "link": "https://www.instagram.com/dubai.nozha/?hl=en",
+    "tags": [
+      "Rafay3",
+      "Affordable",
+      "Physical Store",
+      "Nozha"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:57:46.698Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:57:46.698Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb62b6ee6e8fd28a57aa4"
+    },
+    "name": "Elhendawy Group",
+    "logo": "https://utfs.io/f/33h5308O79UZZONIElnRjOQJTAWMDpGIEqdSgK6yBl9PsVx0",
+    "description": "Elhendawy Group is an Egyptian retail store offering a wide range of home appliances, kitchenware, and household essentials from various brands, making it a practical shopping destination for brides looking to equip their new home with everyday items and dining pieces.",
+    "link": "https://www.instagram.com/elhendawygroup/",
+    "tags": [
+      "Rafay3",
+      "Affordable",
+      "Physical Store"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T11:59:39.183Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T11:59:39.183Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb69e1b789642cb06b6b7"
+    },
+    "name": "Essential Home Decor",
+    "logo": "https://utfs.io/f/33h5308O79UZRH8SY6TjRQr46YuXT0dKFyUAGC95DfPIwehx",
+    "description": "Essential Home Decor is an Egyptian homeware store offering modern kitchenware, dinnerware, and home organization products designed to combine practicality with stylish everyday living—making it a useful place for brides to find functional yet aesthetic pieces for their new home.",
+    "link": "https://www.instagram.com/essentialhomedecor_/",
+    "tags": [
+      "Rafay3",
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:01:34.260Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:01:34.260Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb7016ee6e8fd28a57aae"
+    },
+    "name": "Poka Home By Dina",
+    "logo": "https://utfs.io/f/33h5308O79UZQmRy4cNBqhj0lPNTobRUAsdWE9v25LI7rcK8",
+    "description": "Poka Home is an Egyptian homeware store offering a variety of kitchen tools, dinnerware, serving pieces, and home organization items, with many affordable options that are popular among brides preparing their kitchens and everyday dining setup.",
+    "link": "https://www.instagram.com/poka_home1/?hl=en",
+    "tags": [
+      "Rafay3",
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:03:13.109Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:03:13.109Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aeb77d1b789642cb06b6c7"
+    },
+    "name": "Sofra Store",
+    "logo": "https://utfs.io/f/33h5308O79UZSsHXDS2C17vw0ZJloXYrbLMj56nhafPBmEDd",
+    "description": "Sofra Store is an Egyptian homeware store offering a wide selection of dinner sets, glassware, cookware, and kitchen essentials, making it a convenient place for brides to find both dining sets and everyday kitchen items for their new home.",
+    "link": "https://sofrastore.com/",
+    "tags": [
+      "Rafay3",
+      "Affordable",
+      "Dinning sets",
+      "Physical store"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:05:17.418Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:05:17.418Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aebdd207beab7447cdb7ba"
+    },
+    "name": "Home Centre",
+    "logo": "https://utfs.io/f/33h5308O79UZwvgchPXVkHYsDP7mdegy5oLF0M6vRhtTqGJW",
+    "description": "Home Centre is a popular international home and lifestyle retailer offering a wide range of dinner sets, tableware, and kitchen essentials with modern and elegant designs, making it a great option for brides looking to build a stylish and practical dining collection.",
+    "link": "https://www.homecentre.com/eg/en/c/furniture?gad_source=1&gad_campaignid=18305386482&gbraid=0AAAAADgC5NRq-86Q1MmXHGXPg0F2YHXXV&gclid=Cj0KCQjw37nNBhDkARIsAEBGI8NhM67jG7WJjSzPunWiO6bvSWrG-ikFBK6e8z5hY5ACK260i7OylqAaAsY2EALw_wcB",
+    "tags": [
+      "Dinning Sets",
+      "Premium quality",
+      "Physical shop"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:32:18.355Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:32:18.355Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeafe460012efbe616a4ff"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec0c44de59d349b932d75"
+    },
+    "name": "Fleeky",
+    "logo": "https://utfs.io/f/33h5308O79UZDsPgETAKjplVGnA7cwUCsFEzafu8ervWIoqX",
+    "description": "Fleeky Wear is an Egyptian brand specializing in stylish and comfortable pajamas and loungewear, offering soft cotton sets, robes, and seasonal collections that are popular among brides who want cute and cozy homewear pieces.",
+    "link": "https://fleekywear.com/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:44:52.426Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:44:52.426Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec15f07beab7447cdb7cc"
+    },
+    "name": "Shada Homewear",
+    "logo": "https://utfs.io/f/33h5308O79UZaagyrNKADQwZxCXscBaJ2qm6rLn9voeT0PGf",
+    "description": "hada Homewear is an Egyptian brand specializing in elegant pajamas, lingerie, and loungewear designed to combine soft fabrics, comfort, and feminine style",
+    "link": "https://shadahomewear.com/",
+    "tags": [
+      "Sexy",
+      "Elegant",
+      "Cute",
+      "Feminine"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:47:27.053Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:47:27.053Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec1d907beab7447cdb7d5"
+    },
+    "name": "Jouri Homewear",
+    "logo": "https://utfs.io/f/33h5308O79UZhwAy3oGm5xBdg9F4YWJCizbrcItuVpSHnOU6",
+    "description": "Jouri Homewear is an Egyptian brand specializing in elegant and comfortable pajamas, robes, and loungewear for women",
+    "link": "https://jourihomewear.com/en?srsltid=AfmBOor-DvQ1LRqvn4HXuoGieDof1b7RqiGaJ00zTYfcELbseAa35Arr",
+    "tags": [
+      "Cozy",
+      "Cute",
+      "Elegant"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:49:29.424Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:49:29.424Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69a4b5e9112e210ee1b2ba6b"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec24507beab7447cdb7df"
+    },
+    "name": "Dozy Daze",
+    "logo": "https://utfs.io/f/33h5308O79UZFNTT5YBp0PDBqgwKJfH5S6Cs4LbZG2OWinVA",
+    "description": "Dozy Daze is an Egyptian homewear brand offering soft and stylish pajamas and loungewear sets designed for comfort and relaxed everyday living",
+    "link": "https://dozydaze.com/",
+    "tags": [
+      "Cozy",
+      "Cute"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:51:17.135Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:51:17.135Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec29b4de59d349b932d80"
+    },
+    "name": "Vanilla Wear",
+    "logo": "https://utfs.io/f/33h5308O79UZtYd3hT0AolThR5n8qDZpSEuYHy6gid0eMfBw",
+    "description": "Vanilla Wear is an Egyptian brand specializing in comfortable and stylish pajamas, lingerie, and loungewear made with soft fabrics",
+    "link": "https://vanilla-wear.com/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:52:43.034Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:52:43.034Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec2d507beab7447cdb7e9"
+    },
+    "name": "Carina",
+    "logo": "https://utfs.io/f/33h5308O79UZodCQQ9rH07W8fE4vyYTmFe3BrsKbiGIuhACM",
+    "description": "Carina is a well-known Egyptian women’s fashion brand offering a wide range of essentials including pajamas, lingerie, loungewear, and basics",
+    "link": "https://carina.eg/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:53:41.797Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:53:41.797Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec3134de59d349b932d8a"
+    },
+    "name": "Lixy",
+    "logo": "https://utfs.io/f/33h5308O79UZkUC0uVRFRn4DkS6j8JvEO2Prd0NlzbTfhqwB",
+    "description": "Lixy Egypt is an Egyptian homewear brand founded in 2019 that offers stylish and comfortable pajamas, loungewear, and satin sets designed to combine elegance with everyday comfort",
+    "link": "https://lixy-eg.com/?srsltid=AfmBOooKNWVwERW58mGjuMSdY7zyqXe0nQAJOx_1O4twHBGYAzfoyOAJ",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:54:43.924Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:54:58.846Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec37907beab7447cdb7ed"
+    },
+    "name": "2S Homewear",
+    "logo": "https://utfs.io/f/33h5308O79UZ2QW7Nts6tznDxJVwFIS0KQYafE9b6WLdcjZo",
+    "description": "2S Egypt (2S Homewear) is an Egyptian brand specializing in comfortable homewear, including pajamas, robes, underwear, and loungewear for women, men, and kids. Known for combining modern designs with comfortable fabrics, it’s a practical option for brides looking to add cozy everyday pieces to their wardrobe",
+    "link": "https://www.2segypt.com/ar-ae?srsltid=AfmBOooVYUk2i_2w18MmVCX_qhv9YiGJypsXDUoR913fMQIvtkGl8w0Z",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:56:25.515Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:56:25.515Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69aec3fc07beab7447cdb7f7"
+    },
+    "name": "A2Z",
+    "logo": "https://utfs.io/f/33h5308O79UZqRm2KRIYRK0b7dyHkrfxO6i5VvZYm9X4GDPU",
+    "description": "A2Z Women is an Egyptian brand specializing in pajamas, lingerie, and comfortable homewear made with soft fabrics and feminine designs",
+    "link": "https://a2z-women.com/?srsltid=AfmBOopKPs6DAfvYKHFSK5pP04CTAzG-aVit_r2O4aNQVvjuXyE7Uvyl",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-09T12:58:36.396Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T12:58:36.396Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b036d2edadc17ba4beb911"
+    },
+    "name": "Linens & More",
+    "logo": "https://utfs.io/f/33h5308O79UZj0cBRrgxaYDnIXO1btWoSdy3rZBRgfscm7iQ",
+    "description": "Linens & More is an Egyptian home textiles brand offering premium bedding products such as bed sheets, duvet covers, quilts, blankets, and towels designed to combine comfort with elegant bedroom styling—making it a great option for brides preparing their bedroom essentials",
+    "link": "https://linens-more.com/",
+    "tags": [
+      "Bridal",
+      "Luxury",
+      "Soft"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:20:50.318Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:20:50.318Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03812edadc17ba4beb920"
+    },
+    "name": "Home Centre",
+    "logo": "https://utfs.io/f/33h5308O79UZYeUsVnkVk1AfN3zeiIWtUO45MsyPHEq9jrw0",
+    "description": "Home Centre – Bedding offers a wide range of bedroom essentials including bed sheets, duvet covers, comforters, blankets, and pillowcases in modern designs and soft fabrics, making it a great option for brides looking to create a stylish and comfortable bedroom setup.",
+    "link": "https://www.homecentre.com/eg/en/c/household-bedding",
+    "tags": [
+      "Egyptian Cotton",
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:26:10.200Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:26:10.200Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03898488356ca6777f50a"
+    },
+    "name": "K&A Home",
+    "logo": "https://utfs.io/f/33h5308O79UZ8ZEYQZPwJMvKLRd7txyjNw4TOHV5QsprBi0E",
+    "description": "K&A Home is an Egyptian home textiles brand established in 2017 that offers bedding essentials such as bed sheets, linens, and home textile pieces made with Egyptian fabrics and craftsmanship, making it a lovely option for brides preparing comfortable and elegant bedroom essentials for their new home.",
+    "link": "https://www.instagram.com/k.and.a.home/?hl=en",
+    "tags": [
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:28:24.500Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:28:24.500Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b038f8488356ca6777f514"
+    },
+    "name": "Laze Home",
+    "logo": "https://utfs.io/f/33h5308O79UZKkX2Z0WyZPew3hMLI0AVku4d27n1vcEFSTBb",
+    "description": "Laze Home is an Egyptian home textiles brand offering premium bedding, towels, and home linens made from high-quality fabrics such as Egyptian cotton, designed to combine comfort, elegance, and timeless style for a cozy and luxurious bedroom setup.",
+    "link": "https://eg.laze-home.com/collections/linens",
+    "tags": [
+      "Luxury",
+      "Pharaonic designs"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:30:00.867Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:30:00.867Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03951edadc17ba4beb924"
+    },
+    "name": "More Cottons",
+    "logo": "https://utfs.io/f/33h5308O79UZvlKPlPhV3L0EDjYxlfQHz4gZ5aRbpuMUOFh9",
+    "description": "More Cottons is an Egyptian home textiles brand founded in 2020 that offers premium bedding, towels, and home linens made from soft cotton fabrics, designed to bring comfort and elegant simplicity to the bedroom—making it a great option for brides preparing their bedding essentials.",
+    "link": "https://morecottons.com",
+    "tags": [
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:31:29.805Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:31:29.805Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b039b8488356ca6777f524"
+    },
+    "name": "Nillens",
+    "logo": "https://utfs.io/f/33h5308O79UZNlYsnEL3WpLod4Q0FUMjcTafEXwblAIH5yhu",
+    "description": "Nillens is an Egyptian home textiles brand known for premium bedding made from high-quality Egyptian cotton, offering bed sheets, duvet covers, pillowcases, and other linens with elegant and colorful designs—making it a great choice for brides preparing comfortable and stylish bedroom essentials.",
+    "link": "https://nillens.com/?srsltid=AfmBOopHC8CjMJS1-6lT5MeBrfxtm4s0OKzIKfsHlvmbZZtpoO5lviLc",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:33:12.698Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:33:12.698Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03a05edadc17ba4beb928"
+    },
+    "name": "Ricrac",
+    "logo": "https://utfs.io/f/33h5308O79UZ9npv1kghNwkfxauW1DKUopMqTeVY7vz3tREm",
+    "description": "RicRac is an Egyptian home brand offering a wide range of home essentials including bedding, pillows, furniture, and décor, designed with a focus on modern style, comfort, and functional living—making it a great option for brides looking for stylish and practical bedroom essentials.",
+    "link": "https://ricracshop.com/collections/bedding-1",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:34:29.585Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:34:29.585Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03a51488356ca6777f534"
+    },
+    "name": "Ariika",
+    "logo": "https://utfs.io/f/33h5308O79UZbvR468Jf1qHwERJCMz7jseZr03pF2VGKOgvk",
+    "description": "Ariika is a modern home brand offering premium bedding such as bed sheets, duvet covers, and pillows made with high-quality materials like Egyptian cotton, designed to combine minimalist style with everyday comfort—making it a great option for brides setting up a cozy and elegant bedroom",
+    "link": "https://ariika.com/pages/bed-sheets",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:35:45.226Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:36:00.326Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03ac5edadc17ba4beb932"
+    },
+    "name": "Mecca Centre",
+    "logo": "https://utfs.io/f/33h5308O79UZ56wROLPS3ru1DxXCziJn0BOd4hWpk5avQMNj",
+    "description": "Mecca Textile Center is an Egyptian home textiles store offering a wide variety of bedding items such as bed sheets, comforters, blankets, and bridal bedding sets, with options ranging from Egyptian cotton to imported fabrics—making it a popular destination for brides preparing their bedroom essentials.",
+    "link": "https://www.instagram.com/meccatextilecenter/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:37:41.541Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:37:41.541Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03bf3488356ca6777f541"
+    },
+    "name": "Anwar Makkah",
+    "logo": "https://utfs.io/f/33h5308O79UZmqILUb1QOgluoyzNPxDcUdXjY6tWGZmrREM9",
+    "description": "Anwar Maka is an Egyptian home textiles store offering a wide range of bedding products such as bed sheets, blankets, comforters, and bridal bed sets in various designs and fabrics",
+    "link": "https://www.instagram.com/anwarmaka.eg/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:42:43.646Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:42:43.646Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03d14edadc17ba4beb942"
+    },
+    "name": "Mall Elhadeer",
+    "logo": "https://utfs.io/f/33h5308O79UZxn8EAWtoGuSTL31h8xqiI4geKQH6cysXN5fz",
+    "description": "Gallery El Hadeer is an Egyptian home textiles and décor store offering a variety of bedding products such as bed sheets, comforters, bedspreads, and linens, along with furniture and home décor items—making it a convenient destination for brides preparing their bedroom essentials and home setup.",
+    "link": "https://www.facebook.com/galleryelhadeer",
+    "tags": [
+      "Physical shop",
+      "Affordable"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:47:32.121Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:47:32.121Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03da8b37fd2730a5dcca5"
+    },
+    "name": "Grand Style",
+    "logo": "https://utfs.io/f/33h5308O79UZaGsTmKADQwZxCXscBaJ2qm6rLn9voeT0PGfb",
+    "description": "Grand Style is an Egyptian home textiles brand specializing in luxury bedding, blankets, towels, and bedspreads made from premium Egyptian cotton, known for its elegant designs and high-quality fabrics",
+    "link": "https://grandstyle.com.eg/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:50:00.045Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:50:00.045Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03e1ab37fd2730a5dccae"
+    },
+    "name": "Almasa Linens",
+    "logo": "https://utfs.io/f/33h5308O79UZeLC4PpEQSbydGZeqoiT2OErPDXcAxgY0zn6s",
+    "description": "Almasa Linens is an Egyptian home textiles brand offering a wide range of bedding products such as bed sheets, comforters, blankets, towels, and bathrobes, known for combining Egyptian cotton quality with elegant designs, making it a great option for brides preparing comfortable and stylish bedroom essentials.",
+    "link": "https://www.instagram.com/almasa_linens/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:51:54.004Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:51:54.004Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03edbb37fd2730a5dccb8"
+    },
+    "name": "Almaamoun",
+    "logo": "https://utfs.io/f/33h5308O79UZHsDLnLmZJ90lxL4czamOdwhNfEGSqpYg8uX3",
+    "description": "Al-Maamoun is a well-known Egyptian bedding brand with over 35 years of experience, offering bed sheets, comforters, pillows, and other bedroom essentials made with quality fabrics and practical designs—making it a reliable option for brides preparing comfortable and durable bedding for their new home.",
+    "link": "https://almaamoun.com/collections/bed-sheets",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:55:07.616Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:55:07.616Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03f4dedadc17ba4beb94d"
+    },
+    "name": "Morano",
+    "logo": "https://utfs.io/f/33h5308O79UZmACAUA1QOgluoyzNPxDcUdXjY6tWGZmrREM9",
+    "description": "Morano is an Egyptian home textiles brand by Misr Spain specializing in bedding products such as bed sheets, comforters, blankets, and coverlets designed to provide comfort, durability, and modern bedroom style—making it a great option for brides preparing cozy and practical bedroom essentials.",
+    "link": "https://morano.misrspain.com/collections/bed-sheets",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:57:01.214Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:57:01.214Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b03ffab37fd2730a5dccc2"
+    },
+    "name": "ElSaadani Mall",
+    "logo": "https://utfs.io/f/33h5308O79UZwkF0AmXVkHYsDP7mdegy5oLF0M6vRhtTqGJW",
+    "description": "El Sadany is an Egyptian home textiles store offering a variety of bedding essentials such as bed sheets, comforters, blankets, and bridal bed sets in different fabrics and designs",
+    "link": "https://www.facebook.com/elsadany2090",
+    "tags": [
+      "Affordable",
+      "Physical Store"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-10T15:59:54.829Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T15:59:54.829Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69b0353f30309a3b6190caa6"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b303f7f5403fe0f9a2af15"
+    },
+    "name": "Sera Egypt",
+    "logo": "https://utfs.io/f/33h5308O79UZZdaC3InRjOQJTAWMDpGIEqdSgK6yBl9PsVx0",
+    "description": "Sera Egypt is a well-known Egyptian home brand specializing in mattresses, carpets, and home furnishings, offering a variety of bedroom and home essentials designed to combine comfort, durability, and modern design",
+    "link": "https://seraegypt.com/en/",
+    "tags": [
+      "Affordable",
+      "Physical Store"
+    ],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-12T18:20:39.358Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-12T18:20:39.358Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeb028e7aab7bba59f1c25"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b30bac524927f234f2bb0e"
+    },
+    "name": "Jammies",
+    "logo": "https://utfs.io/f/33h5308O79UZB6CBJscc3PmjZ290pSht4sTiUalIOuMQoeJg",
+    "description": "Jammies Official is an Egyptian homewear brand offering cute and comfortable pajamas and loungewear designed with soft fabrics and playful prints",
+    "link": "https://www.instagram.com/jammiesofficial/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-12T18:53:32.998Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-12T18:53:32.998Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aec0484de59d349b932d6e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69b3107153e8839a796e669c"
+    },
+    "name": "LC Waikiki Home",
+    "logo": "https://utfs.io/f/33h5308O79UZFZkHjDBp0PDBqgwKJfH5S6Cs4LbZG2OWinVA",
+    "description": "LC Waikiki Home (LCW Home) is the home collection of the international brand LC Waikiki, offering a variety of affordable home essentials such as bedding, bed sheets, duvet covers, towels, tableware, and décor items designed with modern and practical styles",
+    "link": "https://www.instagram.com/lcwaikikiegypt/",
+    "tags": [],
+    "clicks": 0,
+    "isFeatured": false,
+    "isActive": true,
+    "reviews": [],
+    "createdAt": {
+      "$date": "2026-03-12T19:13:53.646Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-12T19:13:53.646Z"
+    },
+    "__v": 0,
+    "subCategories": [
+      {
+        "$oid": "69aeb028e7aab7bba59f1c25"
+      }
+    ]
+  }
+]

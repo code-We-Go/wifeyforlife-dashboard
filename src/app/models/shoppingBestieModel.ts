@@ -7,6 +7,7 @@ export interface IShoppingBrandReview extends Document {
   userName: string;
   rating: number; // 1–5
   comment?: string;
+  images?: string[];
   helpful: Types.ObjectId[];
   notHelpful: Types.ObjectId[];
   createdAt: Date;
@@ -22,6 +23,7 @@ const ReviewSchema = new Schema<IShoppingBrandReview>(
     userName: { type: String, required: true, trim: true },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: false, trim: true },
+    images: { type: [String], required: false, default: [] },
     helpful: { type: [Schema.Types.ObjectId], ref: "users", default: [] },
     notHelpful: { type: [Schema.Types.ObjectId], ref: "users", default: [] },
   },
@@ -33,14 +35,18 @@ const ReviewSchema = new Schema<IShoppingBrandReview>(
 export interface IShoppingBrand extends Document {
   name: string;
   logo?: string;
-  category: string;
-  subCategory: string;
+  /** ObjectId refs to ShoppingSubcategory — parent category is derived via populate */
+  subCategories: Types.ObjectId[];
   description: string;
   link: string;
   tags: string[];
   clicks: number;
   isFeatured: boolean;
   isActive: boolean;
+  /** false = pending approval; true = visible to users */
+  approved: boolean;
+  /** User who submitted this brand for approval (optional — admin-created brands may not have one) */
+  submittedBy?: Types.ObjectId;
   // averageRating and totalRatings are computed from reviews at query time
   reviews: IShoppingBrandReview[];
   createdAt: Date;
@@ -51,28 +57,44 @@ const ShoppingBrandSchema = new Schema<IShoppingBrand>(
   {
     name: { type: String, required: true, trim: true },
     logo: { type: String, required: false },
-    category: { type: String, required: true, trim: true },
-    subCategory: { type: String, required: true, trim: true },
+    subCategories: {
+      type: [{ type: Schema.Types.ObjectId, ref: "ShoppingSubcategory" }],
+      required: true,
+      default: [],
+    },
     description: { type: String, required: true, trim: true },
     link: { type: String, required: true, trim: true },
     tags: { type: [String], default: [] },
     clicks: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    approved: { type: Boolean, default: false },
+    submittedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "users",
+      required: false,
+      default: null,
+    },
     reviews: { type: [ReviewSchema], default: [] },
   },
   { timestamps: true }
 );
 
 // Indexes
-ShoppingBrandSchema.index({ category: 1, isActive: 1 });
+ShoppingBrandSchema.index({ subCategories: 1, isActive: 1 });
 ShoppingBrandSchema.index({ isFeatured: -1 });
 ShoppingBrandSchema.index({ clicks: -1 });
 // Unique constraint: a user can only review a brand once
 ShoppingBrandSchema.index({ "reviews.userId": 1 });
 
-const ShoppingBrandModel =
-  mongoose.models.ShoppingBrand ||
-  mongoose.model<IShoppingBrand>("ShoppingBrand", ShoppingBrandSchema);
+// Delete the cached model so Next.js hot-reload always picks up the current schema.
+// Without this, schema changes (e.g. adding/removing fields) are silently ignored
+// because Mongoose returns the first-registered model for a given name.
+delete mongoose.models["ShoppingBrand"];
+
+const ShoppingBrandModel = mongoose.model<IShoppingBrand>(
+  "ShoppingBrand",
+  ShoppingBrandSchema,
+);
 
 export default ShoppingBrandModel;

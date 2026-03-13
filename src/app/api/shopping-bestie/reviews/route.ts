@@ -6,17 +6,65 @@ import UserModel from "@/app/models/userModel";
 
 const loadDB = async () => { await ConnectDB(); };
 
-// GET: Fetch all reviews for a brand (with voter names manually populated)
+// GET: Fetch all reviews for a brand (with voter names manually populated) OR fetch all reviews across all brands
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const brandId = searchParams.get("brandId");
 
-  if (!brandId) {
-    return NextResponse.json({ error: "brandId is required" }, { status: 400 });
-  }
-
   await loadDB();
   try {
+    if (!brandId) {
+      // IF NO BRAND ID: Fetch all reviews across all brands, sorted by latest
+      const allReviewsPipeline = [
+        { $unwind: "$reviews" },
+        { $sort: { "reviews.createdAt": -1 } },
+        { $project: {
+            "reviews": 1,
+            "brandName": "$name",
+            "brandId": "$_id",
+            "brandLogo": "$logo"
+          }
+        }
+      ];
+
+      const rawReviews = await ShoppingBrandModel.aggregate(allReviewsPipeline as any[]);
+      
+      // Collect all user IDs to populate
+      const allUserIds = new Set<string>();
+      for (const item of rawReviews) {
+        if (item.reviews.userId) allUserIds.add(String(item.reviews.userId));
+        for (const id of [...(item.reviews.helpful ?? []), ...(item.reviews.notHelpful ?? [])]) {
+          allUserIds.add(String(id));
+        }
+      }
+
+      // Single query for all users
+      const userMap = new Map<string, { _id: string; firstName: string; lastName: string; username: string }>();
+      if (allUserIds.size > 0) {
+        const users = await UserModel.find(
+          { _id: { $in: [...allUserIds] } },
+          "firstName lastName username"
+        ).lean();
+        for (const u of users as any[]) {
+          userMap.set(String(u._id), u);
+        }
+      }
+
+      // Map back and structure the response
+      const fullyPopulatedReviews = rawReviews.map((item: any) => ({
+        ...item.reviews,
+        brandId: item.brandId,
+        brandName: item.brandName,
+        brandLogo: item.brandLogo,
+        resolvedUser: item.reviews.userId ? (userMap.get(String(item.reviews.userId)) ?? null) : null,
+        helpful: (item.reviews.helpful ?? []).map((id: any) => userMap.get(String(id)) ?? { _id: String(id) }),
+        notHelpful: (item.reviews.notHelpful ?? []).map((id: any) => userMap.get(String(id)) ?? { _id: String(id) }),
+      }));
+
+      return NextResponse.json({ data: fullyPopulatedReviews }, { status: 200 });
+    }
+
+    // EXISTING LOGIC for a single brand
     const brand = await ShoppingBrandModel.findById(brandId).select("name reviews").lean();
     if (!brand) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
@@ -66,7 +114,7 @@ export async function POST(request: Request) {
   await loadDB();
   try {
     const body = await request.json();
-    const { brandId, userName, rating, comment } = body;
+    const { brandId, userName, rating, comment, images } = body;
 
     if (!brandId || !userName || !rating) {
       return NextResponse.json(
@@ -87,8 +135,9 @@ export async function POST(request: Request) {
       userName: userName.trim(),
       rating: Number(rating),
       comment: comment?.trim() || "",
-      helpful: 0,
-      notHelpful: 0,
+      images: Array.isArray(images) ? images : [],
+      helpful: [],
+      notHelpful: [],
     };
 
     brand.reviews.push(newReview as any);
@@ -108,7 +157,7 @@ export async function PUT(request: Request) {
   await loadDB();
   try {
     const body = await request.json();
-    const { brandId, reviewId, userName, rating, comment, helpful, notHelpful } = body;
+    const { brandId, reviewId, userName, rating, comment, helpful, notHelpful, images } = body;
 
     if (!brandId || !reviewId) {
       return NextResponse.json(
@@ -122,7 +171,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
     }
 
-    const review = brand.reviews.id(reviewId);
+    const review = (brand.reviews as any).id(reviewId);
     if (!review) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }
@@ -130,8 +179,9 @@ export async function PUT(request: Request) {
     if (userName !== undefined) review.userName = userName.trim();
     if (rating !== undefined) review.rating = Number(rating);
     if (comment !== undefined) review.comment = comment.trim();
-    if (helpful !== undefined) (review as any).helpful = Number(helpful);
-    if (notHelpful !== undefined) (review as any).notHelpful = Number(notHelpful);
+    if (images !== undefined) review.images = Array.isArray(images) ? images : [];
+    if (helpful !== undefined) (review as any).helpful = Array.isArray(helpful) ? helpful : [];
+    if (notHelpful !== undefined) (review as any).notHelpful = Array.isArray(notHelpful) ? notHelpful : [];
 
     await brand.save();
     return NextResponse.json({ data: brand }, { status: 200 });
@@ -163,7 +213,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
     }
 
-    const review = brand.reviews.id(reviewId);
+    const review = (brand.reviews as any).id(reviewId);
     if (!review) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }

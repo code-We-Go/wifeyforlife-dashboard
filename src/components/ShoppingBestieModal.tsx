@@ -32,10 +32,14 @@ interface ShoppingBestieModalProps {
 const emptyForm = {
   name: "",
   logo: "",
-  category: "",
-  categoryId: "",
-  subCategory: "",
-  subCategoryId: "",
+  /**
+   * subCategoryIds  – ObjectIds sent to the API (the only thing stored in DB)
+   * subCategoryObjs – populated sub-cat objects { _id, name, categoryId: { _id, name } }
+   * categoryIds / categories are derived from subCategoryObjs for the UI only
+   */
+  subCategoryIds:  [] as string[],
+  subCategoryObjs: [] as Array<{ _id: string; name: string; categoryId: { _id: string; name: string } }>,
+  categoryIds:     [] as string[], // derived – used to filter the sub-cat dropdown
   description: "",
   link: "",
   tags: "",
@@ -60,24 +64,43 @@ const ShoppingBestieModal = ({
   // { reviewId, type: 'helpful' | 'notHelpful' } | null
   const [voterPopover, setVoterPopover] = useState<{ reviewId: string; type: "helpful" | "notHelpful" } | null>(null);
 
-  // Filtered subcategories based on selected category
+  // Subcategories available for currently selected categories (only unselected ones shown)
   const filteredSubs = subcategories.filter((s) => {
     const catId = typeof s.categoryId === "object" ? s.categoryId._id : s.categoryId;
-    return catId === form.categoryId;
+    return form.categoryIds.includes(catId) && !form.subCategoryIds.includes(s._id);
   });
+
+  // Derive category chips from the populated subCategoryObjs
+  const selectedCategories = Array.from(
+    new Map(
+      form.subCategoryObjs.map((s) => [s.categoryId._id, s.categoryId])
+    ).values()
+  );
 
   useEffect(() => {
     if (brand && (type === "edit" || type === "view")) {
-      // Find matching category id from name
-      const matchedCat = categories.find((c) => c.name === brand.category);
-      const matchedSub = subcategories.find((s) => s.name === brand.subCategory);
+      // brand.subCategories is already populated by the API
+      const populatedSubs: Array<{ _id: string; name: string; categoryId: { _id: string; name: string } }> =
+        ((brand as any).subCategories ?? []).map((s: any) =>
+          typeof s === "object" && s !== null
+            ? {
+                _id: String(s._id ?? s),
+                name: s.name ?? "",
+                categoryId: typeof s.categoryId === "object"
+                  ? { _id: String(s.categoryId._id), name: s.categoryId.name ?? "" }
+                  : { _id: String(s.categoryId), name: "" },
+              }
+            : { _id: String(s), name: "", categoryId: { _id: "", name: "" } }
+        );
+
+      const catIds = Array.from(new Set(populatedSubs.map((s) => s.categoryId._id)));
+
       setForm({
         name: brand.name || "",
         logo: brand.logo || "",
-        category: brand.category || "",
-        categoryId: matchedCat?._id || "",
-        subCategory: brand.subCategory || "",
-        subCategoryId: matchedSub?._id || "",
+        subCategoryIds:  populatedSubs.map((s) => s._id),
+        subCategoryObjs: populatedSubs,
+        categoryIds:     catIds,
         description: brand.description || "",
         link: brand.link || "",
         tags: Array.isArray(brand.tags) ? brand.tags.join(", ") : "",
@@ -88,9 +111,7 @@ const ShoppingBestieModal = ({
       setForm(emptyForm);
     }
     setError("");
-    // Seed with raw reviews immediately (so UI isn't empty while fetching)
     setLocalReviews((brand?.reviews as any[]) ?? []);
-    // Then fetch populated voter names only in view mode
     if (type === "view" && brand) {
       axios
         .get(`/api/shopping-bestie/reviews?brandId=${(brand as any)._id}`)
@@ -99,25 +120,41 @@ const ShoppingBestieModal = ({
     }
   }, [brand, type, isOpen, categories, subcategories]);
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedCat = categories.find((c) => c._id === selectedId);
-    setForm((prev) => ({
-      ...prev,
-      categoryId: selectedId,
-      category: selectedCat?.name || "",
-      subCategoryId: "",
-      subCategory: "",
-    }));
+  // ── Category multi-select helpers ──────────────────────────────────────────
+  const toggleCategory = (catId: string) => {
+    const isSelected = form.categoryIds.includes(catId);
+    if (isSelected) {
+      // de-select category → remove its sub-cats from the selection
+      setForm((prev) => ({
+        ...prev,
+        categoryIds: prev.categoryIds.filter((id) => id !== catId),
+        subCategoryIds: prev.subCategoryIds.filter(
+          (id) => !prev.subCategoryObjs.find((s) => s._id === id && s.categoryId._id === catId)
+        ),
+        subCategoryObjs: prev.subCategoryObjs.filter((s) => s.categoryId._id !== catId),
+      }));
+    } else {
+      setForm((prev) => ({ ...prev, categoryIds: [...prev.categoryIds, catId] }));
+    }
   };
 
-  const handleSubCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedSub = subcategories.find((s) => s._id === selectedId);
+  const toggleSubCategory = (subId: string) => {
+    const sub = subcategories.find((s) => s._id === subId);
+    if (!sub) return;
+    const catId = typeof sub.categoryId === "object" ? sub.categoryId._id : sub.categoryId;
+    const catName = categories.find((c) => c._id === catId)?.name ?? "";
+    const isSelected = form.subCategoryIds.includes(subId);
     setForm((prev) => ({
       ...prev,
-      subCategoryId: selectedId,
-      subCategory: selectedSub?.name || "",
+      subCategoryIds: isSelected
+        ? prev.subCategoryIds.filter((id) => id !== subId)
+        : [...prev.subCategoryIds, subId],
+      subCategoryObjs: isSelected
+        ? prev.subCategoryObjs.filter((s) => s._id !== subId)
+        : [
+            ...prev.subCategoryObjs,
+            { _id: subId, name: sub.name, categoryId: { _id: catId, name: catName } },
+          ],
     }));
   };
 
@@ -150,21 +187,19 @@ const ShoppingBestieModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.category) { setError("Please select a category"); return; }
-    if (!form.subCategory) { setError("Please select a sub-category"); return; }
+    if (form.subCategoryIds.length === 0) { setError("Please select at least one sub-category"); return; }
     setLoading(true);
     setError("");
     try {
       const payload = {
-        name: form.name,
-        logo: form.logo,
-        category: form.category,
-        subCategory: form.subCategory,
+        name:        form.name,
+        logo:        form.logo,
+        subCategories: form.subCategoryIds, // only ObjectIds stored in DB
         description: form.description,
-        link: form.link,
-        tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-        isFeatured: form.isFeatured,
-        isActive: form.isActive,
+        link:        form.link,
+        tags:        form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        isFeatured:  form.isFeatured,
+        isActive:    form.isActive,
       };
 
       if (type === "add") {
@@ -262,55 +297,98 @@ const ShoppingBestieModal = ({
             />
           </div>
 
-          {/* ── Category / Sub-category ── */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* ── Categories / Sub-categories ── */}
+          <div className="space-y-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Category *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Categories *</label>
               {isView ? (
-                <p className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600">
-                  {form.category || "—"}
-                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedCategories.length === 0
+                    ? <span className="text-sm text-gray-400">—</span>
+                    : selectedCategories.map((c) => (
+                        <span key={c._id} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">{c.name}</span>
+                      ))}
+                </div>
               ) : (
-                <select
-                  value={form.categoryId}
-                  onChange={handleCategoryChange}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
-                >
-                  <option value="">Select category</option>
-                  {categories
-                    .filter((c) => c.name && c._id)
-                    .map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                </select>
+                <>
+                  {/* chip row for selected categories */}
+                  {form.categoryIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {form.categoryIds.map((catId) => {
+                        const cat = categories.find((c) => c._id === catId);
+                        return cat ? (
+                          <span key={catId} className="inline-flex items-center gap-1 rounded-full bg-primary/10 pl-2.5 pr-1.5 py-0.5 text-xs font-medium text-primary">
+                            {cat.name}
+                            <button
+                              type="button"
+                              onClick={() => toggleCategory(catId)}
+                              className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-primary/20 hover:bg-primary/40 text-primary leading-none"
+                            >×</button>
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  <select
+                    value=""
+                    onChange={(e) => { if (e.target.value) toggleCategory(e.target.value); }}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                  >
+                    <option value="">+ Add category…</option>
+                    {categories
+                      .filter((c) => !form.categoryIds.includes(c._id))
+                      .map((c) => (
+                        <option key={c._id} value={c._id}>{c.name}</option>
+                      ))}
+                  </select>
+                </>
               )}
             </div>
+
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Sub-Category *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Sub-Categories *</label>
               {isView ? (
-                <p className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600">
-                  {form.subCategory || "—"}
-                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {form.subCategoryObjs.length === 0
+                    ? <span className="text-sm text-gray-400">—</span>
+                    : form.subCategoryObjs.map((s) => (
+                        <span key={s._id} className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">{s.name}</span>
+                      ))}
+                </div>
               ) : (
-                <select
-                  value={form.subCategoryId}
-                  onChange={handleSubCategoryChange}
-                  required
-                  disabled={!form.categoryId}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white disabled:bg-gray-50 disabled:text-gray-400"
-                >
-                  <option value="">
-                    {form.categoryId ? "Select sub-category" : "Select category first"}
-                  </option>
-                  {filteredSubs.map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  {/* chip row for selected sub-categories */}
+                  {form.subCategoryIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {form.subCategoryObjs.map((s) => (
+                        <span key={s._id} className="inline-flex items-center gap-1 rounded-full bg-gray-100 pl-2.5 pr-1.5 py-0.5 text-xs font-medium text-gray-700">
+                          {s.name}
+                          <button
+                            type="button"
+                            onClick={() => toggleSubCategory(s._id)}
+                            className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-700 leading-none"
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {form.categoryIds.length === 0 ? (
+                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">⚠️ Select at least one category first</p>
+                  ) : filteredSubs.length === 0 ? (
+                    <p className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">No sub-categories for selected categories</p>
+                  ) : (
+                    <select
+                      value=""
+                      onChange={(e) => { if (e.target.value) toggleSubCategory(e.target.value); }}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                    >
+                      <option value="">+ Add sub-category…</option>
+                      {filteredSubs.map((s) => (
+                        <option key={s._id} value={s._id}>{s.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </>
               )}
             </div>
           </div>

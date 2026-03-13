@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 import { IShoppingBrand } from "@/app/models/shoppingBestieModel";
 import ShoppingBestieModal, {
   ShoppingCategoryOption,
@@ -21,7 +22,7 @@ interface AnalyticsData {
   totalReviews: number;
   topByClicks: Brand[];
   topByRating: Brand[];
-  categoryStats: { _id: string; count: number; totalClicks: number }[];
+  categoryStats: { _id: string; name: string; count: number; totalClicks: number }[];
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -252,7 +253,16 @@ const ShoppingBestieComponent = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [activeTab, setActiveTab] = useState<"brands" | "analytics" | "categories">("brands");
+  const [activeTab, setActiveTab] = useState<"brands" | "analytics" | "categories" | "newBrands" | "reviews">("brands");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+
+  const handleSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   // Brand modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -274,6 +284,49 @@ const ShoppingBestieComponent = () => {
     brandName: string;
   }>({ open: false, brandId: "", brandName: "" });
 
+  // Lightbox state
+  const [lightbox, setLightbox] = useState<{ images: string[], currentIndex: number } | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEndHandler = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe && lightbox && lightbox.currentIndex < lightbox.images.length - 1) {
+      setLightbox({ ...lightbox, currentIndex: lightbox.currentIndex + 1 });
+    }
+    if (isRightSwipe && lightbox && lightbox.currentIndex > 0) {
+      setLightbox({ ...lightbox, currentIndex: lightbox.currentIndex - 1 });
+    }
+  };
+
+  const handleNextLightbox = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lightbox && lightbox.currentIndex < lightbox.images.length - 1) {
+      setLightbox({...lightbox, currentIndex: lightbox.currentIndex + 1});
+    }
+  };
+
+  const handlePrevLightbox = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lightbox && lightbox.currentIndex > 0) {
+      setLightbox({...lightbox, currentIndex: lightbox.currentIndex - 1});
+    }
+  };
+
   // ── Fetchers ────────────────────────────────────────────────────────────────
 
   const fetchBrands = useCallback(async () => {
@@ -285,6 +338,34 @@ const ShoppingBestieComponent = () => {
       setError(err.response?.data?.error || "Failed to fetch brands");
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const [pendingBrands, setPendingBrands] = useState<Brand[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  const fetchAllReviews = useCallback(async () => {
+    setReviewsLoading(true);
+    try {
+      const res = await axios.get("/api/shopping-bestie/reviews");
+      setAllReviews(res.data.data || []);
+    } catch { /* silently fail */ } finally {
+      setReviewsLoading(false);
+    }
+  }, []);
+
+  const fetchPendingBrands = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      const res = await axios.get("/api/shopping-bestie?pending=true");
+      setPendingBrands(res.data.data);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to fetch pending brands");
+    } finally {
+      setPendingLoading(false);
     }
   }, []);
 
@@ -313,9 +394,11 @@ const ShoppingBestieComponent = () => {
     fetchBrands();
     fetchAnalytics();
     fetchCategories();
-  }, [fetchBrands, fetchAnalytics, fetchCategories]);
+    fetchPendingBrands();
+    fetchAllReviews();
+  }, [fetchBrands, fetchAnalytics, fetchCategories, fetchPendingBrands, fetchAllReviews]);
 
-  const handleBrandSuccess = () => { fetchBrands(); fetchAnalytics(); };
+  const handleBrandSuccess = () => { fetchBrands(); fetchAnalytics(); fetchPendingBrands(); fetchAllReviews(); };
 
   // ── Brand CRUD ──────────────────────────────────────────────────────────────
 
@@ -327,6 +410,39 @@ const ShoppingBestieComponent = () => {
       fetchAnalytics();
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to delete brand");
+    }
+  };
+
+  const handleApproveBrand = async (id: string) => {
+    try {
+      await axios.put("/api/shopping-bestie", { _id: id, approveBrand: true });
+      fetchPendingBrands();
+      fetchBrands();
+      fetchAnalytics();
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to approve brand");
+    }
+  };
+
+  const handleRejectBrand = async (id: string, name: string) => {
+    if (!window.confirm(`Reject and delete "${name}"? This cannot be undone.`)) return;
+    try {
+      await axios.delete(`/api/shopping-bestie?id=${id}`);
+      fetchPendingBrands();
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to reject brand");
+    }
+  };
+
+  const handleDeleteReview = async (brandId: string, reviewId: string) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) return;
+    try {
+      await axios.delete(`/api/shopping-bestie/reviews?brandId=${brandId}&reviewId=${reviewId}`);
+      fetchAllReviews();
+      fetchBrands();
+      fetchAnalytics();
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to delete review");
     }
   };
 
@@ -360,16 +476,122 @@ const ShoppingBestieComponent = () => {
 
   // ── Filter ──────────────────────────────────────────────────────────────────
 
+  // ── helpers to read populated subCategories ────────────────────────────────
+  const getBrandCategoryNames = (brand: Brand): string[] =>
+    Array.from(
+      new Set(
+        ((brand as any).subCategories ?? [])
+          .map((s: any) =>
+            typeof s === "object" && s?.categoryId
+              ? typeof s.categoryId === "object" ? s.categoryId.name : ""
+              : ""
+          )
+          .filter(Boolean)
+      )
+    );
+
+  const getBrandSubCategoryNames = (brand: Brand): string[] =>
+    ((brand as any).subCategories ?? []).map((s: any) =>
+      typeof s === "object" ? s.name ?? "" : ""
+    ).filter(Boolean);
+
   const filteredBrands = brands.filter((b) => {
     const matchSearch =
       b.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       b.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (b.tags || []).some((t) => t.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchCat = categoryFilter ? b.category === categoryFilter : true;
+    const matchCat = categoryFilter
+      ? getBrandCategoryNames(b).includes(categoryFilter)
+      : true;
     return matchSearch && matchCat;
   });
 
-  const uniqueCategories = Array.from(new Set(brands.map((b) => b.category).filter(Boolean)));
+  const uniqueCategories = Array.from(
+    new Set(brands.flatMap((b) => getBrandCategoryNames(b)))
+  );
+
+  const sortedBrands = React.useMemo(() => {
+    const sortableItems = [...filteredBrands];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue: any = null;
+        let bValue: any = null;
+
+        switch (sortConfig.key) {
+          case "brand":
+            aValue = a.name?.toLowerCase() || "";
+            bValue = b.name?.toLowerCase() || "";
+            break;
+          case "category":
+            aValue = getBrandCategoryNames(a).join(", ").toLowerCase();
+            bValue = getBrandCategoryNames(b).join(", ").toLowerCase();
+            break;
+          case "subCategory":
+            aValue = getBrandSubCategoryNames(a).join(", ").toLowerCase();
+            bValue = getBrandSubCategoryNames(b).join(", ").toLowerCase();
+            break;
+          case "clicks":
+            aValue = a.clicks ?? 0;
+            bValue = b.clicks ?? 0;
+            break;
+          case "rating": {
+            const getAvg = (brand: Brand) => {
+              const reviews = brand.reviews ?? [];
+              const total = reviews.length;
+              return total > 0 ? reviews.reduce((s, r) => s + (r as any).rating, 0) / total : 0;
+            };
+            aValue = getAvg(a);
+            bValue = getAvg(b);
+            break;
+          }
+          case "reviews":
+            aValue = (a.reviews ?? []).length;
+            bValue = (b.reviews ?? []).length;
+            break;
+          case "status":
+            aValue = a.isActive ? 1 : 0;
+            bValue = b.isActive ? 1 : 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredBrands, sortConfig]);
+
+  const renderSortableHeader = (label: string, sortKey: string, align: "left" | "center") => (
+    <th
+      className={`px-4 py-3.5 font-semibold cursor-pointer hover:bg-white/10 transition-colors select-none`}
+      onClick={() => handleSort(sortKey)}
+    >
+      <div className={`flex items-center gap-1.5 ${align === "center" ? "justify-center" : ""}`}>
+        {label}
+        <span className="w-3 flex flex-col items-center justify-center text-[10px] leading-[0.6]">
+          {sortConfig?.key === sortKey ? (
+            sortConfig.direction === "asc" ? (
+              <span className="text-white">▲</span>
+            ) : (
+              <span className="text-white">▼</span>
+            )
+          ) : (
+            <>
+              <span className="text-white/30 mb-1">▲</span>
+              <span className="text-white/30">▼</span>
+            </>
+          )}
+        </span>
+      </div>
+    </th>
+  );
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -399,17 +621,30 @@ const ShoppingBestieComponent = () => {
 
           {/* Tab navigation */}
           <div className="mt-6 flex gap-2 flex-wrap">
-            {(["brands", "analytics", "categories"] as const).map((tab) => (
+            {(["brands", "newBrands", "reviews", "analytics", "categories"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200 ${
+                className={`relative rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200 ${
                   activeTab === tab
                     ? "bg-white text-primary shadow-sm"
                     : "text-white/70 hover:text-white"
                 }`}
               >
-                {tab === "brands" ? "📋 Brands" : tab === "analytics" ? "📊 Analytics" : "🗂️ Categories"}
+                {tab === "brands"
+                  ? "📋 Brands"
+                  : tab === "newBrands"
+                  ? "🆕 New Brands"
+                  : tab === "reviews"
+                  ? "⭐ Reviews"
+                  : tab === "analytics"
+                  ? "📊 Analytics"
+                  : "🗂️ Categories"}
+                {tab === "newBrands" && pendingBrands.length > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow">
+                    {pendingBrands.length}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -421,6 +656,249 @@ const ShoppingBestieComponent = () => {
           <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError("")} className="text-red-400 hover:text-red-600 ml-4">✕</button>
+          </div>
+        )}
+
+        {/* ══════════ NEW BRANDS TAB ══════════ */}
+        {activeTab === "newBrands" && (
+          <div>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">🆕 Pending Brand Requests</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Review and approve or reject brand submissions before they go live.
+                </p>
+              </div>
+              <button
+                onClick={fetchPendingBrands}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm transition"
+              >
+                🔄 Refresh
+              </button>
+            </div>
+
+            {pendingLoading ? (
+              <div className="flex items-center justify-center py-20 text-gray-400">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            ) : pendingBrands.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center shadow-sm">
+                <span className="text-5xl mb-3">✅</span>
+                <p className="text-lg font-semibold text-gray-700">All caught up!</p>
+                <p className="text-sm text-gray-400 mt-1">No pending brand requests right now.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {pendingBrands.map((brand) => (
+                  <div
+                    key={(brand as any)._id}
+                    className="flex flex-col rounded-2xl border border-amber-200 bg-white shadow-sm overflow-hidden transition hover:shadow-md"
+                  >
+                    {/* Card header */}
+                    <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4 bg-primary/10">
+                      {brand.logo ? (
+                        <div className="relative h-12 w-16 shrink-0 rounded-lg overflow-hidden bg-white border border-gray-100">
+                          <Image src={brand.logo} alt={brand.name} fill className="object-cover " />
+                        </div>
+                      ) : (
+                        <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl">🛍️</div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-bold text-gray-900">{brand.name}</p>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {getBrandCategoryNames(brand).map((cat) => (
+                            <span key={cat} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{cat}</span>
+                          ))}
+                          {getBrandSubCategoryNames(brand).map((sub) => (
+                            <span key={sub} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">{sub}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card body */}
+                    <div className="flex-1 px-5 py-4 space-y-3">
+                      <p className="text-sm text-gray-600 line-clamp-3">{brand.description}</p>
+
+                      <a
+                        href={brand.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline truncate max-w-full"
+                      >
+                        🔗 {brand.link}
+                      </a>
+
+                      {(brand.tags ?? []).length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {(brand.tags ?? []).map((tag) => (
+                            <span key={tag} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Submitted by */}
+                      {(() => {
+                        const sub = (brand as any).submittedBy;
+                        const displayName = sub
+                          ? [sub.firstName, sub.lastName].filter(Boolean).join(" ").trim() || sub.username
+                          : null;
+                        return (
+                          <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
+                            {displayName ? (
+                              <>
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[11px] font-bold text-primary uppercase">
+                                  {displayName.charAt(0)}
+                                </div>
+                                <div className="text-[11px] text-gray-500 leading-tight">
+                                  <span className="font-medium text-gray-700">{displayName}</span>
+                                  <span className="mx-1">·</span>
+                                  {new Date((brand as any).createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-[10px] text-gray-400">
+                                Submitted {new Date((brand as any).createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Card actions */}
+                    <div className="grid grid-cols-2 border-t border-gray-100">
+                      <button
+                        onClick={() => handleApproveBrand((brand as any)._id)}
+                        className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-green-600 bg-green-50 hover:bg-green-100 transition-colors"
+                      >
+                        ✓ Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectBrand((brand as any)._id, brand.name)}
+                        className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+                      >
+                        ✕ Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════ REVIEWS TAB ══════════ */}
+        {activeTab === "reviews" && (
+          <div>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">⭐ Latest Reviews Feed</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Monitor all incoming user reviews across every brand from newest to oldest.
+                </p>
+              </div>
+              <button
+                onClick={fetchAllReviews}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm transition"
+              >
+                🔄 Refresh
+              </button>
+            </div>
+
+            {reviewsLoading ? (
+              <div className="flex items-center justify-center py-20 text-gray-400">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            ) : allReviews.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center shadow-sm">
+                <span className="text-4xl mb-3">📭</span>
+                <p className="text-lg font-semibold text-gray-700">No reviews yet!</p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-w-4xl">
+                {allReviews.map((review) => {
+                  const u = review.resolvedUser;
+                  const displayName = u?.firstName || u?.lastName
+                    ? `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim()
+                    : (review.userName ?? "?");
+                  
+                  return (
+                    <div
+                      key={review._id}
+                      className="group flex flex-col md:flex-row gap-4 p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow relative"
+                    >
+                      {/* Left: Brand summary */}
+                      <div className="w-full md:w-64 shrink-0 flex items-start gap-3 md:border-r border-gray-100 pr-4">
+                        {review.brandLogo ? (
+                          <div className="relative h-10 w-14 shrink-0 rounded-lg overflow-hidden bg-white border border-gray-100">
+                            <Image src={review.brandLogo} alt={review.brandName} fill className="object-cover" />
+                          </div>
+                        ) : (
+                          <div className="flex h-10 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-lg">🛍️</div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-bold tracking-wider text-gray-400 uppercase">Brand</p>
+                          <p className="font-semibold text-gray-800 text-sm truncate" title={review.brandName}>{review.brandName}</p>
+                        </div>
+                      </div>
+
+                      {/* Right: Review details */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-start">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-bold text-gray-900">{displayName}</p>
+                              <span className="text-amber-400 tracking-widest text-sm">
+                                {"★".repeat(Math.round(review.rating))}
+                                <span className="text-gray-200">{"★".repeat(5 - Math.round(review.rating))}</span>
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              {new Date(review.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+
+                          {/* Delete Action */}
+                          <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => handleDeleteReview(review.brandId, review._id)}
+                              title="Delete Review"
+                              className="flex items-center justify-center h-8 w-8 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {review.comment && (
+                          <p className="mt-2 text-sm text-gray-600 leading-relaxed pr-8">
+                            {review.comment}
+                          </p>
+                        )}
+                        
+                        {(review.images && review.images.length > 0) && (
+                          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                            {review.images.map((img: string, idx: number) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setLightbox({ images: review.images, currentIndex: idx })}
+                                className="relative h-14 w-14 shrink-0 rounded-md border border-gray-200 overflow-hidden bg-gray-50 hover:ring-2 hover:ring-primary hover:opacity-90 transition-all focus:outline-none"
+                              >
+                                <CldImage width="100" height="100" src={img} alt="attachment" className="object-cover h-full w-full" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -453,13 +931,13 @@ const ShoppingBestieComponent = () => {
                   <thead>
                     <tr className="bg-primary text-white">
                       <th className="px-4 py-3.5 text-left font-semibold">Logo</th>
-                      <th className="px-4 py-3.5 text-left font-semibold">Brand</th>
-                      <th className="px-4 py-3.5 text-left font-semibold">Category</th>
-                      <th className="px-4 py-3.5 text-left font-semibold">Sub-Category</th>
-                      <th className="px-4 py-3.5 text-center font-semibold">Clicks</th>
-                      <th className="px-4 py-3.5 text-center font-semibold">Rating</th>
-                      <th className="px-4 py-3.5 text-center font-semibold">Reviews</th>
-                      <th className="px-4 py-3.5 text-center font-semibold">Status</th>
+                      {renderSortableHeader("Brand", "brand", "left")}
+                      {renderSortableHeader("Category", "category", "left")}
+                      {renderSortableHeader("Sub-Category", "subCategory", "left")}
+                      {renderSortableHeader("Clicks", "clicks", "center")}
+                      {renderSortableHeader("Rating", "rating", "center")}
+                      {renderSortableHeader("Reviews", "reviews", "center")}
+                      {renderSortableHeader("Status", "status", "center")}
                       <th className="px-4 py-3.5 text-center font-semibold">Actions</th>
                     </tr>
                   </thead>
@@ -473,14 +951,14 @@ const ShoppingBestieComponent = () => {
                           </div>
                         </td>
                       </tr>
-                    ) : filteredBrands.length === 0 ? (
+                    ) : sortedBrands.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="py-12 text-center text-gray-400">
                           No brands found
                         </td>
                       </tr>
                     ) : (
-                      filteredBrands.map((brand) => (
+                      sortedBrands.map((brand) => (
                         <tr
                           key={brand._id}
                           className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -492,7 +970,7 @@ const ShoppingBestieComponent = () => {
                                   src={brand.logo}
                                   alt={brand.name}
                                   fill
-                                  className="object-contain rounded-lg border border-gray-100 bg-white p-0.5"
+                                  className="object-cover rounded-lg border border-gray-100 bg-white "
                                 />
                               </div>
                             ) : (
@@ -509,8 +987,22 @@ const ShoppingBestieComponent = () => {
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-gray-600">{brand.category}</td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{brand.subCategory}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {getBrandCategoryNames(brand).map((cat) => (
+                                <span key={cat} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{cat}</span>
+                              ))}
+                              {getBrandCategoryNames(brand).length === 0 && <span className="text-xs text-gray-300">—</span>}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {getBrandSubCategoryNames(brand).map((sub) => (
+                                <span key={sub} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">{sub}</span>
+                              ))}
+                              {getBrandSubCategoryNames(brand).length === 0 && <span className="text-xs text-gray-300">—</span>}
+                            </div>
+                          </td>
                           <td className="px-4 py-3 text-center">
                             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
                               👆 {brand.clicks ?? 0}
@@ -600,14 +1092,14 @@ const ShoppingBestieComponent = () => {
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{idx + 1}</span>
                             {b.logo ? (
                               <div className="relative h-7 w-12 shrink-0">
-                                <Image src={b.logo} alt={b.name} fill className="object-contain rounded" />
+                                <Image src={b.logo} alt={b.name} fill className="object-cover rounded" />
                               </div>
                             ) : (
                               <div className="flex h-7 w-12 shrink-0 items-center justify-center rounded bg-gray-100 text-base">🛍️</div>
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="truncate text-sm font-semibold text-gray-800">{b.name}</p>
-                              <p className="text-xs text-gray-400">{b.category}</p>
+                              <p className="text-xs text-gray-400">{getBrandCategoryNames(b as any).join(", ") || "—"}</p>
                             </div>
                             <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{(b as any).clicks ?? 0} clicks</span>
                           </div>
@@ -625,7 +1117,7 @@ const ShoppingBestieComponent = () => {
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-600">{idx + 1}</span>
                             {b.logo ? (
                               <div className="relative h-7 w-12 shrink-0">
-                                <Image src={b.logo} alt={b.name} fill className="object-contain rounded" />
+                                <Image src={b.logo} alt={b.name} fill className="object-cover rounded" />
                               </div>
                             ) : (
                               <div className="flex h-7 w-12 shrink-0 items-center justify-center rounded bg-gray-100 text-base">🛍️</div>
@@ -651,7 +1143,7 @@ const ShoppingBestieComponent = () => {
                         return (
                           <div key={cat._id}>
                             <div className="mb-1 flex items-center justify-between text-sm">
-                              <span className="font-medium text-gray-700">{cat._id || "Uncategorised"}</span>
+                              <span className="font-medium text-gray-700">{cat.name || "Uncategorised"}</span>
                               <div className="flex items-center gap-3 text-xs text-gray-500">
                                 <span>{cat.count} brand{cat.count !== 1 ? "s" : ""}</span>
                                 <span className="font-bold text-primary">{cat.totalClicks} clicks</span>
@@ -830,8 +1322,65 @@ const ShoppingBestieComponent = () => {
         onClose={() => setReviewsModal((s) => ({ ...s, open: false }))}
         brandId={reviewsModal.brandId}
         brandName={reviewsModal.brandName}
-        onReviewsChanged={() => { fetchBrands(); fetchAnalytics(); }}
+        onReviewsChanged={() => { fetchBrands(); fetchAnalytics(); fetchAllReviews(); }}
       />
+
+      {/* ── Lightbox Modal ── */}
+      {lightbox && (
+        <div 
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/95 backdrop-blur-md"
+          onClick={() => setLightbox(null)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEndHandler}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 rounded-full h-10 w-10 flex items-center justify-center transition-all z-50 text-xl font-bold"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox(null);
+            }}
+          >
+            ✕
+          </button>
+          
+          {lightbox.currentIndex > 0 && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 rounded-full h-12 w-12 flex items-center justify-center transition-all z-50 text-3xl pb-1"
+              onClick={handlePrevLightbox}
+            >
+              ‹
+            </button>
+          )}
+
+          <div
+            className="relative w-full h-full max-w-6xl max-h-[95vh] flex items-center justify-center p-4 lg:p-12"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CldImage 
+              width="1200"
+              height="1200"
+              src={lightbox.images[lightbox.currentIndex]} 
+              alt={`Review attachment ${lightbox.currentIndex + 1}`} 
+              className="max-w-full max-h-full object-contain select-none drop-shadow-2xl rounded-sm"
+              preserveTransformations
+            />
+          </div>
+
+          {lightbox.currentIndex < lightbox.images.length - 1 && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 rounded-full h-12 w-12 flex items-center justify-center transition-all z-50 text-3xl pb-1"
+              onClick={handleNextLightbox}
+            >
+              ›
+            </button>
+          )}
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white bg-white/10 px-4 py-1.5 rounded-full text-sm font-semibold z-50 tracking-widest backdrop-blur-sm">
+            {lightbox.currentIndex + 1} / {lightbox.images.length}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

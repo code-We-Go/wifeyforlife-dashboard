@@ -1,0 +1,126 @@
+[{
+  "_id": {
+    "$oid": "69a4b5e9112e210ee1b2ba6b"
+  },
+  "name": "Dresses",
+  "slug": "dresses",
+  "categoryId": {
+    "$oid": "69a4b5d9112e210ee1b2ba67"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-01T21:55:53.365Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-01T21:55:53.365Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69aeb028e7aab7bba59f1c25"
+  },
+  "name": "Kitchen Tools",
+  "slug": "kitchen-tools",
+  "categoryId": {
+    "$oid": "69aeafe460012efbe616a4cb"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-09T11:34:00.796Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-10T21:28:14.206Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69aec0484de59d349b932d6e"
+  },
+  "name": "Pijamas",
+  "slug": "pijamas",
+  "categoryId": {
+    "$oid": "69a4b5d9112e210ee1b2ba67"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-09T12:42:48.783Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-09T12:42:48.783Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69b0353f30309a3b6190caa6"
+  },
+  "name": "Bed Sheets",
+  "slug": "bed-sheets",
+  "categoryId": {
+    "$oid": "69b0352c5586f46bc004d42a"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-10T15:14:07.538Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-10T15:14:07.538Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69b08d1dd553ebf1f60a151d"
+  },
+  "name": "Lingerie",
+  "slug": "lingerie",
+  "categoryId": {
+    "$oid": "69a4b5d9112e210ee1b2ba67"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-10T21:29:01.460Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-10T21:29:01.460Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69b08d300b8ca8d4713e785e"
+  },
+  "name": "Bags",
+  "slug": "bags",
+  "categoryId": {
+    "$oid": "69a4b5d9112e210ee1b2ba67"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-10T21:29:20.030Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-10T21:29:20.030Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69b08d3da9e260561cb12efd"
+  },
+  "name": "Shoes",
+  "slug": "shoes",
+  "categoryId": {
+    "$oid": "69a4b5d9112e210ee1b2ba67"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-03-10T21:29:33.717Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-10T21:29:33.717Z"
+  },
+  "__v": 0
+}]

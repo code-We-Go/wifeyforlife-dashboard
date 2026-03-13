@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { CldImage, CldUploadWidget } from "next-cloudinary";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,7 @@ interface Review {
   resolvedUser?: VoterUser | null;
   rating: number;
   comment?: string;
+  images?: string[];
   helpful: VoterUser[] | number;
   notHelpful: VoterUser[] | number;
   createdAt: string;
@@ -93,6 +95,7 @@ const BrandReviewsModal = ({
   const [newName, setNewName] = useState("");
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
+  const [newImages, setNewImages] = useState<string[]>([]);
   const [addLoading, setAddLoading] = useState(false);
 
   // Edit state
@@ -100,10 +103,54 @@ const BrandReviewsModal = ({
   const [editName, setEditName] = useState("");
   const [editRating, setEditRating] = useState(0);
   const [editComment, setEditComment] = useState("");
+  const [editImages, setEditImages] = useState<string[]>([]);
   const [editLoading, setEditLoading] = useState(false);
 
   // Voter popover: { reviewId, type }
   const [voterPopover, setVoterPopover] = useState<{ reviewId: string; type: "helpful" | "notHelpful" } | null>(null);
+
+  // Lightbox state
+  const [lightbox, setLightbox] = useState<{ images: string[], currentIndex: number } | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEndHandler = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe && lightbox && lightbox.currentIndex < lightbox.images.length - 1) {
+      setLightbox({ ...lightbox, currentIndex: lightbox.currentIndex + 1 });
+    }
+    if (isRightSwipe && lightbox && lightbox.currentIndex > 0) {
+      setLightbox({ ...lightbox, currentIndex: lightbox.currentIndex - 1 });
+    }
+  };
+
+  const handleNextLightbox = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lightbox && lightbox.currentIndex < lightbox.images.length - 1) {
+      setLightbox({...lightbox, currentIndex: lightbox.currentIndex + 1});
+    }
+  };
+
+  const handlePrevLightbox = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lightbox && lightbox.currentIndex > 0) {
+      setLightbox({...lightbox, currentIndex: lightbox.currentIndex - 1});
+    }
+  };
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -145,10 +192,12 @@ const BrandReviewsModal = ({
         userName: newName,
         rating: newRating,
         comment: newComment,
+        images: newImages,
       });
       setNewName("");
       setNewRating(0);
       setNewComment("");
+      setNewImages([]);
       setAddMode(false);
       await fetchReviews();
       onReviewsChanged?.();
@@ -166,6 +215,7 @@ const BrandReviewsModal = ({
     setEditName(r.userName);
     setEditRating(r.rating);
     setEditComment(r.comment || "");
+    setEditImages(r.images || []);
     setAddMode(false);
     setError("");
   };
@@ -183,6 +233,7 @@ const BrandReviewsModal = ({
         userName: editName,
         rating: editRating,
         comment: editComment,
+        images: editImages,
       });
       setEditId(null);
       await fetchReviews();
@@ -224,7 +275,7 @@ const BrandReviewsModal = ({
           <div className="flex items-center gap-3">
             {!addMode && editId === null && (
               <button
-                onClick={() => { setAddMode(true); setEditId(null); setError(""); }}
+                onClick={() => { setAddMode(true); setEditId(null); setError(""); setNewImages([]); }}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/30 transition-colors"
               >
                 + Add Review
@@ -280,6 +331,40 @@ const BrandReviewsModal = ({
                   placeholder="Share thoughts about this brand…"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Images</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {newImages.map((img, idx) => (
+                    <div key={idx} className="relative h-16 w-16 group rounded overflow-hidden border border-gray-200">
+                      <CldImage width="100" height="100" src={img} alt="Review Image" className="object-cover w-full h-full" />
+                      <button
+                        type="button"
+                        onClick={() => setNewImages(prev => prev.filter((_, i) => i !== idx))}
+                        className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-bold transition-opacity"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <div className="h-16 w-16 border-2 border-dashed border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors">
+                    <CldUploadWidget
+                      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "unsigned_preset"}
+                      onSuccess={(result: any) => {
+                        if (result.info && result.info.secure_url) {
+                          setNewImages((prev) => [...prev, result.info.secure_url]);
+                        }
+                      }}
+                    >
+                      {({ open }) => (
+                        <button type="button" onClick={() => open()} className="h-full w-full flex items-center justify-center text-gray-400 font-bold text-xl pb-1" title="Upload Image">
+                          +
+                        </button>
+                      )}
+                    </CldUploadWidget>
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-2 justify-end">
@@ -354,6 +439,40 @@ const BrandReviewsModal = ({
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Images</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {editImages.map((img, idx) => (
+                          <div key={idx} className="relative h-16 w-16 group rounded overflow-hidden border border-gray-200">
+                            <CldImage width="100" height="100" src={img} alt="Review Image" className="object-cover w-full h-full" />
+                            <button
+                              type="button"
+                              onClick={() => setEditImages(prev => prev.filter((_, i) => i !== idx))}
+                              className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-bold transition-opacity"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <div className="h-16 w-16 border-2 border-dashed border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors">
+                          <CldUploadWidget
+                            uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "unsigned_preset"}
+                            onSuccess={(result: any) => {
+                              if (result.info && result.info.secure_url) {
+                                setEditImages((prev) => [...prev, result.info.secure_url]);
+                              }
+                            }}
+                          >
+                            {({ open }) => (
+                              <button type="button" onClick={() => open()} className="h-full w-full flex items-center justify-center text-gray-400 font-bold text-xl pb-1" title="Upload Image">
+                                +
+                              </button>
+                            )}
+                          </CldUploadWidget>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex gap-2 justify-end">
                       <button
                         type="button"
@@ -424,9 +543,25 @@ const BrandReviewsModal = ({
 
                           {/* Comment */}
                           {review.comment && (
-                            <p className="mt-2.5 text-sm text-gray-600 leading-relaxed pl-12">
+                            <p className="mt-2.5 text-sm text-gray-600 leading-relaxed pl-12 flex-wrap break-words">
                               {review.comment}
                             </p>
+                          )}
+
+                          {/* Images */}
+                          {review.images && review.images.length > 0 && (
+                            <div className="mt-3 pl-12 flex gap-2 flex-wrap">
+                              {review.images.map((img, idx) => (
+                                <button 
+                                  key={idx} 
+                                  type="button"
+                                  onClick={() => setLightbox({ images: review.images!, currentIndex: idx })} 
+                                  className="block h-20 w-20 overflow-hidden rounded-lg border border-gray-200 hover:ring-2 hover:ring-primary hover:opacity-90 transition-all focus:outline-none"
+                                >
+                                  <CldImage width="150" height="150" src={img} alt={`Review Image ${idx + 1}`} className="object-cover h-full w-full" />
+                                </button>
+                              ))}
+                            </div>
                           )}
 
                           {/* Helpful / Not Helpful — clickable voter popovers */}
@@ -505,6 +640,64 @@ const BrandReviewsModal = ({
           </div>
         )}
       </div>
+
+      {/* ── Lightbox Modal ── */}
+      {lightbox && (
+        <div 
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/95 backdrop-blur-md"
+          onClick={() => setLightbox(null)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEndHandler}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 rounded-full h-10 w-10 flex items-center justify-center transition-all z-50 text-xl font-bold"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox(null);
+            }}
+          >
+            ✕
+          </button>
+          
+          {lightbox.currentIndex > 0 && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 rounded-full h-12 w-12 flex items-center justify-center transition-all z-50 text-3xl pb-1"
+              onClick={handlePrevLightbox}
+            >
+              ‹
+            </button>
+          )}
+
+          <div
+            className="relative w-full h-full max-w-6xl max-h-[95vh] flex items-center justify-center p-4 lg:p-12"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* The image itself */}
+            <CldImage 
+              width="1200"
+              height="1200"
+              src={lightbox.images[lightbox.currentIndex]} 
+              alt={`Review attachment ${lightbox.currentIndex + 1}`} 
+              className="max-w-full max-h-full object-contain select-none drop-shadow-2xl rounded-sm"
+              preserveTransformations
+            />
+          </div>
+
+          {lightbox.currentIndex < lightbox.images.length - 1 && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 rounded-full h-12 w-12 flex items-center justify-center transition-all z-50 text-3xl pb-1"
+              onClick={handleNextLightbox}
+            >
+              ›
+            </button>
+          )}
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white bg-white/10 px-4 py-1.5 rounded-full text-sm font-semibold z-50 tracking-widest backdrop-blur-sm">
+            {lightbox.currentIndex + 1} / {lightbox.images.length}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
