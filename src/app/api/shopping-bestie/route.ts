@@ -202,7 +202,7 @@ export async function POST(request: Request) {
   await loadDB();
   try {
     const body  = await request.json();
-    const brand = await ShoppingBrandModel.create(body);
+    const brand = await ShoppingBrandModel.create({...body, approved: true});
     const populated = await brand.populate(populateSubCats as any);
     return NextResponse.json({ data: populated }, { status: 201 });
   } catch (error: any) {
