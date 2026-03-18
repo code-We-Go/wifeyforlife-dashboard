@@ -401,7 +401,7 @@ const ShoppingBestieModal = ({
               value={form.description}
               onChange={handleChange}
               disabled={isView}
-              required
+              
               rows={3}
               placeholder="Tell brides what this brand offers..."
               className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:bg-gray-50 disabled:text-gray-500 resize-none"

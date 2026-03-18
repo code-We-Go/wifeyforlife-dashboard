@@ -37,7 +37,7 @@ export interface IShoppingBrand extends Document {
   logo?: string;
   /** ObjectId refs to ShoppingSubcategory — parent category is derived via populate */
   subCategories: Types.ObjectId[];
-  description: string;
+  description?: string;
   link: string;
   tags: string[];
   clicks: number;
@@ -62,7 +62,7 @@ const ShoppingBrandSchema = new Schema<IShoppingBrand>(
       required: true,
       default: [],
     },
-    description: { type: String, required: true, trim: true },
+    description: { type: String, required: false, trim: true },
     link: { type: String, required: true, trim: true },
     tags: { type: [String], default: [] },
     clicks: { type: Number, default: 0 },
