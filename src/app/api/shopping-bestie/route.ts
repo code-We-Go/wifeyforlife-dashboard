@@ -108,8 +108,14 @@ export async function GET(request: Request) {
         { $unwind: { path: "$catDoc", preserveNullAndEmptyArrays: false } },
         {
           $group: {
-            _id: { catId: "$catDoc._id", catName: "$catDoc.name" },
-            count: { $addToSet: "$_id" },
+            _id: { brandId: "$_id", catId: "$catDoc._id", catName: "$catDoc.name" },
+            clicks: { $first: "$clicks" },
+          },
+        },
+        {
+          $group: {
+            _id: { catId: "$_id.catId", catName: "$_id.catName" },
+            count: { $sum: 1 },
             totalClicks: { $sum: "$clicks" },
           },
         },
@@ -117,11 +123,42 @@ export async function GET(request: Request) {
           $project: {
             _id: "$_id.catId",
             name: "$_id.catName",
-            count: { $size: "$count" },
+            count: 1,
             totalClicks: 1,
           },
         },
         { $sort: { totalClicks: -1 } },
+      ]);
+
+      // ── Subcategory stats: join directly to subcategories ──
+      const subcategoryStats = await ShoppingBrandModel.aggregate([
+        { $unwind: { path: "$subCategories", preserveNullAndEmptyArrays: false } },
+        {
+          $lookup: {
+            from: "shoppingsubcategories",
+            localField: "subCategories",
+            foreignField: "_id",
+            as: "subCatDoc",
+          },
+        },
+        { $unwind: { path: "$subCatDoc", preserveNullAndEmptyArrays: false } },
+        {
+          $group: {
+            _id: { subCatId: "$subCatDoc._id", subCatName: "$subCatDoc.name" },
+            count: { $sum: 1 },
+            totalClicks: { $sum: "$clicks" },
+          },
+        },
+        {
+          $project: {
+            _id: "$_id.subCatId",
+            name: "$_id.subCatName",
+            count: 1,
+            totalClicks: 1,
+          },
+        },
+        { $sort: { totalClicks: -1 } },
+        { $limit: 10 },
       ]);
 
       // Populate subCategories in agg results via Mongoose
@@ -140,6 +177,7 @@ export async function GET(request: Request) {
           topByClicks,
           topByRating,
           categoryStats,
+          subcategoryStats,
         },
       }, { status: 200 });
     }

@@ -23,6 +23,7 @@ interface AnalyticsData {
   topByClicks: Brand[];
   topByRating: Brand[];
   categoryStats: { _id: string; name: string; count: number; totalClicks: number }[];
+  subcategoryStats: { _id: string; name: string; count: number; totalClicks: number }[];
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -767,12 +768,18 @@ const ShoppingBestieComponent = () => {
                     </div>
 
                     {/* Card actions */}
-                    <div className="grid grid-cols-2 border-t border-gray-100">
+                    <div className="grid grid-cols-3 border-t border-gray-100">
                       <button
                         onClick={() => handleApproveBrand((brand as any)._id)}
                         className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-green-600 bg-green-50 hover:bg-green-100 transition-colors"
                       >
                         ✓ Approve
+                      </button>
+                      <button
+                        onClick={() => openBrandModal("edit", brand)}
+                        className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors border-x border-gray-100"
+                      >
+                        ✎ Edit
                       </button>
                       <button
                         onClick={() => handleRejectBrand((brand as any)._id, brand.name)}
@@ -1147,6 +1154,31 @@ const ShoppingBestieComponent = () => {
                               <div className="flex items-center gap-3 text-xs text-gray-500">
                                 <span>{cat.count} brand{cat.count !== 1 ? "s" : ""}</span>
                                 <span className="font-bold text-primary">{cat.totalClicks} clicks</span>
+                              </div>
+                            </div>
+                            <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+                              <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <h3 className="mb-4 text-sm font-bold text-gray-700 uppercase tracking-widest">🏷️ Clicks by Subcategory</h3>
+                  {(!analytics.subcategoryStats || analytics.subcategoryStats.length === 0) ? <p className="text-sm text-gray-400">No data yet</p> : (
+                    <div className="space-y-3">
+                      {analytics.subcategoryStats.map((sub) => {
+                        const pct = analytics.totalClicks > 0 ? Math.round((sub.totalClicks / analytics.totalClicks) * 100) : 0;
+                        return (
+                          <div key={sub._id}>
+                            <div className="mb-1 flex items-center justify-between text-sm">
+                              <span className="font-medium text-gray-700">{sub.name || "Uncategorised"}</span>
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <span>{sub.count} brand{sub.count !== 1 ? "s" : ""}</span>
+                                <span className="font-bold text-primary">{sub.totalClicks} clicks</span>
                               </div>
                             </div>
                             <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
