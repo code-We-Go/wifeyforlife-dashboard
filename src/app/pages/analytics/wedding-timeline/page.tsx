@@ -186,7 +186,7 @@ const WeddingTimelineAnalyticsPage = () => {
     XLSX.writeFile(workbook, "wedding-timeline-analytics.xlsx");
   };
 
-  const calculateStats = () => {
+  const calculateStats = useCallback(() => {
     // Calculate stats from client-side allTimelines to ensure consistency
     const totalRecords = allTimelines.length;
     const subscribedCount = allTimelines.filter(t => t.subscription?.hasSubscription).length;
@@ -208,9 +208,9 @@ const WeddingTimelineAnalyticsPage = () => {
       timelinesExported,
       exportRate
     };
-  };
+  }, [allTimelines, apiStats]);
 
-  const stats = calculateStats();
+  const stats = React.useMemo(() => calculateStats(), [calculateStats]);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -706,10 +706,9 @@ const WeddingTimelineAnalyticsPage = () => {
           </div>
         )}
         
-        {/* Timeline Export List */}
         <div className="mt-8">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-gray-800">Timeline Export Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">Top 50 Timeline Exports</h3>
             <button
               onClick={() => setExportSortOrder(exportSortOrder === "desc" ? "asc" : "desc")}
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-md hover:opacity-90 transition-opacity"
@@ -737,6 +736,7 @@ const WeddingTimelineAnalyticsPage = () => {
                   ? bExports - aExports 
                   : aExports - bExports;
               })
+              .slice(0, 50)
               .map((timeline, idx) => (
                 <motion.div
                   key={timeline._id}

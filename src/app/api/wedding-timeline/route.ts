@@ -26,31 +26,56 @@ export async function GET(request: Request) {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Populate user data for each timeline
-    const timelinesWithUserData = await Promise.all(
-      timelines.map(async (timeline) => {
+    // 1. Extract unique user IDs
+    const userIds = [...new Set(timelines.map(t => t.userId).filter(Boolean))];
+
+    // 2. Fetch users in bulk
+    const users = await UserModel.find(
+      { _id: { $in: userIds } },
+      "firstName lastName email imageURL subscription"
+    ).lean();
+
+    // Create user map for fast lookup
+    const userMap = new Map();
+    const subscriptionIds = new Set();
+    users.forEach((user: any) => {
+      userMap.set(user._id.toString(), user);
+      if (user.subscription) {
+        subscriptionIds.add(user.subscription.toString());
+      }
+    });
+
+    // 3. Fetch subscriptions in bulk
+    const subscriptions = await subscriptionsModel.find(
+      { _id: { $in: Array.from(subscriptionIds) } }
+    ).lean();
+
+    // Create subscription map for fast lookup
+    const subscriptionMap = new Map();
+    subscriptions.forEach((sub: any) => {
+      subscriptionMap.set(sub._id.toString(), sub);
+    });
+
+    // 4. Populate user data for each timeline
+    const timelinesWithUserData = timelines.map((timeline: any) => {
         let userData = null;
         let subscriptionData = null;
 
         if (timeline.userId) {
-          const user = await UserModel.findById(timeline.userId)
-            .select("firstName lastName email imageURL subscription")
-            .lean();
-
+          const user = userMap.get(timeline.userId.toString());
           if (user) {
             userData = {
-              firstName: (user as any).firstName || "",
-              lastName: (user as any).lastName || "",
-              email: (user as any).email || "",
-              imageURL: (user as any).imageURL || "",
+              firstName: user.firstName || "",
+              lastName: user.lastName || "",
+              email: user.email || "",
+              imageURL: user.imageURL || "",
             };
 
-            // Check if user has an active subscription
-            if ((user as any).subscription) {
-              const subscription = await subscriptionsModel.findById((user as any).subscription).lean();
+            if (user.subscription) {
+              const subscription = subscriptionMap.get(user.subscription.toString());
               subscriptionData = {
-                hasSubscription: subscription ? (subscription as any).subscribed : false,
-                expiryDate: (subscription as any)?.expiryDate || null,
+                hasSubscription: subscription ? subscription.subscribed : false,
+                expiryDate: subscription?.expiryDate || null,
               };
             } else {
               subscriptionData = {
@@ -66,8 +91,7 @@ export async function GET(request: Request) {
           user: userData,
           subscription: subscriptionData,
         };
-      })
-    );
+    });
 
     // Filter by search term if provided
     let filteredTimelines = timelinesWithUserData;
@@ -120,8 +144,8 @@ export async function GET(request: Request) {
       },
       stats: {
         subscribedUsersCount,
-        avgEaseOfUse: parseFloat(avgEaseOfUse.toFixed(1)),
-        avgSatisfaction: parseFloat(avgSatisfaction.toFixed(1)),
+        avgEaseOfUse: parseFloat(avgEaseOfUse.toFixed(2)),
+        avgSatisfaction: parseFloat(avgSatisfaction.toFixed(2)),
       },
     });
   } catch (error: any) {

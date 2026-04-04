@@ -410,6 +410,7 @@ const ProductModal = ({
                       attributeName: "",
                       attributes: [],
                       images: [],
+                      mobImages: [],
                       price: 0,
                     },
                   ])

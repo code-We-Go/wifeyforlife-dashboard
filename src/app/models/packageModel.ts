@@ -20,6 +20,8 @@ const PackageSchema = new Schema<Ipackage>(
     name: { type: String, required: true },
     imgUrl: { type: String, required: true },
     images: { type: [String], required: false, default: [] },
+    mobMainImage: { type: String, required: false },
+    mobImages: { type: [String], required: false, default: [] },
     price: { type: Number, required: true, min: 0 },
     cost: { type: Number, required: false },
     duration: { type: String, required: true },

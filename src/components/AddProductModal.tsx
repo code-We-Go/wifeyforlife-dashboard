@@ -86,6 +86,7 @@ const AddProductModal = ({
             price: 0,
             stock: 0,
             images: [],
+            mobImages: [],
             attributes: [
               {
                 name: "",
@@ -186,6 +187,7 @@ const AddProductModal = ({
         attributeName: "",
         attributes: [],
         images: [],
+        mobImages: [],
         price: 0,
       },
     ]);

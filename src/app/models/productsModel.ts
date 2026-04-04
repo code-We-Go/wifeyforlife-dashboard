@@ -54,6 +54,11 @@ const VariantSchema = new Schema<Variant>({
       message: "At least one image is required",
     },
   },
+  mobImages: {
+    type: [mediaSchema],
+    required: false,
+    default: [],
+  },
 });
 
 // Define the price schema

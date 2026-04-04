@@ -18,6 +18,8 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     name: "",
     imgUrl: "",
     images: [],
+    mobMainImage: "",
+    mobImages: [],
     price: 0,
     duration: "",
     items: [],
@@ -73,6 +75,8 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         name: packageItem.name,
         imgUrl: packageItem.imgUrl,
         images: packageItem.images || [],
+        mobMainImage: packageItem.mobMainImage || "",
+        mobImages: packageItem.mobImages || [],
         price: packageItem.price,
         duration: packageItem.duration,
         items: formattedItems,
@@ -85,6 +89,8 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         name: "",
         imgUrl: "",
         images: [],
+        mobMainImage: "",
+        mobImages: [],
         price: 0,
         duration: "",
         items: [],
@@ -321,6 +327,22 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     }));
   };
 
+  const addMobImage = (url: string) => {
+    if (url.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        mobImages: [...(prev.mobImages || []), url.trim()]
+      }));
+    }
+  };
+
+  const removeMobImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      mobImages: (prev.mobImages || []).filter((_, i) => i !== index)
+    }));
+  };
+
   // Support card handlers
   const addSupportCard = () => {
     if (newSupportCard.title.trim() && newSupportCard.imagePath.trim()) {
@@ -488,6 +510,34 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
           <div>
             <label className="block text-sm font-medium text-primary mb-1">
+              Mobile Main Image
+            </label>
+            {formData.mobMainImage && (
+              <div className="mb-2">
+                <img
+                  src={formData.mobMainImage}
+                  alt="Mobile Package"
+                  className="w-32 h-32 object-cover rounded border border-primary/50"
+                />
+              </div>
+            )}
+            <UploadButton
+              endpoint="mediaUploader"
+              onClientUploadComplete={(res) => {
+                if (res && res.length > 0) {
+                  setFormData(prev => ({ ...prev, mobMainImage: res[0].url }));
+                }
+              }}
+              onUploadError={(error: Error) => {
+                console.error("Upload error:", error);
+                alert(`ERROR! ${error.message}`);
+              }}
+              className="mt-2 bg-primary w-fit rounded-md px-2 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1">
               Additional Images
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -516,6 +566,46 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                   // Add all uploaded images to the images array
                   res.forEach(file => {
                     addImage(file.url);
+                  });
+                }
+              }}
+              onUploadError={(error: Error) => {
+                console.error("Upload error:", error);
+                alert(`ERROR! ${error.message}`);
+              }}
+              className="mt-2 bg-primary w-fit rounded-md px-2 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1">
+              Additional Mobile Images
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {(formData.mobImages || []).map((image, index) => (
+                <div key={index} className="relative w-24 h-24 border border-primary/50 rounded overflow-hidden">
+                  <img
+                    src={image}
+                    alt={`Mobile Package Image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeMobImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    title="Remove Image"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <UploadButton
+              endpoint="mediaUploader"
+              onClientUploadComplete={(res) => {
+                if (res && res.length > 0) {
+                  res.forEach(file => {
+                    addMobImage(file.url);
                   });
                 }
               }}

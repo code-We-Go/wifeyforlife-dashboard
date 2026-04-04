@@ -23,6 +23,9 @@ const ProductVariant = ({
   onDeleteVariant: (index: number) => void;
 }) => {
   const [imagesUrl, setImagesUrl] = useState<media[]>(variant.images || []);
+  const [mobImagesUrl, setMobImagesUrl] = useState<media[]>(
+    variant.mobImages || [],
+  );
   const [attributes, setAttributes] = useState<attribute[]>(
     (variant.attributes || []).map((a) => ({
       ...a,
@@ -38,19 +41,31 @@ const ProductVariant = ({
   }, [imagesUrl]);
 
   useEffect(() => {
+    updateVariant(index, "mobImages", mobImagesUrl);
+  }, [mobImagesUrl]);
+
+  useEffect(() => {
     // attributes are pushed on change handlers directly to avoid stale updates
   }, [attributes]);
 
   // Handle media deletion
-  async function deleteProductImage(url: string) {
+  async function deleteProductImage(url: string, isMob: boolean = false) {
     try {
       const res = await axios.delete("/api/uploadthing", { data: { url } });
       if (res.status === 200) {
-        const imagesAfterDelete = imagesUrl.filter(
-          (media) => media.url !== url,
-        );
-        setImagesUrl(imagesAfterDelete);
-        updateVariant(index, "images", imagesAfterDelete);
+        if (isMob) {
+          const imagesAfterDelete = mobImagesUrl.filter(
+            (media) => media.url !== url,
+          );
+          setMobImagesUrl(imagesAfterDelete);
+          updateVariant(index, "mobImages", imagesAfterDelete);
+        } else {
+          const imagesAfterDelete = imagesUrl.filter(
+            (media) => media.url !== url,
+          );
+          setImagesUrl(imagesAfterDelete);
+          updateVariant(index, "images", imagesAfterDelete);
+        }
       }
     } catch (err) {
       console.error("Error deleting media:", err);
@@ -85,26 +100,34 @@ const ProductVariant = ({
   };
 
   // Handle drag-and-drop for media
-  const moveMedia = (fromIndex: number, toIndex: number) => {
-    const updatedImages = [...imagesUrl];
-    const [movedMedia] = updatedImages.splice(fromIndex, 1);
-    updatedImages.splice(toIndex, 0, movedMedia);
-    setImagesUrl(updatedImages);
-    updateVariant(index, "images", updatedImages);
+  const moveMedia = (fromIndex: number, toIndex: number, isMob: boolean = false) => {
+    if (isMob) {
+      const updatedImages = [...mobImagesUrl];
+      const [movedMedia] = updatedImages.splice(fromIndex, 1);
+      updatedImages.splice(toIndex, 0, movedMedia);
+      setMobImagesUrl(updatedImages);
+      updateVariant(index, "mobImages", updatedImages);
+    } else {
+      const updatedImages = [...imagesUrl];
+      const [movedMedia] = updatedImages.splice(fromIndex, 1);
+      updatedImages.splice(toIndex, 0, movedMedia);
+      setImagesUrl(updatedImages);
+      updateVariant(index, "images", updatedImages);
+    }
   };
 
   // Drag-and-drop media item
-  const MediaItem = ({ media, index }: { media: media; index: number }) => {
+  const MediaItem = ({ media, index, isMob = false }: { media: media; index: number; isMob?: boolean }) => {
     const [, drag] = useDrag({
-      type: ItemTypes.MEDIA,
+      type: isMob ? "mobMedia" : ItemTypes.MEDIA,
       item: { index },
     });
 
     const [, drop] = useDrop({
-      accept: ItemTypes.MEDIA,
+      accept: isMob ? "mobMedia" : ItemTypes.MEDIA,
       hover: (item: { index: number }) => {
         if (item.index !== index) {
-          moveMedia(item.index, index);
+          moveMedia(item.index, index, isMob);
           item.index = index;
         }
       },
@@ -119,7 +142,7 @@ const ProductVariant = ({
         className="relative h-34 w-28 cursor-move"
       >
         <span
-          onClick={() => deleteProductImage(media.url)}
+          onClick={() => deleteProductImage(media.url, isMob)}
           className="absolute left-2 top-2 z-30 flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm bg-red-500 p-2 text-center text-white"
         >
           x
@@ -277,7 +300,7 @@ const ProductVariant = ({
       </div>
 
       {/* Media Section */}
-      <div>
+      <div className="mb-4">
         <label className="block font-semibold">Media:</label>
         <div className="flex gap-2">
           <div className="scrollbar-hidden flex max-w-[90%] flex-nowrap gap-2 overflow-x-scroll">
@@ -288,6 +311,22 @@ const ProductVariant = ({
           <UploadProductsImagesButton
             imagesUrl={imagesUrl}
             setImagesUrl={setImagesUrl}
+          />
+        </div>
+      </div>
+
+      {/* Mobile Media Section */}
+      <div>
+        <label className="block font-semibold">Mobile Media:</label>
+        <div className="flex gap-2">
+          <div className="scrollbar-hidden flex max-w-[90%] flex-nowrap gap-2 overflow-x-scroll">
+            {mobImagesUrl.map((media, i) => (
+              <MediaItem key={i} media={media} index={i} isMob />
+            ))}
+          </div>
+          <UploadProductsImagesButton
+            imagesUrl={mobImagesUrl}
+            setImagesUrl={setMobImagesUrl}
           />
         </div>
       </div>

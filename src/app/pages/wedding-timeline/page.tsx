@@ -200,9 +200,41 @@ const WeddingTimelinePage = () => {
     return feeling.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
   };
 
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const showRange = 2;
+
+    // Add current and surrounding pages
+    for (
+      let i = Math.max(1, currentPage - showRange);
+      i <= Math.min(totalPages, currentPage + showRange);
+      i++
+    ) {
+      pages.push(i);
+    }
+
+    // Since we just filled it with numbers, we can safely check the first and last
+    const firstInRange = pages[0] as number;
+    const lastInRange = pages[pages.length - 1] as number;
+
+    // Add beginning if not in range
+    if (firstInRange > 1) {
+      if (firstInRange > 2) pages.unshift("...");
+      pages.unshift(1);
+    }
+
+    // Add end if not in range
+    if (lastInRange < totalPages) {
+      if (lastInRange < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
   return (
     <DefaultLayout>
-      <div className="mx-auto max-w-7xl p-4">
+      <div className=" p-4">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -465,30 +497,46 @@ const WeddingTimelinePage = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-6 flex justify-center gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="rounded-lg bg-creamey px-4 py-2 text-primary disabled:opacity-50"
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3 pb-8">
+            <div className="flex gap-2">
+           
               <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`rounded-lg px-4 py-2 ${currentPage === page ? "bg-primary text-white" : "bg-creamey text-primary"}`}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center justify-center rounded-lg bg-creamey px-4 py-2.5 text-sm font-medium text-primary transition-all hover:bg-primary hover:text-white disabled:pointer-events-none disabled:opacity-40"
               >
-                {page}
+                Previous
               </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="rounded-lg bg-creamey px-4 py-2 text-primary disabled:opacity-50"
-            >
-              Next
-            </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {getPageNumbers().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => typeof page === "number" && setCurrentPage(page)}
+                  disabled={page === "..."}
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold transition-all ${
+                    currentPage === page
+                      ? "bg-primary text-white shadow-md shadow-primary/20"
+                      : page === "..."
+                      ? "cursor-default text-gray-400"
+                      : "bg-creamey text-primary hover:bg-primary hover:text-white"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center justify-center rounded-lg bg-creamey px-4 py-2.5 text-sm font-medium text-primary transition-all hover:bg-primary hover:text-white disabled:pointer-events-none disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -601,6 +649,7 @@ const WeddingTimelinePage = () => {
                       </select>
                     </div>
                     <div>
+                      
                       <label className="mb-1 block text-sm font-medium">Comment</label>
                       <textarea
                         value={formData.comment}
