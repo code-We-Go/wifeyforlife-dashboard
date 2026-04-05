@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ChartOne from "../Charts/ChartOne";
+import ChartVisits from "../Charts/ChartVisits";
 import ChartTwo from "../Charts/ChartTwo";
 import ChartSubscriptions from "../Charts/ChartSubscriptions";
 import ChatCard from "../Chat/ChatCard";
@@ -305,6 +306,7 @@ const ECommerce: React.FC = () => {
       <div className="mt-4 grid grid-cols-12 gap-4  md:gap-6  2xl:gap-7.5">
         <ChartSubscriptions />
         <ChartOne />
+        <ChartVisits />
         <ChartTwo />
         <ChartThree />
         {/* <MapOne /> */}

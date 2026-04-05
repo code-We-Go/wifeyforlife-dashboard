@@ -1,4 +1,4 @@
-import visitesModel from "@/app/models/visitsModel";
+ import visitesModel from "@/app/models/visitsModel";
 import { ConnectDB } from "@/config/db";
 import { NextResponse } from "next/server";
 
@@ -93,8 +93,39 @@ export async function GET(req: Request) {
         endOfPeriod.setHours(23, 59, 59, 999);
         break;
 
+      case "last12Months":
+        startOfPeriod = new Date(today.getFullYear(), today.getMonth() - 11, 1);
+        startOfPeriod.setHours(0, 0, 0, 0);
+        
+        endOfPeriod = new Date(today);
+        endOfPeriod.setHours(23, 59, 59, 999);
+        break;
+
+
       default:
         return NextResponse.json({ error: "Invalid duration" }, { status: 400 });
+    }
+
+    const isAggregate = url.searchParams.get("aggregate") === "true";
+
+    if (isAggregate) {
+      const data = await visitesModel.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startOfPeriod, $lte: endOfPeriod },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+      return NextResponse.json({ data }, { status: 200 });
     }
 
     // Query the database for records between the calculated start and end of the period
