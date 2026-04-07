@@ -16,6 +16,7 @@ const NotificationsPage = () => {
   const [link, setLink] = useState("");
   const [loading, setLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [lastResult, setLastResult] = useState<any | null>(null);
 
   useEffect(() => {
     if (targetType === "specific" && users.length === 0) {
@@ -58,6 +59,7 @@ const NotificationsPage = () => {
     }
 
     setLoading(true);
+    setLastResult(null);
     try {
       const payload = {
         userIds: targetType === "all" ? ["all"] : selectedUserIds,
@@ -68,8 +70,9 @@ const NotificationsPage = () => {
 
       const res = await axios.post("/api/notifications", payload);
       const data = res.data.data;
+      setLastResult(data);
       
-      toast.success(`Notifications sent successfully! (Success: ${data.successCount}, Failed: ${data.failureCount})`);
+      toast.success(`Notifications sent! Delivered: ${data.delivered}, Failed: ${data.failed}`);
       
       // Reset form
       setTitle("");
@@ -203,6 +206,53 @@ const NotificationsPage = () => {
               </button>
             </div>
           </form>
+
+          {lastResult && (
+            <div className="mt-8 rounded-xl border border-gray-100 bg-gray-50 p-6">
+              <h3 className="mb-4 text-lg font-bold text-gray-800">Expo Push Delivery Result</h3>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Tokens</p>
+                  <p className="text-xl font-bold text-primary">{lastResult.tokenCount}</p>
+                </div>
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Accepted</p>
+                  <p className="text-xl font-bold text-green-600">{lastResult.sendAccepted}</p>
+                </div>
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Rejected</p>
+                  <p className="text-xl font-bold text-red-500">{lastResult.sendRejected}</p>
+                </div>
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Delivered</p>
+                  <p className="text-xl font-bold text-green-700">{lastResult.delivered}</p>
+                </div>
+                <div className="rounded-lg bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Failed</p>
+                  <p className="text-xl font-bold text-red-700">{lastResult.failed}</p>
+                </div>
+              </div>
+
+              {lastResult.failures && lastResult.failures.length > 0 && (
+                <div className="mt-6">
+                  <p className="mb-2 text-sm font-semibold text-gray-700">Detailed Failures:</p>
+                  <div className="max-h-40 overflow-y-auto rounded-lg bg-white p-3 text-xs border border-gray-200">
+                    {lastResult.failures.map((f: any, i: number) => (
+                      <div key={i} className="mb-1 pb-1 border-b border-gray-50 last:border-0">
+                        <span className="font-mono text-gray-500">{f.ticketId}:</span> <span className="text-red-600">{f.error}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-400 font-mono break-all">
+                    Raw Result: {JSON.stringify(lastResult)}
+                  </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </DefaultLayout>
