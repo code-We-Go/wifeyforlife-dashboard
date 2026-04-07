@@ -79,14 +79,14 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 }
 
 /** Receipts are not always ready immediately; a short delay improves accuracy. */
-async function sleep(ms: number) {
+const sleep = async (ms: number) => {
   await new Promise((r) => setTimeout(r, ms));
-}
+};
 
-export async function sendAndTrackExpoPush(
+const sendAndTrackExpoPush = async (
   tokens: string[],
   payload: SendPayload
-): Promise<SendAndTrackResult> {
+): Promise<SendAndTrackResult> => {
   const uniqueTokens = [...new Set(tokens.map((t) => t.trim()))].filter(Boolean);
   const messageChunks = chunkArray(uniqueTokens, 100);
 
