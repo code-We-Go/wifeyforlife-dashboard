@@ -14,6 +14,8 @@ export interface IUser extends Document {
   lastName?:string;
   subscription:ISubscription;
     weddingDate?: Date;
+  pushToken?: string;
+  tags?: string[];
 
   // isSubscribed: boolean;
   createdAt: Date;
@@ -62,6 +64,15 @@ const UserSchema = new Schema<IUser>(
       default: "customer",
       required: false,
     },
+        pushToken: {
+      type: String,
+      required: false,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+
     // isSubscribed: {
     //   type: Boolean,
     //   default: false,
