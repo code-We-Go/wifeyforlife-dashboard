@@ -1,0 +1,205 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-4a5b-8c9d-d0e1f2g3h4i5",
+		"name": "Wifey Dashboard - Notifications API",
+		"description": "Postman collection for the Push Notifications API and Persistence system.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Admin Dashboard",
+			"item": [
+				{
+					"name": "List Notifications (History)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notifications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications"
+							]
+						},
+						"description": "Fetch a list of all sent notifications with computed seen/unseen counts."
+					},
+					"response": []
+				},
+				{
+					"name": "Send & Persist Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"all\"],\n  \"title\": \"Hello from API\",\n  \"message\": \"This is a test notification message\",\n  \"link\": \"https://yourapp.com/deals\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/notifications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications"
+							]
+						},
+						"description": "Sends push notifications via Expo and saves the record to the database."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/{{notification_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications",
+								"{{notification_id}}"
+							]
+						},
+						"description": "Fetch a single notification record with full recipient details (populated users)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Notification (ID in Query)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notifications?id={{notification_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{notification_id}}"
+								}
+							]
+						},
+						"description": "Delete a notification by ID using search parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Notification (ID in Path)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/{{notification_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications",
+								"{{notification_id}}"
+							]
+						},
+						"description": "Delete a notification record by path ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mobile Client",
+			"item": [
+				{
+					"name": "Mark Single Seen",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/notifications/{{notification_id}}/seen",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications",
+								"{{notification_id}}",
+								"seen"
+							]
+						},
+						"description": "Marks a specific notification as seen for a specific user."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All Seen",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/notifications/seen",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"notifications",
+								"seen"
+							]
+						},
+						"description": "Bulk marks all unseen notifications as seen for a specific user."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "notification_id",
+			"value": "651234..."
+		},
+		{
+			"key": "user_id",
+			"value": "654321..."
+		}
+	]
+}

@@ -1,5 +1,6 @@
 import { ConnectDB } from "@/config/db";
 import UserModel from "@/app/models/userModel";
+import NotificationModel from "@/app/models/notificationModel";
 import { NextResponse } from "next/server";
 
 const loadDB = async () => {
@@ -199,8 +200,42 @@ const sendAndTrackExpoPush = async (
     failed,
     failures,
   };
+};
+
+// ─── GET: Fetch notification history for dashboard ───────────────────────────
+export async function GET() {
+  try {
+    const notifications = await NotificationModel.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const mapped = notifications.map((n) => {
+      const total = n.recipients?.length ?? 0;
+      const seenCount = n.recipients?.filter((r: { seen: boolean }) => r.seen).length ?? 0;
+      return {
+        _id: n._id,
+        title: n.title,
+        body: n.body,
+        link: n.link,
+        targetType: n.targetType,
+        totalRecipients: total,
+        seenCount,
+        unseenCount: total - seenCount,
+        deliveryStats: n.deliveryStats,
+        createdAt: n.createdAt,
+      };
+    });
+
+    return successResponse({ notifications: mapped });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch notifications";
+    console.error("Error fetching notifications:", error);
+    return errorResponse(message);
+  }
 }
 
+// ─── POST: Send push + persist notification ──────────────────────────────────
 export async function POST(req: Request) {
   try {
     const data = await req.json();
@@ -219,11 +254,13 @@ export async function POST(req: Request) {
       return errorResponse("User selection is required", 400);
     }
 
+    const isAll = userIds.includes("all");
+
     let query: Record<string, unknown> = {
       pushToken: { $exists: true, $nin: [null, ""] },
     };
 
-    if (!userIds.includes("all")) {
+    if (!isAll) {
       query._id = { $in: userIds };
     }
 
@@ -247,15 +284,58 @@ export async function POST(req: Request) {
     const result = await sendAndTrackExpoPush(tokens, expoPayload);
     console.log("Expo push result:", JSON.stringify(result));
 
+    // Persist notification with recipients
+    const notification = await NotificationModel.create({
+      title,
+      body: message,
+      link: link && String(link).trim() !== "" ? String(link).trim() : undefined,
+      targetType: isAll ? "all" : "specific",
+      recipients: users.map((u) => ({
+        userId: u._id,
+        seen: false,
+      })),
+      deliveryStats: {
+        requested: result.requested,
+        delivered: result.delivered,
+        failed: result.failed,
+      },
+    });
+
     return successResponse({
       message: "Notifications sent",
       tokenCount: tokens.length,
+      notificationId: notification._id,
       ...result,
     });
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Failed to send notification";
     console.error("Error sending push notification:", error);
+    return errorResponse(message);
+  }
+}
+
+// ─── DELETE: Remove a notification by ID ─────────────────────────────────────
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return errorResponse("Notification ID is required", 400);
+    }
+
+    const deleted = await NotificationModel.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return errorResponse("Notification not found", 404);
+    }
+
+    return successResponse({ message: "Notification deleted" });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to delete notification";
+    console.error("Error deleting notification:", error);
     return errorResponse(message);
   }
 }
