@@ -12,82 +12,60 @@ async function loadDB() {
 export async function GET(request: Request) {
   try {
     await loadDB();
-
+    console.log("registering"+UserModel+subscriptionsModel);
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
     const skip = (page - 1) * limit;
 
-    // Only get timelines that have feedback
+    // Only get timelines that have feedback and populate the user data along with their subscription
     const timelines = await WeddingTimelineModel.find({ 
       feedback: { $exists: true, $ne: null } 
     })
       .sort({ createdAt: -1 })
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email imageURL subscription',
+        populate: {
+          path: 'subscription'
+        }
+      })
       .lean();
-
-    // 1. Extract unique user IDs
-    const userIds = [...new Set(timelines.map(t => t.userId).filter(Boolean))];
-
-    // 2. Fetch users in bulk
-    const users = await UserModel.find(
-      { _id: { $in: userIds } },
-      "firstName lastName email imageURL subscription"
-    ).lean();
-
-    // Create user map for fast lookup
-    const userMap = new Map();
-    const subscriptionIds = new Set();
-    users.forEach((user: any) => {
-      userMap.set(user._id.toString(), user);
-      if (user.subscription) {
-        subscriptionIds.add(user.subscription.toString());
-      }
-    });
-
-    // 3. Fetch subscriptions in bulk
-    const subscriptions = await subscriptionsModel.find(
-      { _id: { $in: Array.from(subscriptionIds) } }
-    ).lean();
-
-    // Create subscription map for fast lookup
-    const subscriptionMap = new Map();
-    subscriptions.forEach((sub: any) => {
-      subscriptionMap.set(sub._id.toString(), sub);
-    });
 
     // 4. Populate user data for each timeline
     const timelinesWithUserData = timelines.map((timeline: any) => {
         let userData = null;
         let subscriptionData = null;
 
-        if (timeline.userId) {
-          const user = userMap.get(timeline.userId.toString());
-          if (user) {
-            userData = {
-              firstName: user.firstName || "",
-              lastName: user.lastName || "",
-              email: user.email || "",
-              imageURL: user.imageURL || "",
-            };
+        const user = timeline.userId; // This is the populated user object!
 
-            if (user.subscription) {
-              const subscription = subscriptionMap.get(user.subscription.toString());
-              subscriptionData = {
-                hasSubscription: subscription ? subscription.subscribed : false,
-                expiryDate: subscription?.expiryDate || null,
-              };
-            } else {
-              subscriptionData = {
-                hasSubscription: false,
-                expiryDate: null,
-              };
-            }
+        if (user) {
+          userData = {
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
+            email: user.email || "",
+            imageURL: user.imageURL || "",
+          };
+
+          if (user.subscription) {
+            subscriptionData = {
+              hasSubscription: user.subscription.subscribed || false,
+              expiryDate: user.subscription.expiryDate || null,
+            };
+          } else {
+            subscriptionData = {
+              hasSubscription: false,
+              expiryDate: null,
+            };
           }
         }
 
+        // Return a shape consistent with the previous implementation
+        const { userId, ...rest } = timeline;
         return {
-          ...timeline,
+          ...rest,
+          userId: user?._id?.toString() || (typeof userId === 'string' ? userId : null), // Fallback in case of missing populate
           user: userData,
           subscription: subscriptionData,
         };

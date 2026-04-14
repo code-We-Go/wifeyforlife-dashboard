@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IWeddingTimeline extends Document {
-  userId?: string;
+  userId?: mongoose.Types.ObjectId;
   zaffaTime: string; // The anchor time
   selectedFeatures: {
     name: string;
@@ -49,7 +49,7 @@ const SelectedFeatureSchema = new Schema({
 
 const WeddingTimelineSchema = new Schema<IWeddingTimeline>(
   {
-    userId: { type: String, required: false },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: false },
     zaffaTime: { type: String, required: true },
     selectedFeatures: [SelectedFeatureSchema],
     events: [EventSchema],
