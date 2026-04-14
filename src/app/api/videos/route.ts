@@ -43,6 +43,7 @@ export async function PUT(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const videoID = searchParams.get("videoID");
+    console.log("Updating video:", videoID);
     const req = await request.json();
 
     console.log("Updating video:", videoID, req);

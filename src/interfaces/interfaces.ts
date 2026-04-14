@@ -77,21 +77,30 @@ export interface Video {
   createdAt: Date;
   updatedAt: Date;
   playlistHint?: string;
+  playlistFolder?: string; // slug of the folder this video belongs to within its playlist
 }
 
 // types/Playlist.ts
+
+/** A folder inside a playlist — has a display name and a URL-safe slug */
+export interface PlaylistFolder {
+  _id?: string;
+  name: string;   // e.g. "Behind the Scenes"
+  slug: string;   // e.g. "behind-the-scenes"
+}
+
 export interface SubPlaylist {
   _id?: string;
   title: string;
-  videos: Video[] | string[]; // Can be full Video objects or just IDs
+  videos: Video[] | string[];
   thumbnailUrl: string;
   order: number;
 }
 
 export interface PlaylistItem {
   itemType: 'video' | 'subPlaylist';
-  video?: Video | string; // Video object or ID
-  subPlaylist?: SubPlaylist; // SubPlaylist object
+  video?: Video | string;
+  subPlaylist?: SubPlaylist;
   order: number;
 }
 
@@ -99,8 +108,9 @@ export interface Playlist {
   _id?: string;
   title: string;
   description?: string[];
-  items: PlaylistItem[]; // Changed from videos to items
-  videos: (Video | string)[]; // Re-added to match current backend/frontend usage
+  folders: PlaylistFolder[];          // ordered list of folders
+  videos: (Video | string)[];            // videos array of string IDs or populated objects
+  items: PlaylistItem[];              // legacy / alternative structure
   thumbnailUrl: string;
   isPublic: boolean;
   category?: string;
