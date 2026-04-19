@@ -11,7 +11,8 @@ interface LoyaltyTransaction {
   reason?: string;
   bonusID?: {
     _id: string;
-    bonusName: string;
+    bonusName?: string;
+    title?: string;
     bonusPoints: number;
   };
   timestamp: string;
@@ -35,14 +36,32 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ isOpen, onC
   const [type, setType] = useState<"earn" | "spend">("earn");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [bonusID, setBonusID] = useState("");
+  const [bonuses, setBonuses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchBonuses = async () => {
+      try {
+        const response = await fetch("/api/loyalty/loyaltyPoints");
+        if (response.ok) {
+          const data = await response.json();
+          setBonuses(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch bonuses", error);
+      }
+    };
+    fetchBonuses();
+  }, []);
 
   useEffect(() => {
     if (transaction) {
       setEmail(transaction.email);
       setType(transaction.type);
       setAmount(transaction.amount?.toString() || transaction.bonusID?.bonusPoints?.toString() || "");
-      setReason(transaction.reason || transaction.bonusID?.bonusName || "");
+      setReason(transaction.reason || transaction.bonusID?.bonusName || transaction.bonusID?.title || "");
+      setBonusID(transaction.bonusID?._id || "");
     }
   }, [transaction]);
 
@@ -62,6 +81,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ isOpen, onC
           type,
           amount: parseFloat(amount),
           reason,
+          bonusID: bonusID || null,
         }),
       });
 
@@ -132,6 +152,32 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ isOpen, onC
               className="w-full p-2 border rounded-md"
               maxLength={500}
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Bonus Option (Optional)</label>
+            <select
+              value={bonusID}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                setBonusID(selectedId);
+                // If a bonus is selected, we might want to update amount and reason
+                if (selectedId) {
+                  const selectedBonus = bonuses.find(b => b._id === selectedId);
+                  if (selectedBonus) {
+                    setAmount(selectedBonus.bonusPoints.toString());
+                    setReason(selectedBonus.title);
+                  }
+                }
+              }}
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="">No Bonus (Manual Points)</option>
+              {bonuses.map((bonus) => (
+                <option key={bonus._id} value={bonus._id}>
+                  {bonus.title} ({bonus.bonusPoints} pts)
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex justify-end space-x-2">
             <button
@@ -460,7 +506,7 @@ const LoyaltyTransactionsPage = () => {
                           {getPointsDisplay(transaction)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {transaction.reason || transaction.bonusID?.bonusName || "-"}
+                          {transaction.reason || transaction.bonusID?.bonusName || transaction.bonusID?.title || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatDate(transaction.timestamp)}
