@@ -8,7 +8,7 @@ export function setToken(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 30 * 60, // 30 minutes
+    maxAge: 7 * 60 * 60 * 24, // 7 days
   });
 }
 
