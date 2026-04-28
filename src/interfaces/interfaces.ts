@@ -1,5 +1,12 @@
 import { Discount } from "@/types/discount";
 import mongoose from "mongoose";
+
+export interface PackageVariant {
+  price: number;
+  duration: number;
+  saving?: string;
+}
+
 export interface PackageCard {
   image: string;
   points: string[];
@@ -24,10 +31,12 @@ export interface Ipackage {
   mobMainImage?: string;
   mobImages?: string[];
   price: number;
-  duration: string;
+  duration: number;
+  saving?: string;
+  variants?: PackageVariant[];
   items: PackageItem[];
   notes: string[];
-  cost?: string;
+  cost?: number;
   cards: PackageCard[];
   supportCards: SupportCard[]; // Array of cards with image and points
 }

@@ -98,7 +98,10 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
 
   return (
     <div className="relative rounded-2xl w-[97%] bg-secondary min-h-2 px-2 py-1 text-creamey bg-backgroundColor/25">
-      <div className='flex w-full hover:cursor-pointer items-start text-primary mr-28'>
+      <div 
+        onClick={() => setDetailsModal(true)}
+        className='flex w-full hover:cursor-pointer items-start text-primary mr-28'
+      >
         <div className='flex pb-2 w-full justify-between items-start text-creamey'>
           <div className='relative w-[60px] h-[70px] md:w-[100px] md:h-[120px]'>
             <Image 
@@ -113,7 +116,7 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
               {packageItem.name}
             </h2>
             <p className={`${thirdFont.className} text-sm xl:text-base text-creamey/90`}>
-              Duration: {packageItem.duration}
+              Duration: {packageItem.duration} Months
             </p>
             <p className={`${thirdFont.className} text-sm xl:text-base text-creamey/90`}>
               Items: {packageItem.items.length}
@@ -135,12 +138,28 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
                   </span>
                 </div>
               )}
+              {packageItem.variants && packageItem.variants.length > 0 && (
+                <div className="flex items-center ml-2">
+                  <span className={`${thirdFont.className} text-xs xl:text-sm text-creamey/90 px-1 border border-creamey/50 rounded`}>
+                    {packageItem.variants.length} Variants
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-          <div className="flex flex-col items-end">
-            <p className={`${thirdFont.className} text-xl xl:text-2xl`}>
-              {`${packageItem.price} LE`}
-            </p>
+            <div 
+              onClick={() => setDetailsModal(true)}
+              className="flex flex-col items-end hover:opacity-80 transition-opacity"
+            >
+              <p className={`${thirdFont.className} text-xl xl:text-2xl`}>
+                {`${packageItem.price} LE`}
+              </p>
+              {packageItem.saving && (
+                <p className={`${thirdFont.className} text-xs xl:text-sm text-green-400 font-medium`}>
+                  {packageItem.saving}
+                </p>
+              )}
+            </div>
             <div className="relative">
               <button
                 onClick={(e) => {
@@ -186,7 +205,6 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
             </div>
           </div>
         </div>
-      </div>
       
       {/* Package Details Modal */}
       {isDetailsModalOpen && (

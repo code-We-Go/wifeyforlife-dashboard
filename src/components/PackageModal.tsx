@@ -21,11 +21,19 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     mobMainImage: "",
     mobImages: [],
     price: 0,
-    duration: "",
+    duration: 0,
+    saving: "",
+    variants: [],
     items: [],
     notes: [],
     cards: [],
     supportCards: [],
+  });
+
+  const [newVariant, setNewVariant] = useState({
+    price: 0,
+    duration: 0,
+    saving: "",
   });
 
   const [newItem, setNewItem] = useState("");
@@ -78,7 +86,9 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         mobMainImage: packageItem.mobMainImage || "",
         mobImages: packageItem.mobImages || [],
         price: packageItem.price,
-        duration: packageItem.duration,
+        duration: packageItem.duration || 0,
+        saving: packageItem.saving || "",
+        variants: packageItem.variants || [],
         items: formattedItems,
         notes: [...packageItem.notes],
         cards: packageItem.cards || [],
@@ -92,7 +102,9 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         mobMainImage: "",
         mobImages: [],
         price: 0,
-        duration: "",
+        duration: 0,
+        saving: "",
+        variants: [],
         items: [],
         notes: [],
         cards: [],
@@ -234,6 +246,24 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     setFormData(prev => ({
       ...prev,
       notes: prev.notes.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Variant management functions
+  const addVariant = () => {
+    if (newVariant.price > 0 && newVariant.duration > 0) {
+      setFormData(prev => ({
+        ...prev,
+        variants: [...(prev.variants || []), { ...newVariant }]
+      }));
+      setNewVariant({ price: 0, duration: 0, saving: "" });
+    }
+  };
+
+  const removeVariant = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).filter((_, i) => i !== index)
     }));
   };
 
@@ -617,10 +647,10 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1">
-                Price (LE) *
+                Default Price (LE) *
               </label>
               <input
                 type="number"
@@ -635,16 +665,97 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
             <div>
               <label className="block text-sm font-medium text-primary mb-1">
-                Duration *
+                Saving Text
               </label>
               <input
                 type="text"
+                value={formData.saving}
+                onChange={(e) => setFormData(prev => ({ ...prev, saving: e.target.value }))}
+                placeholder="e.g., Save 20%"
+                className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1">
+                Default Duration (Months) *
+              </label>
+              <input
+                type="number"
                 value={formData.duration}
-                onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
-                placeholder="e.g., 30 days, 3 months"
+                onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                placeholder="e.g., 1, 3, 6"
                 className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
                 required
               />
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Package Variants
+            </label>
+            
+            <div className="space-y-2">
+              {(formData.variants || []).map((variant, index) => (
+                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div className="flex-1">
+                    <span className="font-semibold">Duration:</span> {variant.duration} Months
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold">Price:</span> {variant.price} LE
+                  </div>
+                  {variant.saving && (
+                    <div className="flex-1 text-green-600 font-medium">
+                      {variant.saving}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <input
+                  type="number"
+                  placeholder="Months"
+                  value={newVariant.duration || ""}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Saving (e.g. Save 20%)"
+                  value={newVariant.saving}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, saving: e.target.value }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={newVariant.price || ""}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+                <button
+                  type="button"
+                  onClick={addVariant}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
             </div>
           </div>
 

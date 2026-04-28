@@ -23,8 +23,20 @@ const PackageSchema = new Schema<Ipackage>(
     mobMainImage: { type: String, required: false },
     mobImages: { type: [String], required: false, default: [] },
     price: { type: Number, required: true, min: 0 },
+    saving: { type: String, required: false },
     cost: { type: Number, required: false },
-    duration: { type: String, required: true },
+    duration: { type: Number, required: true },
+    variants: {
+      type: [
+        {
+          price: { type: Number, required: true },
+          duration: { type: Number, required: true },
+          saving: { type: String, required: false },
+        },
+      ],
+      required: false,
+      default: [],
+    },
     items: {
       type: [{ value: String, included: Boolean }],
       required: true,
