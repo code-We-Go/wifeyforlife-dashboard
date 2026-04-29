@@ -79,23 +79,7 @@ const UsersPage = () => {
   };
 
   const handleSubscriptionClick = (user: IUser) => {
-    if (user.subscription?.subscribed) {
-      setSubscriptionModal({ type: "view", user });
-    } else {
-      // Fetch packages from API when opening the add modal
-      axios
-        .get("/api/packages?all=true")
-        .then((res) => {
-          setAvailablePackages(
-            res.data.data.map((pkg: any) => ({ _id: pkg._id, name: pkg.name })),
-          );
-          setSubscriptionModal({ type: "add", user });
-        })
-        .catch(() => {
-          setAvailablePackages([]);
-          setSubscriptionModal({ type: "add", user });
-        });
-    }
+    setSubscriptionModal({ type: "view", user });
   };
 
   return (
@@ -127,7 +111,7 @@ const UsersPage = () => {
               <th className="border p-2">Username</th>
               <th className="border p-2">Email</th>
               <th className="border p-2">Role</th>
-              {/* <th className="border p-2">Subscription</th> */}
+              <th className="border p-2">Subscription</th>
               <th className="border p-2">Created At</th>
               <th className="border p-2">Actions</th>
             </tr>
@@ -175,12 +159,12 @@ const UsersPage = () => {
                   </td>
                   <td className="border p-2">{user.email}</td>
                   <td className="border p-2">{user.role}</td>
-                  {/* <td
+                  <td
                     className="cursor-pointer border p-2 text-blue-600 underline"
                     onClick={() => handleSubscriptionClick(user)}
                   >
-                    {user.subscription?.subscribed ? "Yes" : "No"}
-                  </td> */}
+                    {user.subscriptions?.some(s => s.subscribed) ? "Yes" : "No"}
+                  </td>
                   <td className="border p-2">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
@@ -437,113 +421,21 @@ const UsersPage = () => {
           </div>
         )}
 
-        {/* Subscription Modals */}
-        {subscriptionModal.type === "view" && subscriptionModal.user && (
+        {/* Subscription Management Modal */}
+        {subscriptionModal.user && (
           <SubscriptionInfoModal
             user={subscriptionModal.user}
             availablePackages={availablePackages}
             setAvailablePackages={setAvailablePackages}
             onClose={() => setSubscriptionModal({ type: null, user: null })}
             onUserRefresh={async () => {
-              // Refresh users list after update
-              const res = await axios.get(`/api/users?page=${page}`);
+              const res = await axios.get(
+                `/api/users?page=${page}&search=${encodeURIComponent(debouncedSearchQuery)}`,
+              );
               setUsers(res.data.data.users);
+              setTotalPages(res.data.data.pagination.totalPages);
             }}
           />
-        )}
-
-        {subscriptionModal.type === "add" && subscriptionModal.user && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-96 rounded-lg bg-white p-6">
-              <h2 className="mb-4 text-xl font-bold">Add Subscription</h2>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  try {
-                    // 1. Create the subscription with selected packageID and other fields
-                    const subRes = await axios.post("/api/subscriptions", {
-                      paymentID: formData.get("paymentID"),
-                      packageID: formData.get("packageID"),
-                      email: subscriptionModal.user?.email,
-                      subscribed: true,
-                      expiryDate: formData.get("expiryDate"),
-                    });
-                    const newSubscriptionId =
-                      subRes.data.data._id ||
-                      subRes.data.data.subscription?._id;
-                    // 2. Update the user with the new subscription ID
-                    await axios.put(
-                      `/api/users?userId=${subscriptionModal.user!._id}`,
-                      {
-                        subscription: newSubscriptionId,
-                      },
-                    );
-                    setSubscriptionModal({ type: null, user: null });
-                    // Refresh users list
-                    const res = await axios.get(`/api/users?page=${page}`);
-                    setUsers(res.data.data.users);
-                  } catch (error) {
-                    console.error(
-                      "Error adding subscription and updating user:",
-                      error,
-                    );
-                  }
-                }}
-              >
-                <label className="mb-1 block text-sm font-medium">
-                  Payment ID
-                </label>
-                <input
-                  type="text"
-                  name="paymentID"
-                  className="w-full rounded border p-2"
-                  required
-                />
-                <label className="mb-1 mt-2 block text-sm font-medium">
-                  Package
-                </label>
-                <select
-                  name="packageID"
-                  className="w-full rounded border p-2"
-                  required
-                >
-                  <option value="">Select a package</option>
-                  {availablePackages.map((pkg) => (
-                    <option key={pkg._id} value={pkg._id}>
-                      {pkg.name}
-                    </option>
-                  ))}
-                </select>
-                <label className="mb-1 mt-2 block text-sm font-medium">
-                  Expiry Date
-                </label>
-                <input
-                  type="date"
-                  name="expiryDate"
-                  className="w-full rounded border p-2"
-                  required
-                />
-                <div className="mt-4 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSubscriptionModal({ type: null, user: null })
-                    }
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded bg-accent px-4 py-2 text-white"
-                  >
-                    Add Subscription
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
         )}
       </div>
     </DefaultLayout>
@@ -567,147 +459,252 @@ const SubscriptionInfoModal = ({
   onClose: () => void;
   onUserRefresh: () => void;
 }) => {
-  const [subData, setSubData] = useState<any | null>(null);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingSub, setEditingSub] = useState<any | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchSub = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Fetch latest subscription data
-        const res = await axios.get(
-          `/api/subscriptions?id=${user.subscription?._id}`,
-        );
-        setSubData(res.data.data[0] || user.subscription);
-        // Fetch packages if not already loaded
-        if (!availablePackages.length) {
-          const pkgRes = await axios.get("/api/packages?all=true");
-          setAvailablePackages(
-            pkgRes.data.data.map((pkg: any) => ({
-              _id: pkg._id,
-              name: pkg.name,
-            })),
-          );
-        }
-      } catch (err) {
-        setError("Failed to load subscription data");
+  const fetchUserSubscriptions = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Refresh user to get latest subscriptions array
+      const userRes = await axios.get(`/api/users?userId=${user._id}`);
+      const userData = userRes.data.data;
+      
+      if (userData.subscriptions && userData.subscriptions.length > 0) {
+        setSubscriptions(userData.subscriptions);
+      } else {
+        setSubscriptions([]);
       }
-      setLoading(false);
-    };
-    fetchSub();
+
+      // Fetch packages if not already loaded
+      if (!availablePackages.length) {
+        const pkgRes = await axios.get("/api/packages?all=true");
+        setAvailablePackages(
+          pkgRes.data.data.map((pkg: any) => ({
+            _id: pkg._id,
+            name: pkg.name,
+          })),
+        );
+      }
+    } catch (err) {
+      setError("Failed to load subscription data");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchUserSubscriptions();
     // eslint-disable-next-line
   }, [user]);
+
+  const handleDeleteSub = async (subId: string) => {
+    if (!confirm("Are you sure you want to delete this subscription?")) return;
+    try {
+      await axios.delete(`/api/subscriptions?subscriptionID=${subId}`);
+      await fetchUserSubscriptions();
+      await onUserRefresh();
+    } catch (err) {
+      alert("Failed to delete subscription");
+    }
+  };
+
+  const handleSaveSub = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    const payload = {
+      paymentID: formData.get("paymentID"),
+      packageID: formData.get("packageID"),
+      expiryDate: formData.get("expiryDate"),
+      subscribed: formData.get("subscribed") === "true",
+      email: user.email,
+    };
+
+    try {
+      if (isAdding) {
+        await axios.post("/api/subscriptions", payload);
+      } else if (editingSub) {
+        await axios.put(`/api/subscriptions?subscriptionID=${editingSub._id}`, payload);
+      }
+      setEditingSub(null);
+      setIsAdding(false);
+      await fetchUserSubscriptions();
+      await onUserRefresh();
+    } catch (err) {
+      setError("Failed to save subscription");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading)
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="w-96 rounded-lg bg-white p-6 text-center">
-          Loading...
-        </div>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="w-96 rounded-lg bg-white p-6 text-center">{error}</div>
+        <div className="w-96 rounded-lg bg-white p-6 text-center">Loading...</div>
       </div>
     );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-96 rounded-lg bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold">Edit Subscription</h2>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setSaving(true);
-            setError(null);
-            const formData = new FormData(e.currentTarget);
-            try {
-              await axios.put(
-                `/api/subscriptions?subscriptionID=${subData._id}`,
-                {
-                  paymentID: formData.get("paymentID"),
-                  packageID: formData.get("packageID"),
-                  expiryDate: formData.get("expiryDate"),
-                  subscribed: formData.get("subscribed") === "true",
-                },
-              );
-              setSaving(false);
-              onClose();
-              await onUserRefresh();
-            } catch (err) {
-              setError("Failed to update subscription");
-              setSaving(false);
-            }
-          }}
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
         >
-          <label className="mb-1 block text-sm font-medium">Payment ID</label>
-          <input
-            type="text"
-            name="paymentID"
-            className="w-full rounded border p-2"
-            defaultValue={subData.paymentID}
-            required
-          />
-          <label className="mb-1 mt-2 block text-sm font-medium">Package</label>
-          <select
-            name="packageID"
-            className="w-full rounded border p-2"
-            defaultValue={subData.packageID?._id || subData.packageID}
-            required
-          >
-            <option value="">Select a package</option>
-            {availablePackages.map((pkg) => (
-              <option key={pkg._id} value={pkg._id}>
-                {pkg.name}
-              </option>
-            ))}
-          </select>
-          <label className="mb-1 mt-2 block text-sm font-medium">
-            Expiry Date
-          </label>
-          <input
-            type="date"
-            name="expiryDate"
-            className="w-full rounded border p-2"
-            defaultValue={
-              subData.expiryDate ? subData.expiryDate.slice(0, 10) : ""
-            }
-            required
-          />
-          {/* <label className="block text-sm font-medium mb-1 mt-2">Subscribed</label>
-          <select
-            name="subscribed"
-            className="w-full p-2 border rounded"
-            defaultValue={subData.subscribed ? 'true' : 'false'}
-            required
-          >
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select> */}
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded bg-accent px-4 py-2 text-white"
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
+          ✕
+        </button>
+        
+        <h2 className="mb-6 text-2xl font-bold text-primary border-b pb-2">
+          Manage Subscriptions: <span className="text-secondary font-medium">{user.username}</span>
+        </h2>
+
+        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
+
+        {!editingSub && !isAdding ? (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Existing Subscriptions</h3>
+              <button
+                onClick={() => setIsAdding(true)}
+                className="bg-accent text-white px-4 py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all"
+              >
+                + Add New
+              </button>
+            </div>
+
+            {subscriptions.length === 0 ? (
+              <p className="text-gray-500 py-4 text-center border-2 border-dashed rounded-lg">No active subscriptions found for this user.</p>
+            ) : (
+              <div className="grid gap-4">
+                {subscriptions.map((sub) => (
+                  <div key={sub._id} className="border rounded-xl p-4 flex justify-between items-center bg-gray-50 hover:shadow-md transition-shadow">
+                    <div>
+                      <p className="font-bold text-secondary">{sub.packageID?.name || "Unknown Package"}</p>
+                      <p className="text-xs text-gray-500 mt-1">ID: {sub.paymentID}</p>
+                      <div className="flex gap-4 mt-2">
+                        <p className="text-sm">
+                          Status: <span className={sub.subscribed ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                            {sub.subscribed ? "Active" : "Inactive"}
+                          </span>
+                        </p>
+                        <p className="text-sm">
+                          Expires: <span className="font-medium">{sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : "N/A"}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingSub(sub)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSub(sub._id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
-          {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
-        </form>
+        ) : (
+          <div className="animate-fadeIn">
+            <h3 className="text-lg font-semibold mb-4">
+              {isAdding ? "Add New Subscription" : "Edit Subscription"}
+            </h3>
+            <form onSubmit={handleSaveSub} className="space-y-4 bg-gray-50 p-6 rounded-xl border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Payment ID</label>
+                  <input
+                    type="text"
+                    name="paymentID"
+                    className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-primary outline-none"
+                    defaultValue={editingSub?.paymentID || ""}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Package</label>
+                  <select
+                    name="packageID"
+                    className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-primary outline-none"
+                    defaultValue={editingSub?.packageID?._id || editingSub?.packageID || ""}
+                    required
+                  >
+                    <option value="">Select a package</option>
+                    {availablePackages.map((pkg) => (
+                      <option key={pkg._id} value={pkg._id}>
+                        {pkg.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Expiry Date</label>
+                  <input
+                    type="date"
+                    name="expiryDate"
+                    className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-primary outline-none"
+                    defaultValue={editingSub?.expiryDate ? editingSub.expiryDate.slice(0, 10) : ""}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
+                  <select
+                    name="subscribed"
+                    className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-primary outline-none"
+                    defaultValue={editingSub?.subscribed ? "true" : "false"}
+                    required
+                  >
+                    <option value="true">Active (Paid)</option>
+                    <option value="false">Inactive (Unpaid)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 border-t pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSub(null);
+                    setIsAdding(false);
+                  }}
+                  className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                  disabled={saving}
+                >
+                  Back to List
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-primary px-8 py-2 text-white font-bold hover:bg-opacity-90 shadow-lg disabled:opacity-50 transition-all"
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : (isAdding ? "Create Subscription" : "Save Changes")}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

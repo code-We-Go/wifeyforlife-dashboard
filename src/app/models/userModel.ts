@@ -12,7 +12,7 @@ export interface IUser extends Document {
   emailVerified?:boolean;
   firstName?:string;
   lastName?:string;
-  subscription:ISubscription;
+  subscriptions?: ISubscription[];
     weddingDate?: Date;
   pushToken?: string;
   tags?: string[];
@@ -78,11 +78,10 @@ const UserSchema = new Schema<IUser>(
     //   default: false,
     //   required: false,
     // },
-    subscription: {
+    subscriptions: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "subscriptions",
-      required: false,
-    },
+    }],
     imageURL:{
       type: String,
       required: false,

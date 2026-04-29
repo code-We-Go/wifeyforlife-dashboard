@@ -26,9 +26,9 @@ export async function GET(request: Request) {
       .sort({ createdAt: -1 })
       .populate({
         path: 'userId',
-        select: 'firstName lastName email imageURL subscription',
+        select: 'firstName lastName email imageURL subscriptions',
         populate: {
-          path: 'subscription'
+          path: 'subscriptions'
         }
       })
       .lean();
@@ -48,10 +48,10 @@ export async function GET(request: Request) {
             imageURL: user.imageURL || "",
           };
 
-          if (user.subscription) {
+          if (user.subscriptions && user.subscriptions.length > 0) {
             subscriptionData = {
-              hasSubscription: user.subscription.subscribed || false,
-              expiryDate: user.subscription.expiryDate || null,
+              hasSubscription: user.subscriptions[0].subscribed || false,
+              expiryDate: user.subscriptions[0].expiryDate || null,
             };
           } else {
             subscriptionData = {

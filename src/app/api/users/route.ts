@@ -23,9 +23,25 @@ console.log(subscriptionsModel);
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const search = decodeURIComponent(searchParams.get("search") || "");
     const all = searchParams.get("all") === "true";
+
+    if (userId) {
+      const user = await UserModel.findById(userId)
+        .populate({
+          path: "subscriptions",
+          populate: {
+            path: "packageID",
+            model: "packages",
+          },
+          options: { strictPopulate: false },
+        })
+        .select("-password");
+      if (!user) return errorResponse("User not found", 404);
+      return successResponse(user);
+    }
     const limit = all ? 0 : 10;
     const skip = all ? 0 : (page - 1) * limit;
 
@@ -45,8 +61,11 @@ export async function GET(req: Request) {
     // Get users with pagination
     const users = await UserModel.find(searchQuery)
       .populate({
-        path: "subscription",
-        model: "subscriptions", // <-- this matches your model registration and ref
+        path: "subscriptions",
+        populate: {
+          path: "packageID",
+          model: "packages",
+        },
         options: { strictPopulate: false },
       })
       .select("-password")
@@ -54,7 +73,7 @@ export async function GET(req: Request) {
       .skip(skip)
       .limit(limit);
 
-    console.log("ya rab" + users[1]?.subscription?.subscribed);
+    console.log("ya rab " + users[1]?.subscriptions?.[0]?.subscribed);
     return successResponse({
       users,
       pagination: {

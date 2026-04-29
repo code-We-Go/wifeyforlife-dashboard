@@ -133,10 +133,16 @@ const UserWeddingComponent = ({ user }: { user: IUser }) => {
             <p className="font-semibold">Subscribed:</p>
           <p className="font-bold">
              {(() => {
-                if (!user.subscription?.subscribed) return <span className="text-red-500">Not Subscribed</span>;
-                const pkg = user.subscription.packageID as any;
-                if (pkg?.name?.toLowerCase().includes("mini")) return <span className="text-orange-500">Mini Experience</span>;
-                return <span className="text-success">Full Experience</span>;
+                const activeSubs = user.subscriptions?.filter(s => s.subscribed) || [];
+                if (activeSubs.length === 0) return <span className="text-red-500">Not Subscribed</span>;
+                
+                const hasFull = activeSubs.some(s => {
+                  const pkgId = s.packageID?._id || s.packageID;
+                  return pkgId?.toString() !== "68bf6ae9c4d5c1af12cdcd37";
+                });
+
+                if (hasFull) return <span className="text-success">Full Experience</span>;
+                return <span className="text-orange-500">Mini Experience</span>;
              })()}
           </p>
         </div>
@@ -204,10 +210,16 @@ const UserWeddingComponent = ({ user }: { user: IUser }) => {
                 <p className="font-semibold text-gray-600">Subscription Status</p>
                 <p className="text-lg font-bold">
                    {(() => {
-                      if (!user.subscription?.subscribed) return <span className="text-red-500">Not Subscribed</span>;
-                      const pkg = user.subscription.packageID as any;
-                      if (pkg?.name?.toLowerCase().includes("mini")) return <span className="text-orange-500">Mini Experience</span>;
-                      return <span className="text-success">Full Experience</span>;
+                      const activeSubs = user.subscriptions?.filter(s => s.subscribed) || [];
+                      if (activeSubs.length === 0) return <span className="text-red-500">Not Subscribed</span>;
+                      
+                      const hasFull = activeSubs.some(s => {
+                        const pkgId = s.packageID?._id || s.packageID;
+                        return pkgId?.toString() !== "68bf6ae9c4d5c1af12cdcd37";
+                      });
+
+                      if (hasFull) return <span className="text-success">Full Experience</span>;
+                      return <span className="text-orange-500">Mini Experience</span>;
                    })()}
                 </p>
               </div>

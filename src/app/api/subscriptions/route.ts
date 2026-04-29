@@ -189,7 +189,7 @@ export async function POST(request: Request) {
     if (body.email) {
       await UserModel.findOneAndUpdate(
         { email: body.email },
-        { subscription: newSubscription._id },
+        { $addToSet: { subscriptions: newSubscription._id } },
         { new: true }
       );
     }
@@ -336,13 +336,24 @@ export async function DELETE(request: Request) {
     );
   }
   try {
-    const deleted = await subscriptionsModel.findByIdAndDelete(subscriptionID);
-    if (!deleted) {
+    // Find the subscription first to get the user's email
+    const subscription = await subscriptionsModel.findById(subscriptionID);
+    if (!subscription) {
       return NextResponse.json(
         { error: "Subscription not found" },
         { status: 404 },
       );
     }
+
+    // Remove from user's subscriptions array before deleting the subscription itself
+    if (subscription.email) {
+      await UserModel.findOneAndUpdate(
+        { email: subscription.email },
+        { $pull: { subscriptions: new mongoose.Types.ObjectId(subscriptionID) } }
+      );
+    }
+
+    await subscriptionsModel.findByIdAndDelete(subscriptionID);
     return NextResponse.json(
       { message: "Subscription deleted successfully" },
       { status: 200 },
