@@ -39,6 +39,8 @@ export interface Ipackage {
   cost?: number;
   cards: PackageCard[];
   supportCards: SupportCard[]; // Array of cards with image and points
+  packagePlaylists: string[];
+  accessAllPlaylists: boolean;
 }
 // types/Video.ts
 export interface CommentUser {

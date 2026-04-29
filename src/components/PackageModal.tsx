@@ -1,5 +1,5 @@
 "use client";
-import { Ipackage, PackageCard, PackageItem, SupportCard } from "@/interfaces/interfaces";
+import { Ipackage, PackageCard, PackageItem, Playlist, SupportCard } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -28,7 +28,11 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     notes: [],
     cards: [],
     supportCards: [],
+    packagePlaylists: [],
+    accessAllPlaylists: false,
   });
+
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
   const [newVariant, setNewVariant] = useState({
     price: 0,
@@ -66,6 +70,18 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   const [newDescLineText, setNewDescLineText] = useState("");
 
   useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const response = await axios.get("/api/playlists");
+        setPlaylists(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching playlists:", error);
+      }
+    };
+    fetchPlaylists();
+  }, []);
+
+  useEffect(() => {
     if (packageItem) {
       // Handle potential legacy data where items might be strings instead of objects
       const formattedItems = Array.isArray(packageItem.items) 
@@ -93,6 +109,8 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         notes: [...packageItem.notes],
         cards: packageItem.cards || [],
         supportCards: packageItem.supportCards || [],
+        packagePlaylists: packageItem.packagePlaylists || [],
+        accessAllPlaylists: packageItem.accessAllPlaylists || false,
       });
     } else {
       setFormData({
@@ -109,6 +127,8 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         notes: [],
         cards: [],
         supportCards: [],
+        packagePlaylists: [],
+        accessAllPlaylists: false,
       });
     }
   }, [packageItem, isOpen]);
@@ -1307,6 +1327,58 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               >
                 Add Support Card
               </button>
+            </div>
+          </div>
+
+          {/* Playlists Selection */}
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-primary">
+                Accessible Playlists
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="accessAllPlaylists"
+                  checked={formData.accessAllPlaylists}
+                  onChange={(e) => setFormData(prev => ({ ...prev, accessAllPlaylists: e.target.checked }))}
+                  className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                />
+                <label htmlFor="accessAllPlaylists" className="text-sm font-medium text-primary">
+                  Access All Playlists
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs text-primary/60 mb-2">Select the playlists included in this package:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-primary/20 rounded bg-creamey/50">
+                {playlists.map((playlist) => (
+                  <div key={playlist._id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`playlist-${playlist._id}`}
+                      checked={formData.packagePlaylists.includes(playlist._id!)}
+                      onChange={(e) => {
+                        const id = playlist._id!;
+                        setFormData(prev => ({
+                          ...prev,
+                          packagePlaylists: e.target.checked
+                            ? [...prev.packagePlaylists, id]
+                            : prev.packagePlaylists.filter(pId => pId !== id)
+                        }));
+                      }}
+                      className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                    />
+                    <label htmlFor={`playlist-${playlist._id}`} className="text-xs text-primary truncate">
+                      {playlist.title}
+                    </label>
+                  </div>
+                ))}
+                {playlists.length === 0 && (
+                  <p className="text-xs text-primary/40 col-span-2 text-center py-2">No playlists found.</p>
+                )}
+              </div>
             </div>
           </div>
 

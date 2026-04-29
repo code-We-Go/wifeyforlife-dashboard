@@ -15,7 +15,7 @@ const SupportCardSchema = new Schema<SupportCard>({
 });
 
 // Define the Package schema
-const PackageSchema = new Schema<Ipackage>(
+const PackageSchema = new Schema(
   {
     name: { type: String, required: true },
     imgUrl: { type: String, required: true },
@@ -46,10 +46,15 @@ const PackageSchema = new Schema<Ipackage>(
 
     cards: { type: [PackageCardSchema], required: false, default: [] },
     supportCards: { type: [SupportCardSchema], required: false, default: [] },
+    packagePlaylists: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "playlists" }],
+      default: [],
+    },
+    accessAllPlaylists: { type: Boolean, default: false },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // Create and export the Package model
