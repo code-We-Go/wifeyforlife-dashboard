@@ -1372,6 +1372,11 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                     />
                     <label htmlFor={`playlist-${playlist._id}`} className="text-xs text-primary truncate">
                       {playlist.title}
+                      {playlist.category && (
+                        <span className="ml-1 text-[10px] text-gray-400">
+                          ({playlist.category})
+                        </span>
+                      )}
                     </label>
                   </div>
                 ))}
