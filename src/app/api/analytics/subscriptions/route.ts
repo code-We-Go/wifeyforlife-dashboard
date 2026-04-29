@@ -154,8 +154,9 @@ export async function GET(request: Request) {
       const cost = parseFloat(pkg.cost) || 0;
       const discount = sub.appliedDiscountAmount || 0; // Keep discount as is
 
-      // Calculate shipping costs when total is not equal to subTotal
-      const shippingCost = sub.shipping + sub.shipping * 0.14;
+      // Calculate shipping costs safely
+      const shipping = sub.shipping || 0;
+      const shippingCost = shipping + shipping * 0.14;
 
       // Calculate redeemed points and their value (20 points = 1 pound)
       const redeemedPoints = sub.redeemedLoyaltyPoints || 0;
@@ -257,12 +258,16 @@ export async function GET(request: Request) {
 
         // Get cost from package if available
         if (sub.packageID && typeof sub.packageID === "object") {
+          const pkgCost = sub.packageID.cost || 0;
+          const shipping = sub.shipping || 0;
+          const subTotalValue = sub.total || 0;
+          
           monthCost +=
-            sub.packageID.cost +
-              sub.shipping +
-              sub.shipping * 0.14 +
-              sub.total * 0.0275 +
-              sub.total * 0.0275 * 0.14 || 0;
+            pkgCost +
+            shipping +
+            shipping * 0.14 +
+            subTotalValue * 0.0275 +
+            subTotalValue * 0.0275 * 0.14;
         }
       });
 
