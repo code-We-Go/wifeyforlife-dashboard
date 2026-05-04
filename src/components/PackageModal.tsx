@@ -26,6 +26,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     variants: [],
     items: [],
     notes: [],
+    cost: 0,
     cards: [],
     supportCards: [],
     packagePlaylists: [],
@@ -107,6 +108,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         variants: packageItem.variants || [],
         items: formattedItems,
         notes: [...packageItem.notes],
+        cost: packageItem.cost || 0,
         cards: packageItem.cards || [],
         supportCards: packageItem.supportCards || [],
         packagePlaylists: packageItem.packagePlaylists || [],
@@ -125,6 +127,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         variants: [],
         items: [],
         notes: [],
+        cost: 0,
         cards: [],
         supportCards: [],
         packagePlaylists: [],
@@ -667,7 +670,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1">
                 Default Price (LE) *
@@ -680,6 +683,20 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 min="0"
                 step="0.01"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1">
+                Cost (LE)
+              </label>
+              <input
+                type="number"
+                value={formData.cost || 0}
+                onChange={(e) => setFormData(prev => ({ ...prev, cost: parseFloat(e.target.value) || 0 }))}
+                className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                min="0"
+                step="0.01"
               />
             </div>
 

@@ -151,7 +151,8 @@ export async function GET(request: Request) {
       const subTotal = sub.subTotal || 0;
       const total = sub.total || 0;
       const revenue = total || 0; // Use total as revenue
-      const cost = parseFloat(pkg.cost) || 0;
+      // Use subscription cost if available, otherwise fallback to package cost for older records
+      const cost = sub.cost || (pkg && pkg.cost) || 0;
       const discount = sub.appliedDiscountAmount || 0; // Keep discount as is
 
       // Calculate shipping costs safely
@@ -256,14 +257,15 @@ export async function GET(request: Request) {
       monthSubscriptions.forEach((sub) => {
         monthRevenue += sub.total || 0;
 
-        // Get cost from package if available
+        // Get cost from subscription (fallback to package cost for older records)
         if (sub.packageID && typeof sub.packageID === "object") {
-          const pkgCost = sub.packageID.cost || 0;
+          const pkg = sub.packageID as any;
+          const itemCost = sub.cost || pkg.cost || 0;
           const shipping = sub.shipping || 0;
           const subTotalValue = sub.total || 0;
           
           monthCost +=
-            pkgCost +
+            itemCost +
             shipping +
             shipping * 0.14 +
             subTotalValue * 0.0275 +
