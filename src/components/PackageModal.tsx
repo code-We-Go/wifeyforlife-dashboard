@@ -1,5 +1,5 @@
 "use client";
-import { Ipackage, PackageCard, PackageItem, Playlist, SupportCard } from "@/interfaces/interfaces";
+import { Inspo, Ipackage, PackageCard, PackageItem, Partner, Playlist, SupportCard } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -31,9 +31,15 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     supportCards: [],
     packagePlaylists: [],
     accessAllPlaylists: false,
+    packageInspos: [],
+    accessAllInspos: false,
+    packagePartners: [],
+    accessAllPartners: false,
   });
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [inspos, setInspos] = useState<Inspo[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
 
   const [newVariant, setNewVariant] = useState({
     price: 0,
@@ -79,7 +85,25 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         console.error("Error fetching playlists:", error);
       }
     };
+    const fetchInspos = async () => {
+      try {
+        const response = await axios.get("/api/inspos");
+        setInspos(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching inspos:", error);
+      }
+    };
+    const fetchPartners = async () => {
+      try {
+        const response = await axios.get("/api/partners");
+        setPartners(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching partners:", error);
+      }
+    };
     fetchPlaylists();
+    fetchInspos();
+    fetchPartners();
   }, []);
 
   useEffect(() => {
@@ -113,6 +137,10 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         supportCards: packageItem.supportCards || [],
         packagePlaylists: packageItem.packagePlaylists || [],
         accessAllPlaylists: packageItem.accessAllPlaylists || false,
+        packageInspos: packageItem.packageInspos || [],
+        accessAllInspos: packageItem.accessAllInspos || false,
+        packagePartners: packageItem.packagePartners || [],
+        accessAllPartners: packageItem.accessAllPartners || false,
       });
     } else {
       setFormData({
@@ -132,6 +160,10 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         supportCards: [],
         packagePlaylists: [],
         accessAllPlaylists: false,
+        packageInspos: [],
+        accessAllInspos: false,
+        packagePartners: [],
+        accessAllPartners: false,
       });
     }
   }, [packageItem, isOpen]);
@@ -1362,7 +1394,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                   className="rounded border-primary/50 text-primary focus:ring-primaryLight"
                 />
                 <label htmlFor="accessAllPlaylists" className="text-sm font-medium text-primary">
-                  Access All Playlists
+                  Access All Selected Playlists
                 </label>
               </div>
             </div>
@@ -1399,6 +1431,115 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 ))}
                 {playlists.length === 0 && (
                   <p className="text-xs text-primary/40 col-span-2 text-center py-2">No playlists found.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Inspos Selection */}
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-primary">
+                Accessible Inspos
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="accessAllInspos"
+                  checked={formData.accessAllInspos}
+                  onChange={(e) => setFormData(prev => ({ ...prev, accessAllInspos: e.target.checked }))}
+                  className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                />
+                <label htmlFor="accessAllInspos" className="text-sm font-medium text-primary">
+                  Access All Selected Inspos
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs text-primary/60 mb-2">Select the inspos included in this package:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-primary/20 rounded bg-creamey/50">
+                {inspos.map((inspo) => (
+                  <div key={inspo._id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`inspo-${inspo._id}`}
+                      checked={formData.packageInspos.includes(inspo._id!)}
+                      onChange={(e) => {
+                        const id = inspo._id!;
+                        setFormData(prev => ({
+                          ...prev,
+                          packageInspos: e.target.checked
+                            ? [...prev.packageInspos, id]
+                            : prev.packageInspos.filter(iId => iId !== id)
+                        }));
+                      }}
+                      className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                    />
+                    <label htmlFor={`inspo-${inspo._id}`} className="text-xs text-primary truncate">
+                      {inspo.title}
+                    </label>
+                  </div>
+                ))}
+                {inspos.length === 0 && (
+                  <p className="text-xs text-primary/40 col-span-2 text-center py-2">No inspos found.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Partners Selection */}
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-primary">
+                Accessible Partners
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="accessAllPartners"
+                  checked={formData.accessAllPartners}
+                  onChange={(e) => setFormData(prev => ({ ...prev, accessAllPartners: e.target.checked }))}
+                  className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                />
+                <label htmlFor="accessAllPartners" className="text-sm font-medium text-primary">
+                  Access All Selected Partners
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs text-primary/60 mb-2">Select the partners included in this package:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-primary/20 rounded bg-creamey/50">
+                {partners.map((partner) => (
+                  <div key={partner._id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`partner-${partner._id}`}
+                      checked={formData.packagePartners.includes(partner._id!)}
+                      onChange={(e) => {
+                        const id = partner._id!;
+                        setFormData(prev => ({
+                          ...prev,
+                          packagePartners: e.target.checked
+                            ? [...prev.packagePartners, id]
+                            : prev.packagePartners.filter(pId => pId !== id)
+                        }));
+                      }}
+                      className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                    />
+                    <label htmlFor={`partner-${partner._id}`} className="text-xs text-primary truncate">
+                      {partner.brand}
+                      {partner.category && (
+                        <span className="ml-1 text-[10px] text-gray-400">
+                          ({partner.category})
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                ))}
+                {partners.length === 0 && (
+                  <p className="text-xs text-primary/40 col-span-2 text-center py-2">No partners found.</p>
                 )}
               </div>
             </div>

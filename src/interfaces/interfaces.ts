@@ -41,6 +41,10 @@ export interface Ipackage {
   supportCards: SupportCard[]; // Array of cards with image and points
   packagePlaylists: string[];
   accessAllPlaylists: boolean;
+  packageInspos: string[];
+  accessAllInspos: boolean;
+  packagePartners: string[];
+  accessAllPartners: boolean;
 }
 // types/Video.ts
 export interface CommentUser {
@@ -338,6 +342,21 @@ export interface Inspo {
   title: string;
   viewCount?: number;
   sections: InspoSection[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface Partner {
+  _id?: string;
+  category: string;
+  subCategory: string;
+  brand: string;
+  offer: string;
+  discount: string;
+  code: string;
+  link: string;
+  bookingMethod: string;
+  imagePath: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
