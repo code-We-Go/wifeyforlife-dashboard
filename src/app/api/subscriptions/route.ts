@@ -21,6 +21,8 @@ export async function GET(request: Request) {
   const type = searchParams.get("type"); // "real", "gift", "all"
   const isGift = searchParams.get("isGift"); // "true" or "false"
   const packageID = searchParams.get("packageID"); // Package ID for filtering
+  const paymentMethod = searchParams.get("paymentMethod"); // Payment method for filtering
+
   await loadDB();
   let query: any = {};
 
@@ -43,6 +45,16 @@ export async function GET(request: Request) {
   if (packageID && packageID !== "all") {
     query.packageID = new mongoose.Types.ObjectId(packageID);
   }
+
+  if (paymentMethod && paymentMethod !== "all") {
+    console.log("paymentMethodPaymob", paymentMethod);
+    if (paymentMethod === "paymob") {
+      query.paymentMethod = { $not: /instapay/i };
+    } else {
+      query.paymentMethod = paymentMethod;
+    }
+  }
+
 
   // New filters for Mini Experience
   const startDate = searchParams.get("startDate");
@@ -70,32 +82,74 @@ export async function GET(request: Request) {
 
   try {
     let subscriptions;
+
+    // Dedicated path for instapay — query subscriptionPaymentModel directly
+    if (paymentMethod === "instapay") {
+      const instapayQuery = { ...query };
+      instapayQuery.paymentMethod = "instapay";
+
+      subscriptions = await subscriptionPaymentModel
+        .find(instapayQuery)
+        .populate({
+          path: "packageID",
+          model: packageModel,
+          options: { strictPopulate: false },
+        })
+        .populate({
+          path: "appliedDiscount",
+          model: DiscountModel,
+          options: { strictPopulate: false },
+        })
+        .sort({ createdAt: -1 })
+        .lean();
+    }
+    // Dedicated path for paymob — query subscriptionPaymentModel excluding instapay
+    else if (paymentMethod === "paymob") {
+      const paymobQuery = { ...query };
+      paymobQuery.paymentMethod = { $ne: "instapay" };
+
+      subscriptions = await subscriptionPaymentModel
+        .find(paymobQuery)
+        .populate({
+          path: "packageID",
+          model: packageModel,
+          options: { strictPopulate: false },
+        })
+        .populate({
+          path: "appliedDiscount",
+          model: DiscountModel,
+          options: { strictPopulate: false },
+        })
+        .sort({ createdAt: -1 })
+        .lean();
+    }
     //paymobFailed
-    if (subscribed === "false") {
+    else if (subscribed === "false") {
       // Fetch from subscriptionPaymentModel for failed/unconfirmed payments
       // The user requested "records which status is not confirmed"
       const paymentQuery = { ...query };
       paymentQuery.status = { $ne: "confirmed" };
 
-      // Fetch from subscriptionsModel where subscribed is false
       const subQuery = { ...query };
       subQuery.subscribed = false;
 
-      const [paymentResults, subResults] = await Promise.all([
-        subscriptionPaymentModel
-          .find(paymentQuery)
-          .populate({
-            path: "packageID",
-            model: packageModel,
-            options: { strictPopulate: false },
-          })
-          .populate({
-            path: "appliedDiscount",
-            model: DiscountModel,
-            options: { strictPopulate: false },
-          })
-          .lean(),
-        subscriptionsModel
+      let paymentResults = await subscriptionPaymentModel
+        .find(paymentQuery)
+        .populate({
+          path: "packageID",
+          model: packageModel,
+          options: { strictPopulate: false },
+        })
+        .populate({
+          path: "appliedDiscount",
+          model: DiscountModel,
+          options: { strictPopulate: false },
+        })
+        .lean();
+
+      let subResults: any[] = [];
+      if (paymentMethod !== "instapay") {
+        subResults = await subscriptionsModel
           .find(subQuery)
           .populate({
             path: "packageID",
@@ -113,8 +167,8 @@ export async function GET(request: Request) {
             model: DiscountModel,
             options: { strictPopulate: false },
           })
-          .lean(),
-      ]);
+          .lean();
+      }
 
       // Combine and sort results
       subscriptions = [...paymentResults, ...subResults].sort(
@@ -336,8 +390,16 @@ export async function DELETE(request: Request) {
     );
   }
   try {
-    // Find the subscription first to get the user's email
-    const subscription = await subscriptionsModel.findById(subscriptionID);
+    // Try to find in subscriptionsModel first
+    let subscription = await subscriptionsModel.findById(subscriptionID);
+    let fromPaymentModel = false;
+
+    if (!subscription) {
+      // If not found, try subscriptionPaymentModel
+      subscription = await subscriptionPaymentModel.findById(subscriptionID);
+      fromPaymentModel = true;
+    }
+
     if (!subscription) {
       return NextResponse.json(
         { error: "Subscription not found" },
@@ -353,7 +415,12 @@ export async function DELETE(request: Request) {
       );
     }
 
-    await subscriptionsModel.findByIdAndDelete(subscriptionID);
+    if (fromPaymentModel) {
+      await subscriptionPaymentModel.findByIdAndDelete(subscriptionID);
+    } else {
+      await subscriptionsModel.findByIdAndDelete(subscriptionID);
+    }
+
     return NextResponse.json(
       { message: "Subscription deleted successfully" },
       { status: 200 },

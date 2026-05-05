@@ -87,6 +87,8 @@ const SubscriptionSchema = new Schema(
     // Payment information
     total: { type: Number, required: false },
     subTotal: { type: Number, required: false },
+        paymentMethod: { type: String, required: false, enum: ["instapay", "cash", "card"] },
+    instapayReciept: { type: String, required: false },
     cost: { type: Number, required: false },
     shipping: { type: Number, required: false },
     currency: { type: String, required: false },

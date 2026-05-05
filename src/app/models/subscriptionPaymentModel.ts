@@ -65,6 +65,8 @@ const SubscriptionPaymentSchema = new Schema(
     bostaDistrictName: { type: String, required: false },
     shipmentID: { type: String, required: false, default: "" },
 
+    paymentMethod: { type: String, required: false, enum: ["instapay", "cash", "card"] },
+    instapayReciept: { type: String, required: false },
     // Status tracking
     status: { type: String, enum: ["pending", "confirmed", "failed"], default: "pending" },
     createdAt: { type: Date, default: Date.now },

@@ -4,6 +4,8 @@ import axios from "axios";
 import { Ipackage, Playlist } from "@/interfaces/interfaces";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import * as XLSX from "xlsx";
+import { CldImage, CldUploadWidget } from "next-cloudinary";
+
 
 interface Subscription {
   _id: string;
@@ -53,7 +55,11 @@ interface Subscription {
   subTotal?: number;
   shipping?: number;
   currency?: string;
+  paymentMethod?: string;
+  status?: string;
+  instapayReciept?: string;
 }
+
 
 const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -77,9 +83,12 @@ const SubscriptionsPage = () => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
 
-  const [activeTab, setActiveTab] = useState<"all" | "mini">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "mini" | "instapay" | "paymob">("all");
+
+
   const [miniActivationFilter, setMiniActivationFilter] = useState<string>("all");
   const [miniStats, setMiniStats] = useState({ total: 0, activated: 0 });
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -129,7 +138,9 @@ const SubscriptionsPage = () => {
     appliedDiscount: "",
     appliedDiscountAmount: 0,
     allowedPlaylists: [] as any[],
+    instapayReciept: "",
   });
+
   useEffect(() => {
     fetchPackages();
     fetchPlaylists();
@@ -156,7 +167,8 @@ const SubscriptionsPage = () => {
       (discountSearch === "" ||
         (typeof s.appliedDiscount === "object" &&
           s.appliedDiscount?.code?.toLowerCase() ===
-            discountSearch.toLowerCase())),
+            discountSearch.toLowerCase())) &&
+      (activeTab !== "paymob" || s.paymentMethod !== "instapay"),
   );
 
   const totalPages = Math.ceil(filteredSubscriptions.length / itemsPerPage);
@@ -187,6 +199,16 @@ const SubscriptionsPage = () => {
           params.miniSubscriptionActivated = miniActivationFilter;
         }
       }
+
+      if (activeTab === "instapay") {
+        params.paymentMethod = "instapay";
+      }
+
+      if (activeTab === "paymob") {
+        params.paymentMethod = "paymob";
+      }
+
+
 
       const query = new URLSearchParams(params).toString();
       const res = await axios.get(
@@ -366,7 +388,9 @@ const SubscriptionsPage = () => {
             ? subscription.appliedDiscount.code
             : subscription.appliedDiscount || "",
         appliedDiscountAmount: subscription.appliedDiscountAmount || 0,
+        instapayReciept: subscription.instapayReciept || "",
       });
+
     } else if (type === "add") {
       setForm({
         paymentID: "",
@@ -411,7 +435,9 @@ const SubscriptionsPage = () => {
         redeemedLoyaltyPoints: 0,
         appliedDiscount: "",
         appliedDiscountAmount: 0,
+        instapayReciept: "",
       });
+
     }
   };
 
@@ -481,6 +507,31 @@ const SubscriptionsPage = () => {
     }
   };
 
+  const handleApproveInstapay = async (paymentID: string) => {
+    setApprovingId(paymentID);
+    try {
+const response = await axios.get(
+  `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback?success=true&order=${paymentID}&json=true`
+);
+
+      console.log("response", response);
+      if (response.status === 200) {
+        alert("Payment approved successfully!");
+        fetchSubscriptions();
+      } else {
+        alert("Failed to approve payment. Status code: " + response.status);
+      }
+    } catch (error: any) {
+      console.error("Error approving instapay payment:", error);
+      alert(
+        "An error occurred while approving the payment: " +
+          (error.response?.data?.message || error.message),
+      );
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
   return (
     <DefaultLayout>
       <div className="flex min-h-[calc(100vh-124px)] w-full flex-col items-center p-4">
@@ -504,9 +555,34 @@ const SubscriptionsPage = () => {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            Mini Experience
+            Mini Experience (activation analytics)
+          </button>
+          <button
+            onClick={() => setActiveTab("paymob")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "paymob"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Paymob Logs
+          </button>
+          <button
+            onClick={() => setActiveTab("instapay")}
+            className={`px-4 py-2 font-medium relative ${
+              activeTab === "instapay"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Instapay Requests
+            {subscriptions.filter(s => s.paymentMethod === "instapay" && s.status !== "confirmed").length > 0 && activeTab !== "instapay" && (
+              <span className="absolute top-1 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+            )}
           </button>
         </div>
+
+
 
         {/* Insights for Mini Experience */}
         {activeTab === "mini" && (
@@ -549,10 +625,11 @@ const SubscriptionsPage = () => {
               onChange={(e) => setSubscribedFilter(e.target.value)}
               className="rounded border p-2"
             >
-              <option value="all">All</option>
+              <option value="all">All Status</option>
               <option value="true">Paid</option>
-              <option value="false">Paymob Failed</option>
+              <option value="false">Unpaid/Failed</option>
             </select>
+
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -622,19 +699,29 @@ const SubscriptionsPage = () => {
                 <th className="border p-2">Payment ID</th>
                 <th className="border p-2">Package</th>
                 {/* <th className="p-2 border">Total</th> */}
+                               {activeTab !== "paymob" && activeTab !== "instapay" && (
                 <th className="border p-2">Paid</th>
-                <th className="border p-2">Gift</th>
-                <th className="border p-2">Expiry</th>
+                )}
+                {/* <th className="border p-2">Gift</th> */}
+                {activeTab !== "paymob" && activeTab !== "instapay" && (
+                  <th className="border p-2">Expiry</th>
+                )}
+                {activeTab === "instapay" && <th className="border p-2">Receipt</th>}
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
+
             <tbody className="bg-white">
               {loading ? (
                 <tr>
                   <td colSpan={9} className="border p-8 text-center">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
+                                     {activeTab !== "paymob" && activeTab !== "instapay" ? (
                       <p className="text-gray-600">Loading subscriptions...</p>
+                                     ) : (
+                                      <p className="text-gray-600">Loading logs...</p>
+                                     ) }
                     </div>
                   </td>
                 </tr>
@@ -665,16 +752,38 @@ const SubscriptionsPage = () => {
                       {sub.packageID ? sub.packageID.name : "-"}
                     </td>
                     {/* <td className="p-2 border">{sub.total ? `${sub.currency || ""} ${sub.total.toFixed(2)}` : "-"}</td> */}
+                                       {activeTab !== "paymob" && activeTab !== "instapay" && (
+
                     <td className="border p-2">
                       {sub.subscribed ? "Yes" : "No"}
-                    </td>
-                    <td className="border p-2">{sub.isGift ? "Yes" : "No"}</td>
-                    <td className="border p-2">
-                      {sub.expiryDate
-                        ? new Date(sub.expiryDate).toLocaleDateString()
-                        : "-"}
-                    </td>
+                    </td>)}
+                    {/* <td className="border p-2">{sub.isGift ? "Yes" : "No"}</td> */}
+                    {activeTab !== "paymob" && activeTab !== "instapay" && (
+                      <td className="border p-2">
+                        {sub.expiryDate
+                          ? new Date(sub.expiryDate).toLocaleDateString()
+                          : "-"}
+                      </td>
+                    )}
+                    {activeTab === "instapay" && (
+                      <td className="border p-2">
+                        {sub.instapayReciept ? (
+                          <a 
+                            href={sub.instapayReciept} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary underline flex items-center gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            View Receipt
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 italic">No receipt</span>
+                        )}
+                      </td>
+                    )}
                     <td className="space-x-2 border p-2" onClick={(e) => e.stopPropagation()}>
+
                       <button
                         onClick={() => openModal("edit", sub)}
                         className="text-blue-600 underline"
@@ -687,6 +796,21 @@ const SubscriptionsPage = () => {
                       >
                         Delete
                       </button>
+                      {/* Debug info: showing status */}
+                      <span className="text-xs text-gray-400">({sub.status || "undefined"})</span>
+                      {sub.status !== "confirmed" && (
+                        <button
+                          disabled={approvingId === sub.paymentID}
+                          onClick={() => handleApproveInstapay(sub.paymentID)}
+                          className={`ml-2 rounded mt-2 px-3 py-1 text-xs font-semibold text-white shadow-sm bg-secondary transition-all active:scale-95 disabled:opacity-50 ${
+                            approvingId === sub.paymentID
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+                          }`}
+                        >
+                          {approvingId === sub.paymentID ? "..." : "Approve"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -809,8 +933,57 @@ const SubscriptionsPage = () => {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">
+                    Instapay Receipt
+                  </label>
+                  <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-gray-300 p-4">
+                    {form.instapayReciept ? (
+                      <div className="relative h-48 w-full overflow-hidden rounded-lg">
+                        <CldImage
+                          width="400"
+                          height="300"
+                          src={form.instapayReciept}
+                          alt="Instapay Receipt"
+                          className="h-full w-full object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, instapayReciept: "" })}
+                          className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex h-48 w-full items-center justify-center bg-gray-50 text-gray-400 text-sm">
+                        No receipt uploaded
+                      </div>
+                    )}
+                    <CldUploadWidget
+                      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+                      onSuccess={(result: any) => {
+                        setForm({ ...form, instapayReciept: result.info.secure_url });
+                      }}
+                    >
+                      {({ open }) => (
+                        <button
+                          type="button"
+                          onClick={() => open()}
+                          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-opacity-90"
+                        >
+                          {form.instapayReciept ? "Change Receipt" : "Upload Receipt"}
+                        </button>
+                      )}
+                    </CldUploadWidget>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
                     Package
                   </label>
+
                   <select
                     value={form.packageID}
                     onChange={(e) =>
@@ -859,19 +1032,21 @@ const SubscriptionsPage = () => {
                     <option value="true">Yes</option>
                   </select>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Expiry Date
-                  </label>
-                  <input
-                    type="date"
-                    value={form.expiryDate}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, expiryDate: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                  />
-                </div>
+                {activeTab !== "paymob" && activeTab !== "instapay" && (
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">
+                      Expiry Date
+                    </label>
+                    <input
+                      type="date"
+                      value={form.expiryDate}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, expiryDate: e.target.value }))
+                      }
+                      className="w-full rounded border p-2"
+                    />
+                  </div>
+                )}
 
                 <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
                   <h3 className="text-lg font-medium mb-2">Allowed Playlists</h3>
@@ -1518,10 +1693,18 @@ const SubscriptionsPage = () => {
                     <span className="text-gray-500">Package:</span>
                     <span className="font-medium">{selectedSubscription.packageID?.name || "-"}</span>
                     
-                    <span className="text-gray-500">Expiry Date:</span>
-                    <span className="font-medium">
-                      {selectedSubscription.expiryDate ? new Date(selectedSubscription.expiryDate).toLocaleDateString() : "-"}
-                    </span>
+                    {activeTab !== "paymob" && activeTab !== "instapay" && (
+                      <>
+                        <span className="text-gray-500">Expiry Date:</span>
+                        <span className="font-medium">
+                          {selectedSubscription.expiryDate
+                            ? new Date(
+                                selectedSubscription.expiryDate,
+                              ).toLocaleDateString()
+                            : "-"}
+                        </span>
+                      </>
+                    )}
                     
                     <span className="text-gray-500">Created At:</span>
                     <span className="font-medium">
