@@ -702,7 +702,8 @@ const response = await axios.get(
                                {activeTab !== "paymob" && activeTab !== "instapay" && (
                 <th className="border p-2">Paid</th>
                 )}
-                {/* <th className="border p-2">Gift</th> */}
+                <th className="border p-2">Gift</th>
+              
                 {activeTab !== "paymob" && activeTab !== "instapay" && (
                   <th className="border p-2">Expiry</th>
                 )}
@@ -757,7 +758,7 @@ const response = await axios.get(
                     <td className="border p-2">
                       {sub.subscribed ? "Yes" : "No"}
                     </td>)}
-                    {/* <td className="border p-2">{sub.isGift ? "Yes" : "No"}</td> */}
+                    <td className="border p-2">{sub.isGift ? "Yes" : "No"}</td>
                     {activeTab !== "paymob" && activeTab !== "instapay" && (
                       <td className="border p-2">
                         {sub.expiryDate

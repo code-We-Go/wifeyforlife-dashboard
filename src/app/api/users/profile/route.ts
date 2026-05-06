@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { ConnectDB } from "@/config/db";
 import UserModel from "@/app/models/userModel";
 import { useParams } from "next/navigation";
+import { LoyaltyTransactionModel } from "@/app/models/loyaltyTransactionModel";
+import ordersModel from "@/app/models/ordersModel";
+import subscriptionsModel from "@/app/models/subscriptionsModel";
+import packageModel from "@/app/models/packageModel";
+import playlistModel from "@/app/models/playlistModel";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,28 +21,75 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
+    console.log("register ",subscriptionsModel,ordersModel,LoyaltyTransactionModel,packageModel,playlistModel)
 
-    const user = await UserModel.findOne({ _id: userID }).select("-password");
+    const user = await UserModel.findById(userID).populate({
+      path: "subscriptions",
+      select: "subscribed expiryDate allowedPlaylists miniSubscriptionActivated packageID",
+      populate: [
+        {
+          path: "packageID",
+          model: "packages",
+          select: "name packagePlaylists accessAllPlaylists packageInspos accessAllInspos packagePartners accessAllPartners",
+        },
+        {
+          path: "allowedPlaylists.playlistID",
+          model: "playlists",
+          select: "name",
+        }
+      ]
+    });
     console.log("user:" + user);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+        const ordersCount = await ordersModel.countDocuments({ email: user.email });
 
-    return NextResponse.json({
-      user: {
-        _id: user._id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        imageURL: user.imageURL,
-        emailVerified: user.emailVerified,
-        isSubscribed: user.isSubscribed,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
+    const loyaltyStats = await LoyaltyTransactionModel.aggregate([
+      { $match: { email: user.email } },
+      {
+        $group: {
+          _id: null,
+          totalEarned: {
+            $sum: {
+              $cond: [{ $eq: ["$type", "earn"] }, "$amount", 0],
+            },
+          },
+          totalSpent: {
+            $sum: {
+              $cond: [{ $eq: ["$type", "spend"] }, "$amount", 0],
+            },
+          },
+        },
       },
-    });
+    ]);
+
+    const loyaltyPoints =
+      loyaltyStats.length > 0
+        ? (loyaltyStats[0].totalEarned || 0) - (loyaltyStats[0].totalSpent || 0)
+        : 0;
+
+    // 4. Construct Response
+    const responseData: any = {
+      name:
+        user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
+          : user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      imageURL: user.imageURL,
+      numberOfOrders: ordersCount,
+      loyaltyPoints: loyaltyPoints,
+      weddingDate: user.weddingDate,
+      birthDate: user.birthDate,
+      isSubscribed: user.isSubscribed,
+      subscriptions: user.subscriptions,
+    };
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return NextResponse.json(

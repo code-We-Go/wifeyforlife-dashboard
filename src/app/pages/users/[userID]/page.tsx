@@ -50,6 +50,8 @@ export default function AccountPage() {
     email: "",
     imageUrl: "",
     subscripton: { subscribed: false, expiryDate: new Date() },
+    loyaltyPoints: 0,
+    numberOfOrders: 0,
   });
   const [isDetailsModalOpen, setDetailsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
@@ -80,12 +82,10 @@ export default function AccountPage() {
     if (!userID) return;
     try {
       const response = await axios.get(`/api/users/profile?userID=${userID}`);
-      const userData = response.data.user;
-      const subscription = await axios(
-        `/api/subscriptions?email=${userData.email}`,
-      );
-      console.log("DATA" + JSON.stringify(subscription.data));
-      const subscriptionRecord = subscription.data?.data?.[0]; // Get first subscription record
+      const userData = response.data;
+      
+      // Handle subscriptions
+      const subscriptionRecord = userData.subscriptions?.[0];
       const expiryDateRaw = subscriptionRecord?.expiryDate;
       const expiryDate = expiryDateRaw ? new Date(expiryDateRaw) : null;
       const subscriptionData = {
@@ -93,14 +93,16 @@ export default function AccountPage() {
           expiryDate && expiryDate.getTime() > Date.now() ? true : false,
         expiryDate: expiryDateRaw,
       };
-      console.log(JSON.stringify(subscriptionData) + " subscriptionData");
+
       setUserInfo({
-        name: userData.username || "User",
+        name: userData.name || "User",
         firstName: userData.firstName || "",
         lastName: userData.lastName || "",
         email: userData.email || "user@example.com",
         imageUrl: userData.imageURL || "",
         subscripton: subscriptionData,
+        loyaltyPoints: userData.loyaltyPoints || 0,
+        numberOfOrders: userData.numberOfOrders || 0,
       });
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -111,6 +113,8 @@ export default function AccountPage() {
         lastName: "",
         email: "user@example.com",
         imageUrl: "",
+        loyaltyPoints: 0,
+        numberOfOrders: 0,
       }));
     }
   };
@@ -128,19 +132,7 @@ export default function AccountPage() {
       setLoading(false);
     }
   };
-  const fetchUserSubscription = async () => {
-    const subscription = await axios(
-      `/api/subscriptions?email=${userInfo.email}`,
-    );
-    const subscriptionData = subscription.data;
-    console.log(subscriptionData);
-    const subscriptionRecord = subscriptionData?.data?.[0]; // Get first subscription record
-    const subscriptionNeededData = {
-      subscribed: subscriptionRecord?.expiryDate > Date.now() ? true : false,
-      expiryDate: subscriptionRecord?.expiryDate,
-    };
-    setSubscription(subscriptionNeededData);
-  };
+
 
   useEffect(() => {
     if (userID) {
@@ -210,10 +202,6 @@ export default function AccountPage() {
     }
   };
 
-  const [loyaltyPoints, setLoyaltyPoints] = useState({
-    lifeTimePoints: 0,
-    realLoyaltyPoints: 0,
-  });
 
   // useEffect(() => {
   //   async function fetchLoyaltyPoints(userID: string) {
@@ -243,18 +231,18 @@ export default function AccountPage() {
   const user = {
     name: userInfo.name || "User",
     email: userInfo.email || "user@example.com",
-    isSubscribed: userInfo.subscripton.subscribed ? true : false, // You may fetch this from userInfo if available
-    subscriptionExpiryDate: userInfo.subscripton.expiryDate, // You may fetch this from userInfo if available
+    isSubscribed: userInfo.subscripton.subscribed ? true : false,
+    subscriptionExpiryDate: userInfo.subscripton.expiryDate,
     imgUrl: userInfo.imageUrl,
-    loyaltyPoints: loyaltyPoints,
-    wishlistItems: 0, // Set to 0 or fetch if available
-    orders: orders.length,
+    loyaltyPoints: userInfo.loyaltyPoints,
+    wishlistItems: 0,
+    orders: userInfo.numberOfOrders,
   };
 
   const stats = [
     {
       name: "Loyalty Points",
-      value: user.loyaltyPoints.lifeTimePoints,
+      value: user.loyaltyPoints,
       icon: Gift,
       color: "text-primary",
       bgColor: "bg-creamey",
