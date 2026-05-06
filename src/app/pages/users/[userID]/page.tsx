@@ -52,6 +52,7 @@ export default function AccountPage() {
     subscripton: { subscribed: false, expiryDate: new Date() },
     loyaltyPoints: 0,
     numberOfOrders: 0,
+    subscriptions: [] as any[],
   });
   const [isDetailsModalOpen, setDetailsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
@@ -103,6 +104,7 @@ export default function AccountPage() {
         subscripton: subscriptionData,
         loyaltyPoints: userData.loyaltyPoints || 0,
         numberOfOrders: userData.numberOfOrders || 0,
+        subscriptions: userData.subscriptions || [],
       });
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -115,6 +117,7 @@ export default function AccountPage() {
         imageUrl: "",
         loyaltyPoints: 0,
         numberOfOrders: 0,
+        subscriptions: [],
       }));
     }
   };
@@ -328,7 +331,7 @@ export default function AccountPage() {
                 <p className="break-all text-sm font-semibold text-primary/80">
                   {user.email}
                 </p>
-                <p className="flex items-center gap-2 text-sm font-semibold text-primary/80">
+                {/* <p className="flex items-center gap-2 text-sm font-semibold text-primary/80">
                   Subscription :{" "}
                   <span>
                     {userInfo.subscripton.subscribed ? (
@@ -337,27 +340,36 @@ export default function AccountPage() {
                       <BadgeAlert />
                     )}
                   </span>
-                </p>
-                {user.isSubscribed && (
-                  <p className="text-sm font-semibold text-primary/80">
-                    Expires at :{" "}
-                    {user.subscriptionExpiryDate
-                      ? (() => {
-                          const expiry = new Date(user.subscriptionExpiryDate);
-                          const now = new Date();
-                          const tenYearsFromNow = new Date(
-                            now.setFullYear(now.getFullYear() + 10),
-                          );
-                          return expiry > tenYearsFromNow ? (
-                            <span className="inline-flex items-end gap-2">
-                              Lifetime Wifey <Crown />
-                            </span>
-                          ) : (
-                            expiry.toLocaleDateString()
-                          );
-                        })()
-                      : ""}
-                  </p>
+                </p> */}
+                {userInfo.subscriptions && userInfo.subscriptions.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {userInfo.subscriptions.map((sub: any, idx: number) => (
+                      <p key={idx} className="flex items-center gap-2 text-sm font-semibold text-primary/80">
+                        <Package className="h-4 w-4" />
+                        <span>{sub.packageID?.name || "Subscription"}:</span>
+                        <span className="text-primary">
+                          {sub.expiryDate
+                            ? (() => {
+                                const expiry = new Date(sub.expiryDate);
+                                const now = new Date();
+                                const tenYearsFromNow = new Date();
+                                tenYearsFromNow.setFullYear(now.getFullYear() + 10);
+                                
+                                return expiry > tenYearsFromNow ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    Lifetime Wifey <Crown className="h-3 w-3" />
+                                  </span>
+                                ) : (
+                                  expiry.toLocaleDateString()
+                                );
+                              })()
+                            : "No expiry"}
+                        </span>
+                        {!sub.subscribed && <BadgeAlert className="h-4 w-4 text-red-500" />}
+                        {sub.subscribed && <BadgeCheck className="h-4 w-4 text-green-500" />}
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
