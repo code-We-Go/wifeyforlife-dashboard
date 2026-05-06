@@ -13,6 +13,8 @@ const OrdersPage = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [orderDate, setOrderDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "cash" | "card" | "instapay">("all");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
@@ -21,6 +23,7 @@ const OrdersPage = () => {
       if (search) params.append("search", search);
       if (discountCode) params.append("discountCode", discountCode);
       if (orderDate) params.append("orderDate", orderDate);
+      if (activeTab !== "all") params.append("cash", activeTab);
       const res = await axios.get(`/api/orders?${params.toString()}`);
       setOrders(res.data.data);
       setTotalPages(res.data.totalPages);
@@ -29,15 +32,40 @@ const OrdersPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, search, discountCode, orderDate]);
+  }, [page, search, discountCode, orderDate, activeTab]);
 
   useEffect(() => {
     fetchOrders();
-  }, [page, search, discountCode, orderDate]);
+  }, [page, search, discountCode, orderDate, activeTab]);
 
   useEffect(() => {
     setPage(1); // Reset to first page when filters change
-  }, [search, discountCode, orderDate]);
+  }, [search, discountCode, orderDate, activeTab]);
+
+  const handleApproveInstapay = async (orderID: string) => {
+    setApprovingId(orderID);
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback?success=true&order=${orderID}&json=true`
+      );
+
+      console.log("response", response);
+      if (response.status === 200) {
+        alert("Payment approved successfully!");
+        fetchOrders();
+      } else {
+        alert("Failed to approve payment. Status code: " + response.status);
+      }
+    } catch (error: any) {
+      console.error("Error approving instapay payment:", error);
+      alert(
+        "An error occurred while approving the payment: " +
+          (error.response?.data?.message || error.message),
+      );
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -47,7 +75,51 @@ const OrdersPage = () => {
 
   return (
     <DefaultLayout>
-      <div className="flex h-auto min-h-screen w-full flex-col items-center justify-center gap-4 overflow-hidden bg-backgroundColor px-1 py-2 md:px-2 md:py-4">
+      <div className="flex h-auto min-h-screen w-full flex-col items-center justify-start gap-4 overflow-hidden bg-backgroundColor px-1 py-2 md:px-2 md:py-4">
+        {/* Tabs */}
+        <div className="mb-6 flex w-full space-x-4 border-b">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "all"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            All Orders
+          </button>
+          <button
+            onClick={() => setActiveTab("card")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "card"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Card (Paymob)
+          </button>
+          <button
+            onClick={() => setActiveTab("cash")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "cash"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Cash
+          </button>
+          <button
+            onClick={() => setActiveTab("instapay")}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "instapay"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Instapay
+          </button>
+        </div>
+
         <div className="mb-4 flex w-full flex-col items-center justify-between gap-4 md:flex-row">
           <input
             type="text"
@@ -70,6 +142,7 @@ const OrdersPage = () => {
             className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
           />
         </div>
+        
         {isLoading ? (
           <div>Loading...</div>
         ) : orders.length > 0 ? (
@@ -78,6 +151,8 @@ const OrdersPage = () => {
               setOrders={setOrders}
               key={order._id}
               order={order}
+              handleApproveInstapay={handleApproveInstapay}
+              approvingId={approvingId}
             />
           ))
         ) : (

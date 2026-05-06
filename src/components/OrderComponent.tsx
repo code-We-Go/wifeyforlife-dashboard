@@ -11,9 +11,13 @@ import CartItemSmall from "./CartItemSmall";
 const OrderComponent = ({
   order,
   setOrders,
+  handleApproveInstapay,
+  approvingId,
 }: {
   order: IOrder;
   setOrders: React.Dispatch<React.SetStateAction<IOrder[]>>;
+  handleApproveInstapay?: (paymentID: string) => Promise<void>;
+  approvingId?: string | null;
 }) => {
   const [status, setStatus] = useState(order.status);
   const [payment, setPayment] = useState(order.payment);
@@ -197,6 +201,38 @@ const OrderComponent = ({
         <div className="flex items-center justify-center gap-2">
           <p>{order.state}</p>
         </div>
+        {order.cash === "instapay" && (
+          <div className="flex items-center justify-center gap-4">
+            {order.instapayReciept ? (
+              <a
+                href={order.instapayReciept}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-accent underline"
+              >
+                Receipt
+              </a>
+            ) : (
+              <span className="italic text-gray-400">No receipt</span>
+            )}
+            {order.payment !== "confirmed" && handleApproveInstapay && (
+              <button
+                disabled={approvingId === order.orderID}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleApproveInstapay(order.orderID || "");
+                }}
+                className={`rounded px-3 py-1 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 ${
+                  approvingId === order.orderID
+                    ? "cursor-not-allowed bg-gray-400"
+                    : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+                }`}
+              >
+                {approvingId === order._id ? "..." : "Approve"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Confirmation Modal */}
@@ -314,7 +350,22 @@ const OrderComponent = ({
                 ))}
               </select>
 
-              <label className="mt-4 block font-semibold">Payment Method: {order.cash=== "cash" ? "Cash on delivery" : "card"} </label>
+              <label className="mt-4 block font-semibold">
+                Payment Method: {order.cash === "cash" ? "Cash on delivery" : order.cash === "instapay" ? "Instapay" : "Card"}
+              </label>
+              {order.cash === "instapay" && order.instapayReciept && (
+                <p>
+                  <strong>Instapay Receipt:</strong>{" "}
+                  <a
+                    href={order.instapayReciept}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent underline"
+                  >
+                    View Receipt
+                  </a>
+                </p>
+              )}
               {/* Payment Dropdown */}
               <label className="mt-4 block font-semibold">Payment:</label>
               <select

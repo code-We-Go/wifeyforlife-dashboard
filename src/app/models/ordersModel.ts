@@ -59,7 +59,8 @@ const OrderSchema = new Schema(
     giftRecipientEmail: { type: String, required: false },
     specialMessage: { type: String, required: false },
     giftCardName: { type: String, required: false },
-    cash: { type: String, required: false, default: true }, // Payment method: Cash or not
+        cash: { type: String, required: false, enum: ["card", "cash", "instapay"] }, // Payment method: card, cash, or instapay
+    instapayReciept: { type: String, required: false },
     cart: {
       type: [CartItemSchema],
       required: false, // Array of cart items

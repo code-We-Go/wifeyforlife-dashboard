@@ -274,7 +274,7 @@ export interface IOrder {
   city?: string;
   state?: string;
   phone?: string;
-  cash?: string;
+  cash?: "card" | "cash" | "instapay";
   cart?: CartItem[]; // Assuming CartItem interface exists
   subTotal?: number;
   shipping: number;
@@ -293,6 +293,7 @@ export interface IOrder {
   billingPostalZip?: string;
   billingCity?: string;
   billingPhone?: string;
+  instapayReciept?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

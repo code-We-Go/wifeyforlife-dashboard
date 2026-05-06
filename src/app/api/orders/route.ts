@@ -79,8 +79,12 @@ export async function GET(req: Request) {
   const page = pageParam ? parseInt(pageParam) : 1;
   const skip = (page - 1) * limit;
 
+  const cash = searchParams.get("cash");
   // Build filter
   const filter: any = {};
+  if (cash) {
+    filter.cash = cash;
+  }
   if (discountCode) {
     try {
       const discount = await DiscountModel.findOne({
