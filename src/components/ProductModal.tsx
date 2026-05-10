@@ -46,7 +46,7 @@ const ProductModal = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios("/api/categories");
+        const res = await axios("/api/categories?type=product");
         if (res.status === 200) {
           setCategories(res.data.data);
           console.log("Categories loaded:", res.data.data);

@@ -40,6 +40,9 @@ const CategoryModal = ({
   const [active, setActive] = useState(
     category?.active !== false && subCategory?.active !== false
   );
+  const [catType, setCatType] = useState<"wedding-planning" | "product">(
+    category?.type || "product"
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
@@ -52,6 +55,7 @@ const CategoryModal = ({
           image: image,
           HomePage: homePage,
           active: active,
+          type: catType,
         });
       } else if (type === "editSub") {
         await axios.put(
@@ -85,6 +89,7 @@ const CategoryModal = ({
           image: image,
           HomePage: homePage,
           active: active,
+          type: catType,
         });
       } else if (type === "addSub") {
         const categoryObjectId = new mongoose.Types.ObjectId(categoryID);
@@ -169,11 +174,24 @@ const CategoryModal = ({
               className="mb-4 w-full rounded border px-3 py-2"
             />
             <label className="mb-2 block">Description</label>
-            <textarea
-              className="mb-4 w-full rounded border px-3 py-2"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
+              <textarea
+                className="mb-4 w-full rounded border px-3 py-2"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              {(type === "add" || type === "edit") && (
+                <>
+                  <label className="mb-2 block">Type</label>
+                  <select
+                    value={catType}
+                    onChange={(e) => setCatType(e.target.value as any)}
+                    className="mb-4 w-full rounded border px-3 py-2"
+                  >
+                    <option value="product">Product</option>
+                    <option value="wedding-planning">Wedding Planning</option>
+                  </select>
+                </>
+              )}
              <label className="mb-2 block">Image</label>
              <div className="mb-4 flex flex-col items-center gap-4">
               {image && (

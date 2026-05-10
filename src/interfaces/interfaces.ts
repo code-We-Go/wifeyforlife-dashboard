@@ -172,6 +172,7 @@ export interface Category {
   imageURL?: string; // @deprecated use image
   __v?: number;
   active?: boolean;
+  type?: "wedding-planning" | "product";
 }
 export interface Collection {
   _id: string;
@@ -360,4 +361,16 @@ export interface Partner {
   imagePath: string;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface WeddingPlanningVendor {
+  _id: string;
+  name: string;
+  price?: string;
+  link?: string;
+  images?: string[];
+  package?: string;
+  notes?: string;
+  subCategoryID: SubCategory;
+  active?: boolean;
 }

@@ -218,6 +218,25 @@ const menuGroups = [
             width="18"
             height="18"
             viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.1L19.5 7.8L12 11.5L4.5 7.8L12 4.1ZM4 15.7V9.3L11 12.8V19.2L4 15.7ZM13 19.2V12.8L20 9.3V15.7L13 19.2Z"
+              fill="currentColor"
+            />
+          </svg>
+        ),
+        label: "Wedding Vendors",
+        route: "/pages/wedding-planning-vendors",
+      },
+      {
+        icon: (
+          <svg
+            className="fill-current"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
           >
             <path
               d="M5 12H19M5 12L9 8M5 12L9 16"

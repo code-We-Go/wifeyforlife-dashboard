@@ -69,10 +69,15 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = 10;
     const skip = (page - 1) * limit;
+    const type = searchParams.get("type");
+    const filter: any = {};
+    if (type) {
+        filter.type = type;
+    }
 
     try {
-        const categories = await categoriesModel.find().skip(skip).limit(limit).sort({ createdAt: -1 });
-        const totalCategories = await categoriesModel.countDocuments();
+        const categories = await categoriesModel.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 });
+        const totalCategories = await categoriesModel.countDocuments(filter);
 
         return NextResponse.json({
             data: categories,
