@@ -12,17 +12,43 @@ async function loadDB() {
 export async function GET(request: Request) {
   try {
     await loadDB();
-    console.log("registering"+UserModel+subscriptionsModel);
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
     const skip = (page - 1) * limit;
 
-    // Only get timelines that have feedback and populate the user data along with their subscription
-    const timelines = await WeddingTimelineModel.find({ 
-"feedback.easeOfUse": { $exists: true }    })
+    const feedbackOnly = searchParams.get("feedbackOnly") === "true";
+
+    // 1. Build the base query
+    const query: any = {};
+    if (feedbackOnly) {
+      query["feedback.easeOfUse"] = { $exists: true };
+    }
+
+    // 2. Handle search at database level
+    if (search) {
+      // Find users matching search criteria
+      const matchingUsers = await UserModel.find({
+        $or: [
+          { firstName: { $regex: search, $options: "i" } },
+          { lastName: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      }).select("_id");
+      
+      const userIds = matchingUsers.map((u: any) => u._id);
+      query.userId = { $in: userIds };
+    }
+
+    // 3. Count total documents for pagination
+    const total = await WeddingTimelineModel.countDocuments(query);
+
+    // 4. Fetch only the paginated data with full population
+    const timelines = await WeddingTimelineModel.find(query)
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate({
         path: 'userId',
         select: 'firstName lastName email imageURL subscriptions',
@@ -32,87 +58,83 @@ export async function GET(request: Request) {
       })
       .lean();
 
-    // 4. Populate user data for each timeline
-    const timelinesWithUserData = timelines.map((timeline: any) => {
-        let userData = null;
-        let subscriptionData = null;
+    // 5. Transform the paginated data for response
+    const paginatedData = timelines.map((timeline: any) => {
+      let userData = null;
+      let subscriptionData = null;
+      const user = timeline.userId;
 
-        const user = timeline.userId; // This is the populated user object!
-
-        if (user) {
-          userData = {
-            firstName: user.firstName || "",
-            lastName: user.lastName || "",
-            email: user.email || "",
-            imageURL: user.imageURL || "",
-          };
-
-          if (user.subscriptions && user.subscriptions.length > 0) {
-            subscriptionData = {
-              hasSubscription: user.subscriptions[0].subscribed || false,
-              expiryDate: user.subscriptions[0].expiryDate || null,
-            };
-          } else {
-            subscriptionData = {
-              hasSubscription: false,
-              expiryDate: null,
-            };
-          }
-        }
-
-        // Return a shape consistent with the previous implementation
-        const { userId, ...rest } = timeline;
-        return {
-          ...rest,
-          userId: user?._id?.toString() || (typeof userId === 'string' ? userId : null), // Fallback in case of missing populate
-          user: userData,
-          subscription: subscriptionData,
+      if (user) {
+        userData = {
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
+          imageURL: user.imageURL || "",
         };
+
+        if (user.subscriptions && user.subscriptions.length > 0) {
+          subscriptionData = {
+            hasSubscription: user.subscriptions[0].subscribed || false,
+            expiryDate: user.subscriptions[0].expiryDate || null,
+          };
+        } else {
+          subscriptionData = {
+            hasSubscription: false,
+            expiryDate: null,
+          };
+        }
+      }
+
+      const { userId, ...rest } = timeline;
+      return {
+        ...rest,
+        userId: user?._id?.toString() || (typeof userId === 'string' ? userId : null),
+        user: userData,
+        subscription: subscriptionData,
+      };
     });
 
-    // Filter by search term if provided
-    let filteredTimelines = timelinesWithUserData;
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredTimelines = timelinesWithUserData.filter((timeline) => {
-        const firstName = timeline.user?.firstName?.toLowerCase() || "";
-        const lastName = timeline.user?.lastName?.toLowerCase() || "";
-        const email = timeline.user?.email?.toLowerCase() || "";
-        
-        return (
-          firstName.includes(searchLower) ||
-          lastName.includes(searchLower) ||
-          email.includes(searchLower)
-        );
-      });
-    }
+    // 6. Calculate stats efficiently without loading full documents
+    // We still need global stats for the entire filtered set (not just the page)
+    const statsTimelines = await WeddingTimelineModel.find(query)
+      .select("feedback userId")
+      .lean();
 
-    // Apply pagination after filtering
-    const total = filteredTimelines.length;
-    const paginatedTimelines = filteredTimelines.slice(skip, skip + limit);
+    const userIdsForStats = statsTimelines.map((t: any) => t.userId).filter(Boolean);
+    const uniqueUserIds = [...new Set(userIdsForStats.map((id: any) => id.toString()))];
 
-    // Calculate stats from all filtered timelines (not just current page)
-    const subscribedUsersCount = filteredTimelines.filter(
-      (t) => t.subscription?.hasSubscription
-    ).length;
+    // Fetch minimal user info for subscription count
+    const usersWithSubs = await UserModel.find({ _id: { $in: uniqueUserIds } })
+      .select("subscriptions")
+      .populate("subscriptions", "subscribed")
+      .lean();
 
-    const timelinesWithEaseOfUse = filteredTimelines.filter(
-      (t) => (t as any).feedback?.easeOfUse && (t as any).feedback.easeOfUse > 0
-    );
-    const avgEaseOfUse = timelinesWithEaseOfUse.length > 0
-      ? timelinesWithEaseOfUse.reduce((acc, t) => acc + ((t as any).feedback?.easeOfUse || 0), 0) / timelinesWithEaseOfUse.length
-      : 0;
+    const subMap = new Map();
+    usersWithSubs.forEach((u: any) => {
+      subMap.set(u._id.toString(), u.subscriptions?.[0]?.subscribed || false);
+    });
 
-    const timelinesWithSatisfaction = filteredTimelines.filter(
-      (t) => (t as any).feedback?.satisfaction && (t as any).feedback.satisfaction > 0
-    );
-    const avgSatisfaction = timelinesWithSatisfaction.length > 0
-      ? timelinesWithSatisfaction.reduce((acc, t) => acc + ((t as any).feedback?.satisfaction || 0), 0) / timelinesWithSatisfaction.length
-      : 0;
+    let subscribedUsersCount = 0;
+    let totalEase = 0, countEase = 0;
+    let totalSat = 0, countSat = 0;
+
+    statsTimelines.forEach((t: any) => {
+      if (t.userId && subMap.get(t.userId.toString())) {
+        subscribedUsersCount++;
+      }
+      if (t.feedback?.easeOfUse) {
+        totalEase += t.feedback.easeOfUse;
+        countEase++;
+      }
+      if (t.feedback?.satisfaction) {
+        totalSat += t.feedback.satisfaction;
+        countSat++;
+      }
+    });
 
     return NextResponse.json({
       success: true,
-      data: paginatedTimelines,
+      data: paginatedData,
       pagination: {
         total,
         page,
@@ -121,8 +143,8 @@ export async function GET(request: Request) {
       },
       stats: {
         subscribedUsersCount,
-        avgEaseOfUse: parseFloat(avgEaseOfUse.toFixed(2)),
-        avgSatisfaction: parseFloat(avgSatisfaction.toFixed(2)),
+        avgEaseOfUse: countEase > 0 ? parseFloat((totalEase / countEase).toFixed(2)) : 0,
+        avgSatisfaction: countSat > 0 ? parseFloat((totalSat / countSat).toFixed(2)) : 0,
       },
     });
   } catch (error: any) {

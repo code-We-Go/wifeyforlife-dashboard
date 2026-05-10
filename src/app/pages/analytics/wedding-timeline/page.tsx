@@ -97,7 +97,7 @@ const WeddingTimelineAnalyticsPage = () => {
     try {
       setLoading(true);
       // Fetch all timelines without pagination for accurate stats and client-side manipulation
-      const response = await axios.get(`/api/wedding-timeline?page=1&limit=10000`);
+      const response = await axios.get(`/api/wedding-timeline?page=1&limit=10000&feedbackOnly=true`);
       setAllTimelines(response.data.data);
       setApiStats(response.data.stats || {
         subscribedUsersCount: 0,

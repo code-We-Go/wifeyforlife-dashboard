@@ -441,6 +441,13 @@ const WeddingTimelinePage = () => {
 
                         {/* Feedback Section */}
                         {timeline.feedback && (
+                          (timeline.feedback.easeOfUse && timeline.feedback.easeOfUse > 0) ||
+                          (timeline.feedback.satisfaction && timeline.feedback.satisfaction > 0) ||
+                          (timeline.feedback.comment && timeline.feedback.comment.trim().length > 0) ||
+                          (timeline.feedback.timeSaved && timeline.feedback.timeSaved !== '') ||
+                          (timeline.feedback.recommend && timeline.feedback.recommend !== '') ||
+                          (timeline.feedback.feelings && timeline.feedback.feelings.length > 0)
+                        ) && (
                           <div className="rounded-lg bg-white p-5 shadow">
                             <h3 className="mb-4 text-lg font-bold text-primary">User Feedback</h3>
                             <div className="grid gap-4 md:grid-cols-2">
