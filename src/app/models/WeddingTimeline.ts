@@ -67,6 +67,16 @@ const WeddingTimelineSchema = new Schema<IWeddingTimeline>(
   { timestamps: true }
 );
 
+// Optimize performance for analytics by indexing timelines that HAVE submitted feedback.
+// This partial index only includes documents with feedback, making it small and fast.
+WeddingTimelineSchema.index(
+  { createdAt: -1 }, 
+  { 
+    partialFilterExpression: { "feedback.easeOfUse": { "$exists": true } },
+    name: "feedback_analytics_index"
+  }
+);
+
 const WeddingTimelineModel =
   mongoose.models.WeddingTimeline ||
   mongoose.model<IWeddingTimeline>("WeddingTimeline", WeddingTimelineSchema);

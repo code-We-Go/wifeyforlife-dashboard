@@ -21,8 +21,7 @@ export async function GET(request: Request) {
 
     // Only get timelines that have feedback and populate the user data along with their subscription
     const timelines = await WeddingTimelineModel.find({ 
-      feedback: { $exists: true, $ne: null } 
-    })
+"feedback.easeOfUse": { $exists: true }    })
       .sort({ createdAt: -1 })
       .populate({
         path: 'userId',

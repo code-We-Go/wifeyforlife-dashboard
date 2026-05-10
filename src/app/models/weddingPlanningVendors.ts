@@ -16,6 +16,7 @@ const weddingPlanningVendorsSchema = new mongoose.Schema({
   },
 
   active: { type: Boolean, default: true },
+  visitedCount: { type: Number, default: 0 },
 });
 // console.log("Registering subCategoriesMode");
 const weddingPlanningVendorsModel =
