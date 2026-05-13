@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Ipackage, Playlist } from "@/interfaces/interfaces";
+import { Ipackage, Playlist, Product, Variant, attribute, CartItem as ICartItem } from "@/interfaces/interfaces";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import * as XLSX from "xlsx";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
@@ -58,6 +58,7 @@ interface Subscription {
   paymentMethod?: string;
   status?: string;
   instapayReciept?: string;
+  cart?: ICartItem[];
 }
 
 
@@ -65,6 +66,8 @@ const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [packages, setPackages] = useState<(Ipackage & { _id: string })[]>([]);
   const [allPlaylists, setAllPlaylists] = useState<Playlist[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [productSearch, setProductSearch] = useState("");
   const [loading, setLoading] = useState(true);
   
   // New playlist form state
@@ -139,11 +142,36 @@ const SubscriptionsPage = () => {
     appliedDiscountAmount: 0,
     allowedPlaylists: [] as any[],
     instapayReciept: "",
+    status: "pending",
+    cart: [] as ICartItem[],
   });
+
+  // Calculate totals whenever cart or package or discount/shipping changes
+  useEffect(() => {
+    if (modalType !== "edit" && modalType !== "add") return;
+
+    const selectedPkg = packages.find(p => p._id === form.packageID);
+    const packagePrice = selectedPkg ? selectedPkg.price : 0;
+    
+    const cartTotal = form.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    const newSubTotal = packagePrice + cartTotal;
+    const newTotal = newSubTotal + (Number(form.shipping) || 0) - (Number(form.appliedDiscountAmount) || 0);
+
+    // Only update if values actually changed to avoid infinite loop
+    if (newSubTotal !== form.subTotal || newTotal !== form.total) {
+      setForm(f => ({
+        ...f,
+        subTotal: newSubTotal,
+        total: newTotal
+      }));
+    }
+  }, [form.cart, form.packageID, form.shipping, form.appliedDiscountAmount, modalType, packages]);
 
   useEffect(() => {
     fetchPackages();
     fetchPlaylists();
+    fetchProducts();
     // fetchSubscriptions(); // Initial fetch handled by the other useEffect
   }, []);
 
@@ -257,6 +285,15 @@ const SubscriptionsPage = () => {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get("/api/products?all=true");
+      setAllProducts(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
   const handleAddPlaylist = () => {
     if (!newPlaylistId || !newPlaylistExpiry) return;
     const playlistToAdd = allPlaylists.find(p => p._id === newPlaylistId);
@@ -281,6 +318,46 @@ const SubscriptionsPage = () => {
       ...f,
       allowedPlaylists: f.allowedPlaylists.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleAddToCart = (product: Product) => {
+    // Basic check if already in cart
+    const existingIndex = form.cart.findIndex(item => item.productId === product._id);
+    if (existingIndex > -1) {
+      handleUpdateCartQuantity(existingIndex, form.cart[existingIndex].quantity + 1);
+      return;
+    }
+
+    const newItem: ICartItem = {
+      productId: product._id,
+      productName: product.title,
+      price: product.price.local, // Using local price
+      quantity: 1,
+      imageUrl: product.variations?.[0]?.images?.[0]?.url || "",
+      attributes: product.variations?.[0]?.attributes?.[0] as any, // Default first attribute
+      variant: product.variations?.[0] as any, // Default first variant
+    };
+
+    setForm(f => ({
+      ...f,
+      cart: [...f.cart, newItem]
+    }));
+  };
+
+  const handleRemoveCartItem = (index: number) => {
+    setForm(f => ({
+      ...f,
+      cart: f.cart.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleUpdateCartQuantity = (index: number, quantity: number) => {
+    if (quantity < 1) return;
+    setForm(f => {
+      const newCart = [...f.cart];
+      newCart[index] = { ...newCart[index], quantity };
+      return { ...f, cart: newCart };
+    });
   };
 
   const exportToExcel = () => {
@@ -324,6 +401,8 @@ const SubscriptionsPage = () => {
           ? sub.appliedDiscount.code
           : sub.appliedDiscount || "",
       "Applied Discount Amount": sub.appliedDiscountAmount || 0,
+      "Shipment Status": sub.status || "pending",
+      "Bundled Items": sub.cart?.map(i => `${i.productName} (x${i.quantity})`).join(", ") || "None",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -389,6 +468,8 @@ const SubscriptionsPage = () => {
             : subscription.appliedDiscount || "",
         appliedDiscountAmount: subscription.appliedDiscountAmount || 0,
         instapayReciept: subscription.instapayReciept || "",
+        status: subscription.status || "pending",
+        cart: subscription.cart || [],
       });
 
     } else if (type === "add") {
@@ -436,6 +517,8 @@ const SubscriptionsPage = () => {
         appliedDiscount: "",
         appliedDiscountAmount: 0,
         instapayReciept: "",
+        status: "pending",
+        cart: [],
       });
 
     }
@@ -708,6 +791,7 @@ const response = await axios.get(
                   <th className="border p-2">Expiry</th>
                 )}
                 {activeTab === "instapay" && <th className="border p-2">Receipt</th>}
+                <th className="border p-2">Shipment</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
@@ -779,11 +863,27 @@ const response = await axios.get(
                             View Receipt
                           </a>
                         ) : (
-                          <span className="text-gray-400 italic">No receipt</span>
-                        )}
-                      </td>
+                        <span className="text-gray-400 italic">No receipt</span>
+                      )}
+                    </td>
+                  )}
+                  <td className="border p-2">
+                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                      sub.status === "delivered" ? "bg-green-50 text-green-700 ring-green-600/20" :
+                      sub.status === "shipped" ? "bg-blue-50 text-blue-700 ring-blue-600/20" :
+                      sub.status === "confirmed" ? "bg-purple-50 text-purple-700 ring-purple-600/20" :
+                      sub.status === "cancelled" || sub.status === "returned" ? "bg-red-50 text-red-700 ring-red-600/20" :
+                      "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
+                    }`}>
+                      {sub.status || "pending"}
+                    </span>
+                    {sub.cart && sub.cart.length > 0 && (
+                      <span className="ml-1 text-[10px] text-primary font-bold">
+                        +{sub.cart.length} items
+                      </span>
                     )}
-                    <td className="space-x-2 border p-2" onClick={(e) => e.stopPropagation()}>
+                  </td>
+                  <td className="space-x-2 border p-2" onClick={(e) => e.stopPropagation()}>
 
                       <button
                         onClick={() => openModal("edit", sub)}
@@ -1049,6 +1149,26 @@ const response = await axios.get(
                   </div>
                 )}
 
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Shipment Status
+                  </label>
+                  <select
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, status: e.target.value }))
+                    }
+                    className="w-full rounded border p-2"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="returned">Returned</option>
+                  </select>
+                </div>
+
                 <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
                   <h3 className="text-lg font-medium mb-2">Allowed Playlists</h3>
                   
@@ -1118,6 +1238,107 @@ const response = await axios.get(
                         Add
                       </button>
                     </div>
+                  </div>
+                </div>
+
+                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                  <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 100-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                    </svg>
+                    Cart Items (Bundled Products)
+                  </h3>
+                  
+                  {/* List of cart items */}
+                  <div className="space-y-3 mb-4">
+                    {form.cart.map((item: ICartItem, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.productName}
+                            className="w-12 h-12 object-cover rounded border"
+                          />
+                          <div>
+                            <p className="font-medium text-sm">{item.productName}</p>
+                            <p className="text-xs text-gray-500">{form.currency} {item.price}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center border rounded">
+                            <button 
+                              type="button"
+                              onClick={() => handleUpdateCartQuantity(idx, item.quantity - 1)}
+                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
+                            >-</button>
+                            <span className="px-3 text-sm">{item.quantity}</span>
+                            <button 
+                              type="button"
+                              onClick={() => handleUpdateCartQuantity(idx, item.quantity + 1)}
+                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
+                            >+</button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCartItem(idx)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {form.cart.length === 0 && (
+                      <p className="text-sm text-gray-500 italic text-center py-4 bg-white rounded border border-dashed">No products bundled with this subscription.</p>
+                    )}
+                  </div>
+
+                  {/* Add product search */}
+                  <div className="relative mt-4 pt-4 border-t">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Search & Add Product</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Type product name..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="flex-1 rounded border p-2 text-sm"
+                      />
+                    </div>
+                    
+                    {/* Search Results Dropdown */}
+                    {productSearch.length > 1 && (
+                      <div className="absolute left-0 right-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-md border bg-white shadow-lg">
+                        {allProducts
+                          .filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()))
+                          .map(p => (
+                            <div 
+                              key={p._id} 
+                              onClick={() => {
+                                handleAddToCart(p);
+                                setProductSearch("");
+                              }}
+                              className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer border-b last:border-0"
+                            >
+                              <img 
+                                src={p.variations?.[0]?.images?.[0]?.url} 
+                                alt={p.title} 
+                                className="w-10 h-10 object-cover rounded"
+                              />
+                              <div>
+                                <p className="text-sm font-medium">{p.title}</p>
+                                <p className="text-xs text-gray-500">{form.currency} {p.price.local}</p>
+                              </div>
+                            </div>
+                          ))
+                        }
+                        {allProducts.filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase())).length === 0 && (
+                          <p className="p-3 text-sm text-gray-500 italic">No products found.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1724,6 +1945,17 @@ const response = await axios.get(
                         <span className="font-medium italic">{selectedSubscription.specialMessage}</span>
                       </>
                     )}
+
+                    <span className="text-gray-500">Shipment Status:</span>
+                    <span className={`font-medium px-2 py-0.5 rounded-full text-xs inline-block ${
+                      selectedSubscription.status === "delivered" ? "bg-green-100 text-green-800" :
+                      selectedSubscription.status === "shipped" ? "bg-blue-100 text-blue-800" :
+                      selectedSubscription.status === "confirmed" ? "bg-purple-100 text-purple-800" :
+                      selectedSubscription.status === "cancelled" || selectedSubscription.status === "returned" ? "bg-red-100 text-red-800" :
+                      "bg-yellow-100 text-yellow-800"
+                    }`}>
+                      {(selectedSubscription.status || "pending").toUpperCase()}
+                    </span>
                   </div>
                 </div>
 
@@ -1811,6 +2043,47 @@ const response = await axios.get(
                           <div>
                             <p className="font-medium">{typeof item.playlistID === 'object' ? item.playlistID.title : 'Unknown Playlist'}</p>
                             <p className="text-xs text-gray-500">Expires: {new Date(item.expiryDate).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bundled Items (Cart) */}
+                {selectedSubscription.cart && selectedSubscription.cart.length > 0 && (
+                  <div className="space-y-4 md:col-span-2">
+                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 100-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                      </svg>
+                      Bundled Products
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedSubscription.cart.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-4 bg-white border p-3 rounded-lg shadow-sm">
+                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                            <img 
+                              src={item.imageUrl} 
+                              alt={item.productName} 
+                              className="h-full w-full object-cover object-center"
+                            />
+                          </div>
+                          <div className="flex flex-1 flex-col">
+                            <div>
+                              <div className="flex justify-between text-sm font-medium text-gray-900">
+                                <h4 className="line-clamp-1">{item.productName}</h4>
+                                <p className="ml-4">{selectedSubscription.currency} {item.price}</p>
+                              </div>
+                              {item.variant && (
+                                <p className="mt-1 text-xs text-gray-500">
+                                  {item.variant.name}: {item.attributes?.name}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-1 items-end justify-between text-xs text-gray-500">
+                              <p>Qty: {item.quantity}</p>
+                            </div>
                           </div>
                         </div>
                       ))}

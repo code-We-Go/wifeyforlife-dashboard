@@ -1,21 +1,47 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { CartItemSchema } from "./cartItemSchema";
 
 // Subscription Payment schema mirrors Subscription fields + from/to/process
 const SubscriptionPaymentSchema = new Schema(
   {
+    cart: {
+      type: [CartItemSchema],
+      default: [],
+    },
     // Core payment and context
     paymentID: { type: String, required: true },
     email: { type: String, required: true },
-    userID: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: false },
-    process: { type: String, enum: ["upgrade", "renew", "new"], required: true },
-    from: { type: mongoose.Schema.Types.ObjectId, ref: "packages", required: false },
-    to: { type: mongoose.Schema.Types.ObjectId, ref: "packages", required: true },
+    userID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: false,
+    },
+    process: {
+      type: String,
+      enum: ["upgrade", "renew", "new"],
+      required: true,
+    },
+    from: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "packages",
+      required: false,
+    },
+    to: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "packages",
+      required: true,
+    },
 
     // Subscription model parity fields
     packageID: { type: mongoose.Schema.Types.ObjectId, ref: "packages" }, // optional mirror, will be set to `to`
+    selectedDuration: { type: Number, required: false },
     subscribed: { type: Boolean, default: false },
     redeemedLoyaltyPoints: { type: Number, required: false },
-    appliedDiscount: { type: mongoose.Schema.Types.ObjectId, ref: "discounts", required: false },
+    appliedDiscount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "discounts",
+      required: false,
+    },
     appliedDiscountAmount: { type: Number, required: false },
 
     // User information
@@ -65,11 +91,18 @@ const SubscriptionPaymentSchema = new Schema(
     bostaDistrictName: { type: String, required: false },
     shipmentID: { type: String, required: false, default: "" },
 
-    paymentMethod: { type: String, required: false, enum: ["instapay", "cash", "card"] },
-    instapayReciept: { type: String, required: false },
     // Status tracking
-    status: { type: String, enum: ["pending", "confirmed", "failed"], default: "pending" },
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "failed"],
+      default: "pending",
+    },
+    expiresAt: { type: Date, required: false },
+
+    isMob: { type: Boolean, default: false },
+    instapayReciept: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
+    paymentMethod: { type: String, required: false,enum:["instapay","cash","card"] },
   },
   { timestamps: true }
 );
