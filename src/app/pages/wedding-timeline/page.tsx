@@ -67,19 +67,24 @@ const WeddingTimelinePage = () => {
     fetchTimelines();
   }, [currentPage, searchTerm]);
 
-  const fetchTimelines = useCallback(async () => {
+  const fetchTimelines = useCallback(async (forceStats = false) => {
     try {
       setLoading(true);
+      const isFirstPage = currentPage === 1 || forceStats;
       const searchQuery = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : "";
-      const response = await axios.get(`/api/wedding-timeline?page=${currentPage}&limit=${limit}${searchQuery}`);
+      const statsQuery = isFirstPage ? "&stats=true&total=true" : "";
+      const response = await axios.get(`/api/wedding-timeline?page=${currentPage}&limit=${limit}${searchQuery}${statsQuery}`);
+      
       setTimelines(response.data.data);
-      setTotal(response.data.pagination.total);
-      setTotalPages(response.data.pagination.totalPages);
-      setStats(response.data.stats || {
-        subscribedUsersCount: 0,
-        avgEaseOfUse: 0,
-        avgSatisfaction: 0,
-      });
+      
+      if (response.data.pagination.total !== undefined) {
+        setTotal(response.data.pagination.total);
+        setTotalPages(response.data.pagination.totalPages);
+      }
+      
+      if (response.data.stats) {
+        setStats(response.data.stats);
+      }
     } catch (error) {
       console.error("Error fetching wedding timelines:", error);
     } finally {
@@ -145,7 +150,7 @@ const WeddingTimelinePage = () => {
     if (!selectedTimeline) return;
     try {
       await axios.delete(`/api/wedding-timeline?id=${selectedTimeline._id}`);
-      fetchTimelines();
+      fetchTimelines(true);
       closeModal();
     } catch (error) {
       console.error("Error deleting timeline:", error);
@@ -157,7 +162,7 @@ const WeddingTimelinePage = () => {
     if (!selectedTimeline) return;
     try {
       await axios.put(`/api/wedding-timeline?id=${selectedTimeline._id}`, { feedback: formData });
-      fetchTimelines();
+      fetchTimelines(true);
       closeModal();
     } catch (error) {
       console.error("Error updating timeline:", error);

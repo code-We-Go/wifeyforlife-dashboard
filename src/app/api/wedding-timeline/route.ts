@@ -41,8 +41,14 @@ export async function GET(request: Request) {
       query.userId = { $in: userIds };
     }
 
+    const includeStats = searchParams.get("stats") === "true";
+    const includeTotal = searchParams.get("total") === "true";
+
     // 3. Count total documents for pagination
-    const total = await WeddingTimelineModel.countDocuments(query);
+    let total = 0;
+    if (includeTotal) {
+      total = await WeddingTimelineModel.countDocuments(query);
+    }
 
     // 4. Fetch only the paginated data with full population
     const timelines = await WeddingTimelineModel.find(query)
@@ -95,58 +101,69 @@ export async function GET(request: Request) {
     });
 
     // 6. Calculate stats efficiently without loading full documents
-    // We still need global stats for the entire filtered set (not just the page)
-    const statsTimelines = await WeddingTimelineModel.find(query)
-      .select("feedback userId")
-      .lean();
+    let stats = null;
+    if (includeStats) {
+      const statsTimelines = await WeddingTimelineModel.find(query)
+        .select("feedback userId")
+        .lean();
 
-    const userIdsForStats = statsTimelines.map((t: any) => t.userId).filter(Boolean);
-    const uniqueUserIds = [...new Set(userIdsForStats.map((id: any) => id.toString()))];
+      const userIdsForStats = statsTimelines.map((t: any) => t.userId).filter(Boolean);
+      const uniqueUserIds = [...new Set(userIdsForStats.map((id: any) => id.toString()))];
 
-    // Fetch minimal user info for subscription count
-    const usersWithSubs = await UserModel.find({ _id: { $in: uniqueUserIds } })
-      .select("subscriptions")
-      .populate("subscriptions", "subscribed")
-      .lean();
+      const usersWithSubs = await UserModel.find({ _id: { $in: uniqueUserIds } })
+        .select("subscriptions")
+        .populate("subscriptions", "subscribed")
+        .lean();
 
-    const subMap = new Map();
-    usersWithSubs.forEach((u: any) => {
-      subMap.set(u._id.toString(), u.subscriptions?.[0]?.subscribed || false);
-    });
+      const subMap = new Map();
+      usersWithSubs.forEach((u: any) => {
+        subMap.set(u._id.toString(), u.subscriptions?.[0]?.subscribed || false);
+      });
 
-    let subscribedUsersCount = 0;
-    let totalEase = 0, countEase = 0;
-    let totalSat = 0, countSat = 0;
+      let subscribedUsersCount = 0;
+      let totalEase = 0, countEase = 0;
+      let totalSat = 0, countSat = 0;
 
-    statsTimelines.forEach((t: any) => {
-      if (t.userId && subMap.get(t.userId.toString())) {
-        subscribedUsersCount++;
-      }
-      if (t.feedback?.easeOfUse) {
-        totalEase += t.feedback.easeOfUse;
-        countEase++;
-      }
-      if (t.feedback?.satisfaction) {
-        totalSat += t.feedback.satisfaction;
-        countSat++;
-      }
-    });
+      statsTimelines.forEach((t: any) => {
+        if (t.userId && subMap.get(t.userId.toString())) {
+          subscribedUsersCount++;
+        }
+        if (t.feedback?.easeOfUse) {
+          totalEase += t.feedback.easeOfUse;
+          countEase++;
+        }
+        if (t.feedback?.satisfaction) {
+          totalSat += t.feedback.satisfaction;
+          countSat++;
+        }
+      });
 
-    return NextResponse.json({
-      success: true,
-      data: paginatedData,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-      stats: {
+      stats = {
         subscribedUsersCount,
         avgEaseOfUse: countEase > 0 ? parseFloat((totalEase / countEase).toFixed(2)) : 0,
         avgSatisfaction: countSat > 0 ? parseFloat((totalSat / countSat).toFixed(2)) : 0,
+      };
+    }
+
+    const response: any = {
+      success: true,
+      data: paginatedData,
+      pagination: {
+        page,
+        limit,
       },
-    });
+    };
+
+    if (includeTotal) {
+      response.pagination.total = total;
+      response.pagination.totalPages = Math.ceil(total / limit);
+    }
+
+    if (includeStats) {
+      response.stats = stats;
+    }
+
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error("Error fetching wedding timelines:", error);
     return NextResponse.json(
