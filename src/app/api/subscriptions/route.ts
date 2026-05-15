@@ -22,12 +22,17 @@ export async function GET(request: Request) {
   const isGift = searchParams.get("isGift"); // "true" or "false"
   const packageID = searchParams.get("packageID"); // Package ID for filtering
   const paymentMethod = searchParams.get("paymentMethod"); // Payment method for filtering
+  const status = searchParams.get("status"); // Shipment status for filtering
 
   await loadDB();
   let query: any = {};
 
   if (email) {
     query.email = { $regex: email, $options: "i" };
+  }
+
+  if (status && status !== "all") {
+    query.status = status;
   }
 
   if (type === "real") {

@@ -19,6 +19,7 @@ export interface ISubscription extends Document {
     expiryDate: Date;
   }[];
   miniSubscriptionActivated?: boolean;
+  status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned";
   
   // Because of timestamps: true
 }
@@ -101,6 +102,18 @@ const SubscriptionSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "returned",
+      ],
+      default: "pending",
     },
   },
   { timestamps: true },

@@ -85,6 +85,7 @@ const SubscriptionsPage = () => {
   const [subscribedFilter, setSubscribedFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [activeTab, setActiveTab] = useState<"all" | "mini" | "instapay" | "paymob">("all");
 
@@ -181,7 +182,7 @@ const SubscriptionsPage = () => {
       fetchMiniStats();
     }
     setCurrentPage(1); // Reset to first page when filters change
-  }, [subscribedFilter, typeFilter, packageFilter, activeTab, miniActivationFilter]);
+  }, [subscribedFilter, typeFilter, packageFilter, statusFilter, activeTab, miniActivationFilter]);
 
   // Pagination logic
   const filteredSubscriptions = subscriptions.filter(
@@ -219,6 +220,7 @@ const SubscriptionsPage = () => {
       if (subscribedFilter !== "all") params.subscribed = subscribedFilter;
       if (typeFilter !== "all") params.type = typeFilter;
       if (packageFilter !== "all") params.packageID = packageFilter;
+      if (statusFilter !== "all") params.status = statusFilter;
       
       if (activeTab === "mini") {
         params.startDate = "2026-02-01";
@@ -615,6 +617,18 @@ const response = await axios.get(
     }
   };
 
+  const handleStatusChange = async (subscriptionID: string, newStatus: string) => {
+    try {
+      await axios.put(`/api/subscriptions?subscriptionID=${subscriptionID}`, {
+        status: newStatus,
+      });
+      fetchSubscriptions();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
+    }
+  };
+
   return (
     <DefaultLayout>
       <div className="flex min-h-[calc(100vh-124px)] w-full flex-col items-center p-4">
@@ -733,6 +747,20 @@ const response = await axios.get(
                   {pkg.name}
                 </option>
               ))}
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded border p-2"
+            >
+              <option value="all">All Shipment Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="returned">Returned</option>
             </select>
 
             {/* Mini Activation Filter */}
@@ -867,18 +895,27 @@ const response = await axios.get(
                       )}
                     </td>
                   )}
-                  <td className="border p-2">
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                      sub.status === "delivered" ? "bg-green-50 text-green-700 ring-green-600/20" :
-                      sub.status === "shipped" ? "bg-blue-50 text-blue-700 ring-blue-600/20" :
-                      sub.status === "confirmed" ? "bg-purple-50 text-purple-700 ring-purple-600/20" :
-                      sub.status === "cancelled" || sub.status === "returned" ? "bg-red-50 text-red-700 ring-red-600/20" :
-                      "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
-                    }`}>
-                      {sub.status || "pending"}
-                    </span>
+                  <td className="border p-2" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      value={sub.status || "pending"}
+                      onChange={(e) => handleStatusChange(sub._id, e.target.value)}
+                      className={`rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset cursor-pointer focus:outline-none ${
+                        sub.status === "delivered" ? "bg-green-50 text-green-700 ring-green-600/20" :
+                        sub.status === "shipped" ? "bg-blue-50 text-blue-700 ring-blue-600/20" :
+                        sub.status === "confirmed" ? "bg-purple-50 text-purple-700 ring-purple-600/20" :
+                        sub.status === "cancelled" || sub.status === "returned" ? "bg-red-50 text-red-700 ring-red-600/20" :
+                        "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
+                      }`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="returned">Returned</option>
+                    </select>
                     {sub.cart && sub.cart.length > 0 && (
-                      <span className="ml-1 text-[10px] text-primary font-bold">
+                      <span className="ml-1 text-[10px] text-primary font-bold block mt-1">
                         +{sub.cart.length} items
                       </span>
                     )}
