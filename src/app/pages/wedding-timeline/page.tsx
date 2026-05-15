@@ -43,6 +43,7 @@ const WeddingTimelinePage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [stats, setStats] = useState({
+    total: 0,
     subscribedUsersCount: 0,
     avgEaseOfUse: 0,
     avgSatisfaction: 0,
@@ -67,23 +68,32 @@ const WeddingTimelinePage = () => {
     fetchTimelines();
   }, [currentPage, searchTerm]);
 
-  const fetchTimelines = useCallback(async (forceStats = false) => {
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get("/api/wedding-timeline/stats");
+      if (response.data.success) {
+        setStats(response.data.stats);
+      }
+    } catch (error) {
+      console.error("Error fetching wedding timeline stats:", error);
+    }
+  };
+
+  const fetchTimelines = useCallback(async () => {
     try {
       setLoading(true);
-      const isFirstPage = currentPage === 1 || forceStats;
       const searchQuery = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : "";
-      const statsQuery = isFirstPage ? "&stats=true&total=true" : "";
-      const response = await axios.get(`/api/wedding-timeline?page=${currentPage}&limit=${limit}${searchQuery}${statsQuery}`);
+      const response = await axios.get(`/api/wedding-timeline?page=${currentPage}&limit=${limit}${searchQuery}&total=true`);
       
       setTimelines(response.data.data);
       
-      if (response.data.pagination.total !== undefined) {
+      if (response.data.pagination?.total !== undefined) {
         setTotal(response.data.pagination.total);
         setTotalPages(response.data.pagination.totalPages);
-      }
-      
-      if (response.data.stats) {
-        setStats(response.data.stats);
       }
     } catch (error) {
       console.error("Error fetching wedding timelines:", error);
@@ -150,7 +160,8 @@ const WeddingTimelinePage = () => {
     if (!selectedTimeline) return;
     try {
       await axios.delete(`/api/wedding-timeline?id=${selectedTimeline._id}`);
-      fetchTimelines(true);
+      fetchTimelines();
+      fetchStats();
       closeModal();
     } catch (error) {
       console.error("Error deleting timeline:", error);
@@ -162,7 +173,8 @@ const WeddingTimelinePage = () => {
     if (!selectedTimeline) return;
     try {
       await axios.put(`/api/wedding-timeline?id=${selectedTimeline._id}`, { feedback: formData });
-      fetchTimelines(true);
+      fetchTimelines();
+      fetchStats();
       closeModal();
     } catch (error) {
       console.error("Error updating timeline:", error);
@@ -289,7 +301,7 @@ const WeddingTimelinePage = () => {
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg bg-primary p-5 text-white shadow-lg">
             <p className="text-sm opacity-90">Total Timelines</p>
-            <p className="mt-2 text-3xl font-bold">{total}</p>
+            <p className="mt-2 text-3xl font-bold">{stats.total}</p>
           </div>
           <div className="rounded-lg bg-primary  p-5 text-white shadow-lg">
             <p className="text-sm opacity-90">Subscribed Users</p>
