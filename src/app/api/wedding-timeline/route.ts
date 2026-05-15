@@ -16,9 +16,12 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
+    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const sortOrder = searchParams.get("sortOrder") === "asc" ? 1 : -1;
     const skip = (page - 1) * limit;
 
     const feedbackOnly = searchParams.get("feedbackOnly") === "true";
+    const subscriptionStatus = searchParams.get("subscriptionStatus"); // "subscribed", "not_subscribed", "all"
 
     // 1. Build the base query
     const query: any = {};
@@ -26,22 +29,32 @@ export async function GET(request: Request) {
       query["feedback.easeOfUse"] = { $exists: true };
     }
 
-    // 2. Handle search at database level
-    if (search) {
-      // Find users matching search criteria
-      const matchingUsers = await UserModel.find({
-        $or: [
+    // 2. Handle search and subscription status at database level
+    if (search || (subscriptionStatus && subscriptionStatus !== "all")) {
+      const userQuery: any = {};
+      
+      if (search) {
+        userQuery.$or = [
           { firstName: { $regex: search, $options: "i" } },
           { lastName: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
-        ],
-      }).select("_id");
-      
+        ];
+      }
+
+      if (subscriptionStatus && subscriptionStatus !== "all") {
+        // Find subscriptions that match the status
+        const isSubscribed = subscriptionStatus === "subscribed";
+        const matchingSubscriptions = await subscriptionsModel.find({ subscribed: isSubscribed }).select("_id");
+        const subIds = matchingSubscriptions.map((s: any) => s._id);
+        userQuery.subscriptions = { $in: subIds };
+      }
+
+      // Find users matching search/subscription criteria
+      const matchingUsers = await UserModel.find(userQuery).select("_id");
       const userIds = matchingUsers.map((u: any) => u._id);
       query.userId = { $in: userIds };
     }
 
-    const includeStats = searchParams.get("stats") === "true";
     const includeTotal = searchParams.get("total") === "true";
 
     // 3. Count total documents for pagination
@@ -52,7 +65,8 @@ export async function GET(request: Request) {
 
     // 4. Fetch only the paginated data with full population
     const timelines = await WeddingTimelineModel.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ [sortBy]: sortOrder })
+
       .skip(skip)
       .limit(limit)
       .populate({
@@ -100,51 +114,6 @@ export async function GET(request: Request) {
       };
     });
 
-    // 6. Calculate stats efficiently without loading full documents
-    let stats = null;
-    if (includeStats) {
-      const statsTimelines = await WeddingTimelineModel.find(query)
-        .select("feedback userId")
-        .lean();
-
-      const userIdsForStats = statsTimelines.map((t: any) => t.userId).filter(Boolean);
-      const uniqueUserIds = [...new Set(userIdsForStats.map((id: any) => id.toString()))];
-
-      const usersWithSubs = await UserModel.find({ _id: { $in: uniqueUserIds } })
-        .select("subscriptions")
-        .populate("subscriptions", "subscribed")
-        .lean();
-
-      const subMap = new Map();
-      usersWithSubs.forEach((u: any) => {
-        subMap.set(u._id.toString(), u.subscriptions?.[0]?.subscribed || false);
-      });
-
-      let subscribedUsersCount = 0;
-      let totalEase = 0, countEase = 0;
-      let totalSat = 0, countSat = 0;
-
-      statsTimelines.forEach((t: any) => {
-        if (t.userId && subMap.get(t.userId.toString())) {
-          subscribedUsersCount++;
-        }
-        if (t.feedback?.easeOfUse) {
-          totalEase += t.feedback.easeOfUse;
-          countEase++;
-        }
-        if (t.feedback?.satisfaction) {
-          totalSat += t.feedback.satisfaction;
-          countSat++;
-        }
-      });
-
-      stats = {
-        subscribedUsersCount,
-        avgEaseOfUse: countEase > 0 ? parseFloat((totalEase / countEase).toFixed(2)) : 0,
-        avgSatisfaction: countSat > 0 ? parseFloat((totalSat / countSat).toFixed(2)) : 0,
-      };
-    }
-
     const response: any = {
       success: true,
       data: paginatedData,
@@ -159,9 +128,6 @@ export async function GET(request: Request) {
       response.pagination.totalPages = Math.ceil(total / limit);
     }
 
-    if (includeStats) {
-      response.stats = stats;
-    }
 
     return NextResponse.json(response);
   } catch (error: any) {

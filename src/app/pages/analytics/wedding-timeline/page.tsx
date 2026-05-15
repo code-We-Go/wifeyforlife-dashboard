@@ -62,16 +62,21 @@ type SubscriptionFilter = "all" | "subscribed" | "not_subscribed";
 const WeddingTimelineAnalyticsPage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("users");
-  const [allTimelines, setAllTimelines] = useState<WeddingTimelineFeedback[]>([]);
-  const [filteredTimelines, setFilteredTimelines] = useState<WeddingTimelineFeedback[]>([]);
+  const [timelines, setTimelines] = useState<WeddingTimelineFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filteredCount, setFilteredCount] = useState(0);
-  const [apiStats, setApiStats] = useState({
-    subscribedUsersCount: 0,
-    avgEaseOfUse: 0,
-    avgSatisfaction: 0,
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [stats, setStats] = useState({
+    total: 0,
+    subscribedCount: 0,
+    notSubscribedCount: 0,
+    avgEaseOfUse: "0",
+    avgSatisfaction: "0",
+    subscriptionRate: "0",
+    totalExports: 0,
+    timelinesExported: 0,
+    exportRate: "0"
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [subscriptionFilter, setSubscriptionFilter] = useState<SubscriptionFilter>("all");
@@ -80,137 +85,116 @@ const WeddingTimelineAnalyticsPage = () => {
 
   const limit = 10;
 
-  useEffect(() => {
-    fetchAllTimelines();
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await axios.get("/api/wedding-timeline/stats");
+      if (response.data.success) {
+        const s = response.data.stats;
+        setStats({
+          total: s.total,
+          subscribedCount: s.subscribedUsersCount,
+          notSubscribedCount: s.notSubscribedCount,
+          avgEaseOfUse: s.avgEaseOfUse.toString(),
+          avgSatisfaction: s.avgSatisfaction.toString(),
+          subscriptionRate: s.subscriptionRate.toString(),
+          totalExports: s.totalExports,
+          timelinesExported: s.timelinesExportedCount,
+          exportRate: s.exportRate.toString()
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching wedding timeline stats:", error);
+    }
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [allTimelines, searchTerm, subscriptionFilter, currentPage]);
-
-  useEffect(() => {
-    // Reset to page 1 when search or filters change
-    setCurrentPage(1);
-  }, [searchTerm, subscriptionFilter]);
-
-  const fetchAllTimelines = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch all timelines without pagination for accurate stats and client-side manipulation
-      const response = await axios.get(`/api/wedding-timeline?page=1&limit=10000&feedbackOnly=true`);
-      setAllTimelines(response.data.data);
-      setApiStats(response.data.stats || {
-        subscribedUsersCount: 0,
-        avgEaseOfUse: 0,
-        avgSatisfaction: 0,
+      const isFeedbackTab = activeTab === "feedback";
+      const isInsightsTab = activeTab === "insights";
+      const currentLimit = isInsightsTab ? 50 : limit;
+      
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: currentLimit.toString(),
+        total: "true",
+        feedbackOnly: isFeedbackTab ? "true" : "false",
+        search: searchTerm,
+        subscriptionStatus: subscriptionFilter,
+        sortBy: isInsightsTab ? "exported" : "createdAt",
+        sortOrder: isInsightsTab ? exportSortOrder : "desc"
       });
+
+      const response = await axios.get(`/api/wedding-timeline?${params.toString()}`);
+      if (response.data.success) {
+        setTimelines(response.data.data);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalRecords(response.data.pagination.total);
+      }
     } catch (error) {
-      console.error("Error fetching all wedding timelines:", error);
+      console.error("Error fetching wedding timelines:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage, activeTab, searchTerm, subscriptionFilter, exportSortOrder]);
 
-  const applyFilters = () => {
-    let filtered = [...allTimelines];
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter((timeline) => {
-        const firstName = timeline.user?.firstName?.toLowerCase() || "";
-        const lastName = timeline.user?.lastName?.toLowerCase() || "";
-        const email = timeline.user?.email?.toLowerCase() || "";
-        const search = searchTerm.toLowerCase();
-        return firstName.includes(search) || lastName.includes(search) || email.includes(search);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, subscriptionFilter]);
+
+  const exportToExcel = async () => {
+    try {
+      setLoading(true);
+      // Fetch all matching records for export
+      const isFeedbackTab = activeTab === "feedback";
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "10000",
+        feedbackOnly: isFeedbackTab ? "true" : "false",
+        search: searchTerm,
+        subscriptionStatus: subscriptionFilter
       });
+
+      const response = await axios.get(`/api/wedding-timeline?${params.toString()}`);
+      const allMatchingData = response.data.data;
+
+      const exportData = allMatchingData.map((timeline: any) => ({
+        "First Name": timeline.user?.firstName || "N/A",
+        "Last Name": timeline.user?.lastName || "N/A",
+        Email: timeline.user?.email || "N/A",
+        "Zaffa Time": timeline.zaffaTime,
+        "Events Count": timeline.events.length,
+        "Has Subscription": timeline.subscription?.hasSubscription ? "Yes" : "No",
+        "Subscription Expiry": timeline.subscription?.expiryDate 
+          ? new Date(timeline.subscription.expiryDate).toLocaleDateString() 
+          : "N/A",
+        "Ease of Use": timeline.feedback?.easeOfUse || "N/A",
+        Satisfaction: timeline.feedback?.satisfaction || "N/A",
+        "Time Saved": timeline.feedback?.timeSaved || "N/A",
+        Recommend: timeline.feedback?.recommend || "N/A",
+        Comment: timeline.feedback?.comment || "N/A",
+        Feelings: timeline.feedback?.feelings?.join(", ") || "N/A",
+        "Created At": new Date(timeline.createdAt).toLocaleDateString(),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Wedding Timeline Users");
+      XLSX.writeFile(workbook, "wedding-timeline-analytics.xlsx");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+    } finally {
+      setLoading(false);
     }
-
-    // Apply subscription filter
-    if (subscriptionFilter === "subscribed") {
-      filtered = filtered.filter((timeline) => timeline.subscription?.hasSubscription);
-    } else if (subscriptionFilter === "not_subscribed") {
-      filtered = filtered.filter((timeline) => !timeline.subscription?.hasSubscription);
-    }
-
-    // Update pagination stats for filtered results
-    setFilteredCount(filtered.length);
-    setTotalPages(Math.ceil(filtered.length / limit) || 1);
-
-    // Slice for current page
-    const startIndex = (currentPage - 1) * limit;
-    const itemsForPage = filtered.slice(startIndex, startIndex + limit);
-
-    setFilteredTimelines(itemsForPage);
   };
-
-  const exportToExcel = () => {
-    // Re-apply filters to get ALL matching records for export, not just current page
-    let exportFiltered = [...allTimelines];
-    
-    if (searchTerm) {
-      exportFiltered = exportFiltered.filter((timeline) => {
-        const firstName = timeline.user?.firstName?.toLowerCase() || "";
-        const lastName = timeline.user?.lastName?.toLowerCase() || "";
-        const email = timeline.user?.email?.toLowerCase() || "";
-        const search = searchTerm.toLowerCase();
-        return firstName.includes(search) || lastName.includes(search) || email.includes(search);
-      });
-    }
-
-    if (subscriptionFilter === "subscribed") {
-      exportFiltered = exportFiltered.filter((timeline) => timeline.subscription?.hasSubscription);
-    } else if (subscriptionFilter === "not_subscribed") {
-      exportFiltered = exportFiltered.filter((timeline) => !timeline.subscription?.hasSubscription);
-    }
-
-    const exportData = exportFiltered.map((timeline) => ({
-      "First Name": timeline.user?.firstName || "N/A",
-      "Last Name": timeline.user?.lastName || "N/A",
-      Email: timeline.user?.email || "N/A",
-      "Zaffa Time": timeline.zaffaTime,
-      "Events Count": timeline.events.length,
-      "Has Subscription": timeline.subscription?.hasSubscription ? "Yes" : "No",
-      "Subscription Expiry": timeline.subscription?.expiryDate 
-        ? new Date(timeline.subscription.expiryDate).toLocaleDateString() 
-        : "N/A",
-      "Ease of Use": timeline.feedback?.easeOfUse || "N/A",
-      Satisfaction: timeline.feedback?.satisfaction || "N/A",
-      "Time Saved": timeline.feedback?.timeSaved || "N/A",
-      Recommend: timeline.feedback?.recommend || "N/A",
-      "Created At": new Date(timeline.createdAt).toLocaleDateString(),
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Wedding Timeline Users");
-    XLSX.writeFile(workbook, "wedding-timeline-analytics.xlsx");
-  };
-
-  const calculateStats = useCallback(() => {
-    // Calculate stats from client-side allTimelines to ensure consistency
-    const totalRecords = allTimelines.length;
-    const subscribedCount = allTimelines.filter(t => t.subscription?.hasSubscription).length;
-    const notSubscribedCount = totalRecords - subscribedCount;
-    
-    // Export statistics from all timelines
-    const totalExports = allTimelines.reduce((acc, t) => acc + (t.exported || 0), 0);
-    const timelinesExported = allTimelines.filter((t) => t.exported && t.exported > 0).length;
-    const exportRate = totalRecords > 0 ? ((timelinesExported / totalRecords) * 100).toFixed(1) : "0";
-
-    return {
-      total: totalRecords,
-      subscribedCount,
-      notSubscribedCount,
-      avgEaseOfUse: apiStats.avgEaseOfUse.toString(),
-      avgSatisfaction: apiStats.avgSatisfaction.toString(),
-      subscriptionRate: totalRecords > 0 ? ((subscribedCount / totalRecords) * 100).toFixed(1) : "0",
-      totalExports,
-      timelinesExported,
-      exportRate
-    };
-  }, [allTimelines, apiStats]);
-
-  const stats = React.useMemo(() => calculateStats(), [calculateStats]);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -353,8 +337,8 @@ const WeddingTimelineAnalyticsPage = () => {
       {/* Results Count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing <span className="font-semibold text-primary">{filteredTimelines.length}</span> of{" "}
-          <span className="font-semibold text-primary">{filteredCount}</span> users
+          Showing <span className="font-semibold text-primary">{timelines.length}</span> of{" "}
+          <span className="font-semibold text-primary">{totalRecords}</span> users
         </p>
         <button
           onClick={exportToExcel}
@@ -372,7 +356,7 @@ const WeddingTimelineAnalyticsPage = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredTimelines.map((timeline, idx) => (
+          {timelines.map((timeline, idx) => (
             <motion.div
               key={timeline._id}
               initial={{ opacity: 0, x: -20 }}
@@ -728,15 +712,7 @@ const WeddingTimelineAnalyticsPage = () => {
           </div>
 
           <div className="space-y-3">
-            {[...allTimelines]
-              .sort((a, b) => {
-                const aExports = a.exported || 0;
-                const bExports = b.exported || 0;
-                return exportSortOrder === "desc" 
-                  ? bExports - aExports 
-                  : aExports - bExports;
-              })
-              .slice(0, 50)
+            {timelines
               .map((timeline, idx) => (
                 <motion.div
                   key={timeline._id}
@@ -922,29 +898,27 @@ const WeddingTimelineAnalyticsPage = () => {
   );
 
   const renderFeedbackTab = () => {
-    // Filter for timelines with real user feedback (not default values) from ALL timelines
-    const timelinesWithFeedback = allTimelines.filter((t) => 
-      t.feedback && (
-        (t.feedback.easeOfUse && t.feedback.easeOfUse > 0) ||
-        (t.feedback.satisfaction && t.feedback.satisfaction > 0) ||
-        (t.feedback.comment && t.feedback.comment.trim().length > 0) ||
-        (t.feedback.timeSaved && t.feedback.timeSaved !== '') ||
-        (t.feedback.recommend && t.feedback.recommend !== '') ||
-        (t.feedback.feelings && t.feedback.feelings.length > 0)
-      )
-    );
-    
     return (
       <div className="space-y-6">
-        <div className="rounded-lg bg-white p-6 shadow-lg">
-          <h3 className="mb-4 text-lg font-bold text-primary">User Feedback Summary</h3>
-          <p className="text-sm text-gray-600">
-            {timelinesWithFeedback.length} users have provided feedback
-          </p>
+        <div className="rounded-lg bg-white p-6 shadow-lg flex items-center justify-between">
+          <div>
+            <h3 className="mb-2 text-lg font-bold text-primary">User Feedback Summary</h3>
+            <p className="text-sm text-gray-600">
+              {totalRecords} users have provided feedback
+            </p>
+          </div>
+          <button
+            onClick={exportToExcel}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg hover:opacity-90 disabled:bg-gray-400 transition-all active:scale-95"
+          >
+            <FiDownload size={20} />
+            <span className="font-semibold">Export All Feedback</span>
+          </button>
         </div>
 
         <div className="space-y-4">
-          {timelinesWithFeedback.map((timeline, idx) => (
+          {timelines.map((timeline, idx) => (
             <motion.div
               key={timeline._id}
               initial={{ opacity: 0, y: 10 }}
@@ -1023,6 +997,7 @@ const WeddingTimelineAnalyticsPage = () => {
       </div>
     );
   };
+
 
   return (
     <DefaultLayout>
@@ -1114,7 +1089,10 @@ const WeddingTimelineAnalyticsPage = () => {
         <div className="mb-6">
           <div className="flex gap-2 border-b border-gray-200">
             <button
-              onClick={() => setActiveTab("users")}
+              onClick={() => {
+                setActiveTab("users");
+                setCurrentPage(1);
+              }}
               className={`flex items-center gap-2 px-6 py-3 font-semibold transition-colors ${
                 activeTab === "users"
                   ? "border-b-2 border-primary text-primary"
@@ -1125,7 +1103,10 @@ const WeddingTimelineAnalyticsPage = () => {
               Users
             </button>
             <button
-              onClick={() => setActiveTab("insights")}
+              onClick={() => {
+                setActiveTab("insights");
+                setCurrentPage(1);
+              }}
               className={`flex items-center gap-2 px-6 py-3 font-semibold transition-colors ${
                 activeTab === "insights"
                   ? "border-b-2 border-primary text-primary"
@@ -1136,7 +1117,10 @@ const WeddingTimelineAnalyticsPage = () => {
               Insights
             </button>
             <button
-              onClick={() => setActiveTab("feedback")}
+              onClick={() => {
+                setActiveTab("feedback");
+                setCurrentPage(1);
+              }}
               className={`flex items-center gap-2 px-6 py-3 font-semibold transition-colors ${
                 activeTab === "feedback"
                   ? "border-b-2 border-primary text-primary"
