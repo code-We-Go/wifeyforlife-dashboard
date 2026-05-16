@@ -37,6 +37,16 @@ const PackageSchema = new Schema(
       required: false,
       default: [],
     },
+    renewals: {
+      type: [
+        {
+          price: { type: Number, required: true },
+          duration: { type: Number, required: true },
+        },
+      ],
+      required: false,
+      default: [],
+    },
     items: {
       type: [{ value: String, included: Boolean }],
       required: true,

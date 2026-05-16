@@ -7,6 +7,11 @@ export interface PackageVariant {
   saving?: string;
 }
 
+export interface PackageRenewal {
+  price: number;
+  duration: number;
+}
+
 export interface PackageCard {
   image: string;
   points: string[];
@@ -34,6 +39,7 @@ export interface Ipackage {
   duration: number;
   saving?: string;
   variants?: PackageVariant[];
+  renewals?: PackageRenewal[];
   items: PackageItem[];
   notes: string[];
   cost?: number;

@@ -24,6 +24,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     duration: 0,
     saving: "",
     variants: [],
+    renewals: [],
     items: [],
     notes: [],
     cost: 0,
@@ -45,6 +46,11 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     price: 0,
     duration: 0,
     saving: "",
+  });
+
+  const [newRenewal, setNewRenewal] = useState({
+    price: 0,
+    duration: 0,
   });
 
   const [newItem, setNewItem] = useState("");
@@ -130,6 +136,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         duration: packageItem.duration || 0,
         saving: packageItem.saving || "",
         variants: packageItem.variants || [],
+        renewals: packageItem.renewals || [],
         items: formattedItems,
         notes: [...packageItem.notes],
         cost: packageItem.cost || 0,
@@ -153,6 +160,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         duration: 0,
         saving: "",
         variants: [],
+        renewals: [],
         items: [],
         notes: [],
         cost: 0,
@@ -319,6 +327,24 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     setFormData(prev => ({
       ...prev,
       variants: (prev.variants || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  // Renewal management functions
+  const addRenewal = () => {
+    if (newRenewal.price > 0 && newRenewal.duration > 0) {
+      setFormData(prev => ({
+        ...prev,
+        renewals: [...(prev.renewals || []), { ...newRenewal }]
+      }));
+      setNewRenewal({ price: 0, duration: 0 });
+    }
+  };
+
+  const removeRenewal = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      renewals: (prev.renewals || []).filter((_, i) => i !== index)
     }));
   };
 
@@ -820,6 +846,60 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 <button
                   type="button"
                   onClick={addVariant}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Package Renewals
+            </label>
+            
+            <div className="space-y-2">
+              {(formData.renewals || []).map((renewal, index) => (
+                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div className="flex-1">
+                    <span className="font-semibold">Duration:</span> {renewal.duration} Months
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold">Price:</span> {renewal.price} LE
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeRenewal(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <input
+                  type="number"
+                  placeholder="Months"
+                  value={newRenewal.duration || ""}
+                  onChange={(e) => setNewRenewal(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={newRenewal.price || ""}
+                  onChange={(e) => setNewRenewal(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+                <button
+                  type="button"
+                  onClick={addRenewal}
                   className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
                 >
                   Add
