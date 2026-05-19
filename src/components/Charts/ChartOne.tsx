@@ -140,9 +140,32 @@ const ChartOne: React.FC = () => {
             const key = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
 
             if (monthlyTotals.hasOwnProperty(key)) {
-              monthlyTotals[key] += order.subTotal; // Sum up order totals
+              monthlyTotals[key] += order.subTotal || 0; // Sum up order totals
             }
           });
+
+          // Fetch subscriptions and aggregate their cart value to monthly sales
+          try {
+            const subsResponse = await fetch("/api/subscriptions?subscribed=true");
+            if (subsResponse.ok) {
+              const subsResult = await subsResponse.json();
+              const subscriptions = subsResult.data || [];
+              subscriptions.forEach((sub: any) => {
+                const subDate = new Date(sub.createdAt);
+                const key = `${subDate.getFullYear()}-${subDate.getMonth()}`;
+                
+                if (monthlyTotals.hasOwnProperty(key)) {
+                  const cartValue = (sub.cart || []).reduce(
+                    (sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0),
+                    0
+                  );
+                  monthlyTotals[key] += cartValue;
+                }
+              });
+            }
+          } catch (subError) {
+            console.error("Error fetching subscriptions for monthly sales:", subError);
+          }
 
           // Update chart
           setCategories(months.map((m) => m.label));

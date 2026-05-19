@@ -147,9 +147,15 @@ export async function GET(request: Request) {
         totalWifeyFull++;
       }
 
+      // Calculate the total value of items in the cart to exclude it from subscription calculations
+      const cartValue = ((sub as any).cart || []).reduce(
+        (sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0),
+        0
+      );
+
       // Calculate revenue from total, cost and profit
-      const subTotal = sub.subTotal || 0;
-      const total = sub.total || 0;
+      const subTotal = Math.max(0, (sub.subTotal || 0) - cartValue);
+      const total = Math.max(0, (sub.total || 0) - cartValue);
       const revenue = total || 0; // Use total as revenue
       // Use subscription cost if available, otherwise fallback to package cost for older records
       const cost = sub.cost || (pkg && pkg.cost) || 0;
@@ -255,14 +261,20 @@ export async function GET(request: Request) {
 
       // Calculate metrics from real data
       monthSubscriptions.forEach((sub) => {
-        monthRevenue += sub.total || 0;
+        const cartValue = ((sub as any).cart || []).reduce(
+          (sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0),
+          0
+        );
+        const adjustedTotal = Math.max(0, (sub.total || 0) - cartValue);
+
+        monthRevenue += adjustedTotal;
 
         // Get cost from subscription (fallback to package cost for older records)
         if (sub.packageID && typeof sub.packageID === "object") {
           const pkg = sub.packageID as any;
           const itemCost = sub.cost || pkg.cost || 0;
           const shipping = sub.shipping || 0;
-          const subTotalValue = sub.total || 0;
+          const subTotalValue = adjustedTotal;
           
           monthCost +=
             itemCost +
