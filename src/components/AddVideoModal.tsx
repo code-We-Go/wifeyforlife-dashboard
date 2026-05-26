@@ -163,19 +163,38 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({
             </div>
           </div>
 
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              name="tags"
-              value={formData.tags.join(", ")}
-              onChange={handleTagsChange}
-              placeholder="tag1, tag2, tag3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div> */}
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Tags
+              </label>
+              <div className="flex gap-4">
+                {["groom", "bridesmaids"].map((tag) => (
+                  <label key={tag} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.tags.includes(tag)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            tags: [...prev.tags, tag],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            tags: prev.tags.filter((t) => t !== tag),
+                          }));
+                        }
+                      }}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm capitalize">{tag}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">

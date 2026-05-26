@@ -24,6 +24,7 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
     thumbnailUrl: video.thumbnailUrl,
     isPublic: video.isPublic || false,
     playlistHint: video.playlistHint || "",
+    tags: video.tags || [],
   });
 
   const handleInputChange = (
@@ -217,12 +218,36 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
 
           </div> */}
 
-            {/* <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-primary/80 mb-2">
-              Tags (comma-separated)
-            </label>
-
-          </div> */}
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-primary/80">
+                Tags
+              </label>
+              <div className="flex gap-4">
+                {["groom", "bridesmaids"].map((tag) => (
+                  <label key={tag} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.tags.includes(tag)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            tags: [...prev.tags, tag],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            tags: prev.tags.filter((t) => t !== tag),
+                          }));
+                        }
+                      }}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm capitalize text-primary/80">{tag}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
             <div className="md:col-span-2">
               {/* <label className="block text-sm font-medium text-primary/80 mb-2">
@@ -479,6 +504,16 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
 
             {video.description && (
               <p className=" mb-2 whitespace-pre-line">{video.description}</p>
+            )}
+
+            {video.tags && video.tags.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {video.tags.map(tag => (
+                  <span key={tag} className="rounded-full bg-creamey/20 px-2 py-1 text-xs capitalize text-creamey">
+                    {tag}
+                  </span>
+                ))}
+              </div>
             )}
 
             {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

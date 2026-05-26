@@ -70,6 +70,8 @@ const SubscriptionSchema = new Schema(
     // Gift information
     isGift: { type: Boolean, default: false },
     giftRecipientEmail: { type: String, required: false },
+        giftSenderEmail: { type: String, required: false },
+
     specialMessage: { type: String, required: false },
     giftCardName: { type: String, required: false },
 

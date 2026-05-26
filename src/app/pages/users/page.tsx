@@ -523,6 +523,7 @@ const SubscriptionInfoModal = ({
       expiryDate: formData.get("expiryDate"),
       subscribed: formData.get("subscribed") === "true",
       email: user.email,
+      giftSenderEmail: formData.get("giftSenderEmail") || undefined,
     };
 
     try {
@@ -596,6 +597,11 @@ const SubscriptionInfoModal = ({
                           Expires: <span className="font-medium">{sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : "N/A"}</span>
                         </p>
                       </div>
+                      {sub.giftSenderEmail && (
+                        <p className="text-sm mt-1">
+                          Gift From: <span className="font-medium">{sub.giftSenderEmail}</span>
+                        </p>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -679,6 +685,16 @@ const SubscriptionInfoModal = ({
                     <option value="true">Active (Paid)</option>
                     <option value="false">Inactive (Unpaid)</option>
                   </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Gift Sender Email</label>
+                  <input
+                    type="email"
+                    name="giftSenderEmail"
+                    className="w-full rounded-lg border p-2 focus:ring-2 focus:ring-primary outline-none"
+                    defaultValue={editingSub?.giftSenderEmail || ""}
+                    placeholder="Leave empty if not a gift"
+                  />
                 </div>
               </div>
 

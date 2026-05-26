@@ -99,6 +99,7 @@ export interface Video {
   updatedAt: Date;
   playlistHint?: string;
   playlistFolder?: string; // slug of the folder this video belongs to within its playlist
+  tags?: string[];
 }
 
 // types/Playlist.ts

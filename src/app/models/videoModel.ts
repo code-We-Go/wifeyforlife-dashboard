@@ -32,6 +32,10 @@ const VideoSchema = new Schema<Video>(
     comments: [VideoCommentSchema], // Array of comments
     playlistHint: { type: String, required: false },
     playlistFolder: { type: String, required: false }, // slug of the folder this video belongs to within its playlist
+    tags: {
+      type: [{ type: String, enum: ["groom", "bridesmaids"] }],
+      index: true,
+    },
   },
   {
     timestamps: true, // This will automatically add createdAt and updatedAt fields

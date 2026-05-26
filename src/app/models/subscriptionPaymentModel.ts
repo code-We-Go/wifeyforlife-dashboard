@@ -55,6 +55,8 @@ const SubscriptionPaymentSchema = new Schema(
     giftRecipientEmail: { type: String, required: false },
     specialMessage: { type: String, required: false },
     giftCardName: { type: String, required: false },
+        giftSenderEmail: { type: String, required: false },
+
 
     // Lovely Bride's address information
     country: { type: String, required: false },
