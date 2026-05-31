@@ -74,6 +74,7 @@ const SubscriptionSchema = new Schema(
 
     specialMessage: { type: String, required: false },
     giftCardName: { type: String, required: false },
+        pickupFromBazar: { type: Boolean, default: false },
 
     // Address information
     country: { type: String, required: false },

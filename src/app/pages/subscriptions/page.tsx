@@ -59,6 +59,7 @@ interface Subscription {
   status?: string;
   instapayReciept?: string;
   cart?: ICartItem[];
+  pickupFromBazar?: boolean;
 }
 
 
@@ -145,6 +146,7 @@ const SubscriptionsPage = () => {
     instapayReciept: "",
     status: "pending",
     cart: [] as ICartItem[],
+    pickupFromBazar: false,
   });
 
   // Calculate totals whenever cart or package or discount/shipping changes
@@ -472,6 +474,7 @@ const SubscriptionsPage = () => {
         instapayReciept: subscription.instapayReciept || "",
         status: subscription.status || "pending",
         cart: subscription.cart || [],
+        pickupFromBazar: subscription.pickupFromBazar || false,
       });
 
     } else if (type === "add") {
@@ -521,6 +524,7 @@ const SubscriptionsPage = () => {
         instapayReciept: "",
         status: "pending",
         cart: [],
+        pickupFromBazar: false,
       });
 
     }
@@ -1185,6 +1189,22 @@ const response = await axios.get(
                     />
                   </div>
                 )}
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Pickup from Bazar
+                  </label>
+                  <select
+                    value={form.pickupFromBazar ? "true" : "false"}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, pickupFromBazar: e.target.value === "true" }))
+                    }
+                    className="w-full rounded border p-2"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
 
                 <div>
                   <label className="mb-1 block text-sm font-medium">
@@ -1982,6 +2002,11 @@ const response = await axios.get(
                         <span className="font-medium italic">{selectedSubscription.specialMessage}</span>
                       </>
                     )}
+
+                    <span className="text-gray-500">Pickup from Bazar:</span>
+                    <span className={`font-medium ${selectedSubscription.pickupFromBazar ? "text-green-600" : "text-gray-600"}`}>
+                      {selectedSubscription.pickupFromBazar ? "Yes" : "No"}
+                    </span>
 
                     <span className="text-gray-500">Shipment Status:</span>
                     <span className={`font-medium px-2 py-0.5 rounded-full text-xs inline-block ${
