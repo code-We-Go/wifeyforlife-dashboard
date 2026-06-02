@@ -247,11 +247,19 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
     setFolderName("");
   };
 
-  const removeFolder = (slug: string) => {
+  const removeFolder = async (slug: string) => {
     setFormData((prev) => ({
       ...prev,
       folders: prev.folders.filter((f) => f.slug !== slug),
     }));
+
+    // Remove the folder association from any videos that have it
+    const videosToUpdate = availableVideos.filter((v) => v.playlistFolder === slug);
+    for (const video of videosToUpdate) {
+      if (video._id) {
+        await setVideoFolder(video._id, "");
+      }
+    }
   };
 
   // ── Video management ───────────────────────────────────────────────────────
