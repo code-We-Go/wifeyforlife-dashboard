@@ -62,6 +62,18 @@ interface Subscription {
   pickupFromBazar?: boolean;
 }
 
+interface SubSubscription {
+  _id: string;
+  parentSubscription: string;
+  role: "groom" | "bridesmaids";
+  inviteeEmail: string;
+  inviteeUser?: { _id: string; email: string; firstName?: string; lastName?: string } | string;
+  status: "pending" | "accepted" | "revoked";
+  inviteMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -94,6 +106,12 @@ const SubscriptionsPage = () => {
   const [miniActivationFilter, setMiniActivationFilter] = useState<string>("all");
   const [miniStats, setMiniStats] = useState({ total: 0, activated: 0 });
   const [approvingId, setApprovingId] = useState<string | null>(null);
+
+  // Sub-subscription state
+  const [subSubscriptions, setSubSubscriptions] = useState<SubSubscription[]>([]);
+  const [loadingSubSubs, setLoadingSubSubs] = useState(false);
+  const [subSubForm, setSubSubForm] = useState({ role: "groom" as "groom" | "bridesmaids", inviteeEmail: "", inviteMessage: "", status: "pending" as "pending" | "accepted" | "revoked" });
+  const [editingSubSubId, setEditingSubSubId] = useState<string | null>(null);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -423,6 +441,13 @@ const SubscriptionsPage = () => {
     setSelectedSubscription(subscription || null);
     setNewPlaylistId("");
     setNewPlaylistExpiry("");
+    setSubSubscriptions([]);
+    resetSubSubForm();
+    
+    if ((type === "edit" || type === "view") && subscription) {
+      fetchSubSubscriptions(subscription._id);
+    }
+
     if (type === "edit" && subscription) {
       setForm({
         paymentID: subscription.paymentID,
@@ -536,6 +561,8 @@ const SubscriptionsPage = () => {
     if (!e || e.target === e.currentTarget) {
       setModalType(null);
       setSelectedSubscription(null);
+      setSubSubscriptions([]);
+      resetSubSubForm();
     }
   };
 
@@ -631,6 +658,60 @@ const response = await axios.get(
       console.error("Error updating status:", error);
       alert("Failed to update status");
     }
+  };
+
+  // ── Sub-Subscription CRUD ──────────────────────────────────────────────────
+  const fetchSubSubscriptions = async (parentId: string) => {
+    setLoadingSubSubs(true);
+    try {
+      const res = await axios.get(`/api/sub-subscriptions?parentSubscription=${parentId}`);
+      setSubSubscriptions(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching sub-subscriptions:", error);
+    } finally {
+      setLoadingSubSubs(false);
+    }
+  };
+
+  const resetSubSubForm = () => {
+    setSubSubForm({ role: "groom", inviteeEmail: "", inviteMessage: "", status: "pending" });
+    setEditingSubSubId(null);
+  };
+
+  const handleSubSubSubmit = async (parentId: string) => {
+    try {
+      if (editingSubSubId) {
+        await axios.put(`/api/sub-subscriptions?id=${editingSubSubId}`, subSubForm);
+      } else {
+        await axios.post("/api/sub-subscriptions", { ...subSubForm, parentSubscription: parentId });
+      }
+      resetSubSubForm();
+      fetchSubSubscriptions(parentId);
+    } catch (error: any) {
+      console.error("Error saving sub-subscription:", error);
+      alert(error.response?.data?.error || "Failed to save sub-subscription");
+    }
+  };
+
+  const handleSubSubDelete = async (id: string, parentId: string) => {
+    if (!confirm("Delete this sub-subscription?")) return;
+    try {
+      await axios.delete(`/api/sub-subscriptions?id=${id}`);
+      fetchSubSubscriptions(parentId);
+    } catch (error) {
+      console.error("Error deleting sub-subscription:", error);
+      alert("Failed to delete sub-subscription");
+    }
+  };
+
+  const startEditSubSub = (subSub: SubSubscription) => {
+    setEditingSubSubId(subSub._id);
+    setSubSubForm({
+      role: subSub.role,
+      inviteeEmail: subSub.inviteeEmail,
+      inviteMessage: subSub.inviteMessage || "",
+      status: subSub.status,
+    });
   };
 
   return (
@@ -1399,6 +1480,124 @@ const response = await axios.get(
                   </div>
                 </div>
 
+                {/* ── Sub-Subscriptions (Invitations) ─────────────────────── */}
+                {modalType === "edit" && selectedSubscription && (
+                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                  <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                    Sub-Subscriptions (Invitations)
+                    <button
+                      type="button"
+                      onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
+                      className="ml-auto text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
+                    >
+                      {loadingSubSubs ? "Loading..." : "Refresh"}
+                    </button>
+                  </h3>
+
+                  {/* List */}
+                  <div className="space-y-2 mb-4">
+                    {subSubscriptions.map((ss) => (
+                      <div key={ss._id} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{ss.inviteeEmail}</p>
+                          <div className="flex gap-2 mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
+                              {ss.role}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              ss.status === "accepted" ? "bg-green-100 text-green-700" :
+                              ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                              "bg-yellow-100 text-yellow-700"
+                            }`}>
+                              {ss.status}
+                            </span>
+                          </div>
+                          {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic truncate">{ss.inviteMessage}</p>}
+                        </div>
+                        <div className="flex gap-1 ml-2">
+                          <button type="button" onClick={() => startEditSubSub(ss)} className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1">Edit</button>
+                          <button type="button" onClick={() => handleSubSubDelete(ss._id, selectedSubscription._id)} className="text-red-600 hover:text-red-800 text-xs px-2 py-1">Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                    {subSubscriptions.length === 0 && !loadingSubSubs && (
+                      <p className="text-sm text-gray-500 italic text-center py-3 bg-white rounded border border-dashed">
+                        No invitations yet.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Add / Edit form */}
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end border-t pt-3 mt-2">
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Invitee Email</label>
+                      <input
+                        type="email"
+                        value={subSubForm.inviteeEmail}
+                        onChange={(e) => setSubSubForm(f => ({ ...f, inviteeEmail: e.target.value.toLowerCase() }))}
+                        placeholder="email@example.com"
+                        className="w-full rounded border p-1 text-sm lowercase"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
+                      <select
+                        value={subSubForm.role}
+                        onChange={(e) => setSubSubForm(f => ({ ...f, role: e.target.value as "groom" | "bridesmaids" }))}
+                        className="w-full rounded border p-1 text-sm"
+                      >
+                        <option value="groom">Groom</option>
+                        <option value="bridesmaids">Bridesmaids</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                      <select
+                        value={subSubForm.status}
+                        onChange={(e) => setSubSubForm(f => ({ ...f, status: e.target.value as "pending" | "accepted" | "revoked" }))}
+                        className="w-full rounded border p-1 text-sm"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="revoked">Revoked</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Message</label>
+                      <input
+                        type="text"
+                        value={subSubForm.inviteMessage}
+                        onChange={(e) => setSubSubForm(f => ({ ...f, inviteMessage: e.target.value }))}
+                        placeholder="Optional"
+                        className="w-full rounded border p-1 text-sm"
+                      />
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleSubSubSubmit(selectedSubscription._id)}
+                        disabled={!subSubForm.inviteeEmail}
+                        className="flex-1 bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
+                      >
+                        {editingSubSubId ? "Update" : "Add"}
+                      </button>
+                      {editingSubSubId && (
+                        <button
+                          type="button"
+                          onClick={resetSubSubForm}
+                          className="bg-gray-300 text-gray-700 rounded p-1 text-sm hover:bg-gray-400"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                )}
+
                 <h3 className="mt-6 text-lg font-medium">User Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -2152,6 +2351,51 @@ const response = await axios.get(
                     </div>
                   </div>
                 )}
+
+                {/* Sub-Subscriptions (Invitations) */}
+                <div className="space-y-4 md:col-span-2">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                      </svg>
+                      Sub-Subscriptions
+                    </span>
+                    <button
+                      onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
+                      className="text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
+                    >
+                      {loadingSubSubs ? "Loading..." : "Refresh"}
+                    </button>
+                  </h3>
+                  {subSubscriptions.length > 0 ? (
+                    <div className="space-y-2">
+                      {subSubscriptions.map((ss) => (
+                        <div key={ss._id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                          <div>
+                            <p className="font-medium text-sm">{ss.inviteeEmail}</p>
+                            <div className="flex gap-2 mt-1">
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
+                                {ss.role}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                ss.status === "accepted" ? "bg-green-100 text-green-700" :
+                                ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                                "bg-yellow-100 text-yellow-700"
+                              }`}>
+                                {ss.status}
+                              </span>
+                            </div>
+                            {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic">{ss.inviteMessage}</p>}
+                            <p className="text-xs text-gray-400 mt-1">Created: {new Date(ss.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No invitations yet.</p>
+                  )}
+                </div>
               </div>
               
               <div className="mt-8 flex justify-end">
