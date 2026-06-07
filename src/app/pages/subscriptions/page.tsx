@@ -87,9 +87,14 @@ const SubscriptionsPage = () => {
   const [newPlaylistId, setNewPlaylistId] = useState("");
   const [newPlaylistExpiry, setNewPlaylistExpiry] = useState("");
   
-  const [modalType, setModalType] = useState<"add" | "edit" | "delete" | "view" | null>(
+  const [modalType, setModalType] = useState<"add" | "edit" | "delete" | "view" | "quicksub" | null>(
     null,
   );
+
+  // Quick Sub bulk state
+  const [quickSubList, setQuickSubList] = useState<{ email: string; packageID: string; expiryDate: string }[]>([]);
+  const [quickSubDraft, setQuickSubDraft] = useState({ email: "", packageID: "", expiryDate: "" });
+  const [quickSubSubmitting, setQuickSubSubmitting] = useState(false);
   const [selectedSubscription, setSelectedSubscription] =
     useState<Subscription | null>(null);
   const [search, setSearch] = useState("");
@@ -555,6 +560,54 @@ const SubscriptionsPage = () => {
     }
   };
 
+  const openQuickSubModal = () => {
+    setModalType("quicksub");
+    setQuickSubList([]);
+    setQuickSubDraft({ email: "", packageID: "", expiryDate: "" });
+  };
+
+  const handleAddToQuickSubList = (e: React.FormEvent) => {
+    e.preventDefault();
+    setQuickSubList((prev) => [
+      ...prev,
+      {
+        email: quickSubDraft.email.toLowerCase(),
+        packageID: quickSubDraft.packageID,
+        expiryDate: quickSubDraft.expiryDate,
+      },
+    ]);
+    setQuickSubDraft({ email: "", packageID: "", expiryDate: "" });
+  };
+
+  const handleRemoveFromQuickSubList = (index: number) => {
+    setQuickSubList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleBulkQuickSubSubmit = async () => {
+    if (quickSubList.length === 0) return;
+    setQuickSubSubmitting(true);
+    try {
+      const promises = quickSubList.map((item) =>
+        axios.post("/api/subscriptions", {
+          email: item.email,
+          packageID: item.packageID,
+          expiryDate: item.expiryDate,
+          subscribed: true,
+          paymentID: `QS-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+          status: "delivered",
+        })
+      );
+      await Promise.all(promises);
+      closeModal();
+      fetchSubscriptions();
+    } catch (error) {
+      console.error("Error creating bulk subscriptions:", error);
+      alert("Some subscriptions failed to create. Please check and retry.");
+    } finally {
+      setQuickSubSubmitting(false);
+    }
+  };
+
   const closeModal = (e?: React.MouseEvent) => {
     // If the click event exists and the target is the same as the currentTarget (the overlay),
     // or if no event was passed (called directly), close the modal
@@ -883,6 +936,12 @@ const response = await axios.get(
             >
               Add Subscription
             </button>
+            <button
+              className="rounded bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+              onClick={openQuickSubModal}
+            >
+              Quick Sub
+            </button>
           </div>
         </div>
         <div className="w-full overflow-x-auto">
@@ -1021,7 +1080,7 @@ const response = await axios.get(
                       </button>
                       {/* Debug info: showing status */}
                       <span className="text-xs text-gray-400">({sub.status || "undefined"})</span>
-                      {sub.status !== "confirmed" && (
+                      {sub.status !== "confirmed" && sub.status !== "delivered" && (
                         <button
                           disabled={approvingId === sub.paymentID}
                           onClick={() => handleApproveInstapay(sub.paymentID)}
@@ -2404,6 +2463,120 @@ const response = await axios.get(
                   className="rounded bg-primary px-6 py-2 text-white hover:bg-opacity-90 transition"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Sub Modal (Bulk) */}
+        {modalType === "quicksub" && (
+          <div
+            onClick={closeModal}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 md:pl-72.5"
+          >
+            <div className="w-[600px] max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6" onClick={(e) => e.stopPropagation()}>
+              <h2 className="mb-4 text-xl font-bold">Quick Subscription (Bulk)</h2>
+
+              {/* Queued list */}
+              {quickSubList.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  <h3 className="text-sm font-semibold text-gray-600">Queued ({quickSubList.length})</h3>
+                  <div className="max-h-48 overflow-y-auto space-y-1">
+                    {quickSubList.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between rounded bg-gray-50 px-3 py-2 text-sm">
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium">{item.email}</span>
+                          <span className="mx-2 text-gray-400">·</span>
+                          <span className="text-gray-600">{packages.find(p => p._id === item.packageID)?.name || "Unknown"}</span>
+                          <span className="mx-2 text-gray-400">·</span>
+                          <span className="text-gray-500">{item.expiryDate}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFromQuickSubList(idx)}
+                          className="ml-2 text-red-500 hover:text-red-700 text-xs font-bold"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add new entry form */}
+              <form onSubmit={handleAddToQuickSubList} className="space-y-3 border-t pt-4">
+                <h3 className="text-sm font-semibold text-gray-600">Add Entry</h3>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Email</label>
+                  <input
+                    type="email"
+                    value={quickSubDraft.email}
+                    onChange={(e) =>
+                      setQuickSubDraft((f) => ({ ...f, email: e.target.value.toLowerCase() }))
+                    }
+                    required
+                    className="w-full lowercase rounded border p-2"
+                    placeholder="subscriber@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Package</label>
+                  <select
+                    value={quickSubDraft.packageID}
+                    onChange={(e) =>
+                      setQuickSubDraft((f) => ({ ...f, packageID: e.target.value }))
+                    }
+                    required
+                    className="w-full rounded border p-2"
+                  >
+                    <option value="">Select a package</option>
+                    {packages.map((pkg) => (
+                      <option key={pkg._id} value={pkg._id}>
+                        {pkg.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Expiry Date</label>
+                  <input
+                    type="date"
+                    value={quickSubDraft.expiryDate}
+                    onChange={(e) =>
+                      setQuickSubDraft((f) => ({ ...f, expiryDate: e.target.value }))
+                    }
+                    required
+                    className="w-full rounded border p-2"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="rounded bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600"
+                  >
+                    + Add to List
+                  </button>
+                </div>
+              </form>
+
+              {/* Action buttons */}
+              <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                <button
+                  type="button"
+                  onClick={() => closeModal()}
+                  className="rounded border px-4 py-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkQuickSubSubmit}
+                  disabled={quickSubList.length === 0 || quickSubSubmitting}
+                  className="rounded bg-amber-500 px-4 py-2 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {quickSubSubmitting ? "Submitting..." : `Submit All (${quickSubList.length})`}
                 </button>
               </div>
             </div>
