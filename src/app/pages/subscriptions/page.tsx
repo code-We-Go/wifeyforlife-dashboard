@@ -92,8 +92,8 @@ const SubscriptionsPage = () => {
   );
 
   // Quick Sub bulk state
-  const [quickSubList, setQuickSubList] = useState<{ email: string; packageID: string; expiryDate: string }[]>([]);
-  const [quickSubDraft, setQuickSubDraft] = useState({ email: "", packageID: "", expiryDate: "" });
+  const [quickSubList, setQuickSubList] = useState<{ email: string; packageID: string; expiryDate: string; phone: string }[]>([]);
+  const [quickSubDraft, setQuickSubDraft] = useState({ email: "", packageID: "", expiryDate: "", phone: "" });
   const [quickSubSubmitting, setQuickSubSubmitting] = useState(false);
   const [selectedSubscription, setSelectedSubscription] =
     useState<Subscription | null>(null);
@@ -563,7 +563,7 @@ const SubscriptionsPage = () => {
   const openQuickSubModal = () => {
     setModalType("quicksub");
     setQuickSubList([]);
-    setQuickSubDraft({ email: "", packageID: "", expiryDate: "" });
+    setQuickSubDraft({ email: "", packageID: "", expiryDate: "", phone: "" });
   };
 
   const handleAddToQuickSubList = (e: React.FormEvent) => {
@@ -574,9 +574,10 @@ const SubscriptionsPage = () => {
         email: quickSubDraft.email.toLowerCase(),
         packageID: quickSubDraft.packageID,
         expiryDate: quickSubDraft.expiryDate,
+        phone: quickSubDraft.phone,
       },
     ]);
-    setQuickSubDraft({ email: "", packageID: "", expiryDate: "" });
+    setQuickSubDraft({ email: "", packageID: "", expiryDate: "", phone: "" });
   };
 
   const handleRemoveFromQuickSubList = (index: number) => {
@@ -592,6 +593,7 @@ const SubscriptionsPage = () => {
           email: item.email,
           packageID: item.packageID,
           expiryDate: item.expiryDate,
+          phone: item.phone,
           subscribed: true,
           paymentID: `QS-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
           status: "delivered",
@@ -2491,6 +2493,12 @@ const response = await axios.get(
                           <span className="text-gray-600">{packages.find(p => p._id === item.packageID)?.name || "Unknown"}</span>
                           <span className="mx-2 text-gray-400">·</span>
                           <span className="text-gray-500">{item.expiryDate}</span>
+                          {item.phone && (
+                            <>
+                              <span className="mx-2 text-gray-400">·</span>
+                              <span className="text-gray-500">{item.phone}</span>
+                            </>
+                          )}
                         </div>
                         <button
                           type="button"
@@ -2519,6 +2527,18 @@ const response = await axios.get(
                     required
                     className="w-full lowercase rounded border p-2"
                     placeholder="subscriber@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Phone</label>
+                  <input
+                    type="tel"
+                    value={quickSubDraft.phone}
+                    onChange={(e) =>
+                      setQuickSubDraft((f) => ({ ...f, phone: e.target.value }))
+                    }
+                    className="w-full rounded border p-2"
+                    placeholder="Optional phone number"
                   />
                 </div>
                 <div>
