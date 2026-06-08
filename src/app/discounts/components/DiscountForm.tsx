@@ -327,6 +327,7 @@ export default function DiscountForm({ params }: DiscountFormProps) {
             >
               <option value="">Select Redeem Type</option>
               <option value="Purchase">Purchase</option>
+              <option value="Sessions">Sessions</option>
               <option value="Subscription">Subscription</option>
               <option value="All">All</option>
             </select>
