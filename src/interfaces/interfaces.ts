@@ -1,5 +1,13 @@
 import { Discount } from "@/types/discount";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
+
+export interface IAccountFeature {
+  _id?: mongoose.Types.ObjectId;
+  featureKey: string;
+  label: string;
+  accessType: "free" | "subscription";
+  requiredPackages: Types.ObjectId[];
+}
 
 export interface PackageVariant {
   price: number;

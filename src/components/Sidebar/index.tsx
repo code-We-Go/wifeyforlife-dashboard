@@ -190,6 +190,11 @@ const menuGroups = [
         route: "/pages/subscriptions",
       },
       {
+        icon: <FiKey />,
+        label: "Account Features",
+        route: "/pages/accountFeatures",
+      },
+      {
         icon: (
           <svg
             className="fill-current"
