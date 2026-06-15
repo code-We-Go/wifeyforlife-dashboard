@@ -71,7 +71,17 @@ const PackageSchema = new Schema(
       default: [],
     },
     accessAllPartners: { type: Boolean, default: false },
+        subSubscriptionSlots: {
+      type: [
+        {
+          role: { type: String, enum: ["groom", "bridesmaids"], required: true },
+          maxCount: { type: Number, required: true, default: 1 },
+        },
+      ],
+      default: [],
+    },
   },
+  
   {
     timestamps: true,
   }

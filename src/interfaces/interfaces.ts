@@ -32,6 +32,11 @@ export interface SupportCard {
   imagePath: string;
 }
 
+export interface SubSubscriptionSlot {
+  role: "groom" | "bridesmaids";
+  maxCount: number;
+}
+
 export interface PackageItem {
   value: string;
   included: boolean;
@@ -59,6 +64,7 @@ export interface Ipackage {
   accessAllInspos: boolean;
   packagePartners: string[];
   accessAllPartners: boolean;
+  subSubscriptionSlots?: SubSubscriptionSlot[];
 }
 // types/Video.ts
 export interface CommentUser {

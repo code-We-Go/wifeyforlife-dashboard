@@ -1,5 +1,5 @@
 "use client";
-import { Inspo, Ipackage, PackageCard, PackageItem, Partner, Playlist, SupportCard } from "@/interfaces/interfaces";
+import { Inspo, Ipackage, PackageCard, PackageItem, Partner, Playlist, SupportCard, SubSubscriptionSlot } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -36,6 +36,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     accessAllInspos: false,
     packagePartners: [],
     accessAllPartners: false,
+    subSubscriptionSlots: [],
   });
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -51,6 +52,11 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   const [newRenewal, setNewRenewal] = useState({
     price: 0,
     duration: 0,
+  });
+
+  const [newSubSlot, setNewSubSlot] = useState<SubSubscriptionSlot>({
+    role: "groom",
+    maxCount: 1,
   });
 
   const [newItem, setNewItem] = useState("");
@@ -148,6 +154,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         accessAllInspos: packageItem.accessAllInspos || false,
         packagePartners: packageItem.packagePartners || [],
         accessAllPartners: packageItem.accessAllPartners || false,
+        subSubscriptionSlots: packageItem.subSubscriptionSlots || [],
       });
     } else {
       setFormData({
@@ -172,6 +179,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         accessAllInspos: false,
         packagePartners: [],
         accessAllPartners: false,
+        subSubscriptionSlots: [],
       });
     }
   }, [packageItem, isOpen]);
@@ -345,6 +353,24 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     setFormData(prev => ({
       ...prev,
       renewals: (prev.renewals || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  // Sub Slot management functions
+  const addSubSlot = () => {
+    if (newSubSlot.maxCount > 0) {
+      setFormData(prev => ({
+        ...prev,
+        subSubscriptionSlots: [...(prev.subSubscriptionSlots || []), { ...newSubSlot }]
+      }));
+      setNewSubSlot({ role: "groom", maxCount: 1 });
+    }
+  };
+
+  const removeSubSlot = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      subSubscriptionSlots: (prev.subSubscriptionSlots || []).filter((_, i) => i !== index)
     }));
   };
 
@@ -900,6 +926,62 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 <button
                   type="button"
                   onClick={addRenewal}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Sub-Subscription Slots
+            </label>
+            
+            <div className="space-y-2">
+              {(formData.subSubscriptionSlots || []).map((slot, index) => (
+                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div className="flex-1">
+                    <span className="font-semibold">Role:</span> <span className="capitalize">{slot.role}</span>
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold">Max Count:</span> {slot.maxCount}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeSubSlot(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <select
+                  value={newSubSlot.role}
+                  onChange={(e) => setNewSubSlot(prev => ({ ...prev, role: e.target.value as "groom" | "bridesmaids" }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight capitalize"
+                >
+                  <option value="groom">Groom</option>
+                  <option value="bridesmaids">Bridesmaids</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Max Count"
+                  value={newSubSlot.maxCount || ""}
+                  onChange={(e) => setNewSubSlot(prev => ({ ...prev, maxCount: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                  min="1"
+                />
+                <button
+                  type="button"
+                  onClick={addSubSlot}
                   className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
                 >
                   Add
