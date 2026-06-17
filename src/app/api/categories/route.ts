@@ -74,8 +74,17 @@ export async function GET(req: Request) {
     if (type) {
         filter.type = type;
     }
+    const all = searchParams.get("all");
 
     try {
+        if (all === "true") {
+            const categories = await categoriesModel.find(filter).sort({ createdAt: -1 });
+            return NextResponse.json({
+                data: categories,
+                total: categories.length,
+            }, { status: 200 });
+        }
+
         const categories = await categoriesModel.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 });
         const totalCategories = await categoriesModel.countDocuments(filter);
 

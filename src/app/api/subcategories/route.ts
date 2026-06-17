@@ -115,6 +115,11 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
+    
+    if (body.categoryID) {
+      body.categoryID = new ObjectId(body.categoryID);
+    }
+
     const result = await db.collection("subcategories").updateOne(
       { _id: new ObjectId(subCategoryID) },
       {

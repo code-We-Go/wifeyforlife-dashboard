@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -49,13 +50,15 @@ const CategoriesPage = () => {
         subCategoriesUrl += `?categoryID=${filterCategoryID}`;
       }
 
-      const [categoriesRes, subCategoriesRes] = await Promise.all([
+      const [categoriesRes, subCategoriesRes, allCategoriesRes] = await Promise.all([
         axios.get(categoriesUrl),
         axios.get(subCategoriesUrl),
+        axios.get("/api/categories?all=true"),
       ]);
       setCategories(categoriesRes.data.data);
       setTotalPages(categoriesRes.data.totalPages || 1);
       setSubCategories(subCategoriesRes.data.data);
+      setAllCategories(allCategoriesRes.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -154,7 +157,7 @@ const CategoriesPage = () => {
                 className="rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:border-secondary"
               >
                 <option value="all">All Categories</option>
-                {categories.map((cat) => (
+                {allCategories.map((cat) => (
                   <option key={cat._id} value={cat._id}>
                     {cat.categoryName}
                   </option>
@@ -351,7 +354,7 @@ const CategoriesPage = () => {
                         <td className="border p-2">{subCategory.description}</td>
                         <td className="border p-2">
                           {subCategory?.categoryID?._id
-                            ? categories.find(
+                            ? allCategories.find(
                                 (cat) => cat._id === subCategory.categoryID._id,
                               )?.categoryName || subCategory?.categoryID?.categoryName || "N/A"
                             : "Category Deleted"}
@@ -395,7 +398,7 @@ const CategoriesPage = () => {
             type={modalType}
             category={selectedCategory}
             subCategory={selectedSubCategory}
-            categories={categories}
+            categories={allCategories}
             closeModal={() => {
               setModalType(null);
             }}
