@@ -76,6 +76,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     title: "",
     description: [],
     imagePath: "",
+    enable: true,
   });
   const [newSupportCardDesc, setNewSupportCardDesc] = useState("");
   const [editingSupportCardIndex, setEditingSupportCardIndex] = useState<number | null>(null);
@@ -491,9 +492,10 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         title: newSupportCard.title.trim(),
         description: [...newSupportCard.description],
         imagePath: newSupportCard.imagePath.trim(),
+        enable: newSupportCard.enable !== false,
       };
       setFormData(prev => ({ ...prev, supportCards: [...prev.supportCards, card] }));
-      setNewSupportCard({ title: "", description: [], imagePath: "" });
+      setNewSupportCard({ title: "", description: [], imagePath: "", enable: true });
       setNewSupportCardDesc("");
     }
   };
@@ -1356,6 +1358,18 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                           />
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`edit-enable-${index}`}
+                          checked={editingSupportCard.enable !== false}
+                          onChange={(e) => setEditingSupportCard(prev => prev ? { ...prev, enable: e.target.checked } : prev)}
+                          className="w-4 h-4 text-primary bg-creamey border-primary/50 rounded focus:ring-primaryLight"
+                        />
+                        <label htmlFor={`edit-enable-${index}`} className="text-xs font-medium text-primary">
+                          Enable Card
+                        </label>
+                      </div>
                       <div>
                         <label className="block text-xs font-medium text-primary mb-1">Image *</label>
                         {editingSupportCard.imagePath && (
@@ -1437,7 +1451,10 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                         </div>
                       )}
                       <div className="flex-grow">
-                        <p className="text-sm font-semibold">{sc.title} <span className="text-xs text-primary/50">(ID: {sc.id})</span></p>
+                        <p className="text-sm font-semibold">
+                          {sc.title} <span className="text-xs text-primary/50">(ID: {sc.id})</span>
+                          {sc.enable === false && <span className="ml-2 text-xs text-red-500 font-normal border border-red-500 rounded px-1">Disabled</span>}
+                        </p>
                         <ul className="list-disc pl-4 text-sm">
                           {sc.description.map((line, li) => <li key={li}>{line}</li>)}
                         </ul>
@@ -1466,6 +1483,18 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                     className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
                   />
                 </div>
+              </div>
+              <div className="flex items-center space-x-2 mt-1">
+                <input
+                  type="checkbox"
+                  id="new-card-enable"
+                  checked={newSupportCard.enable !== false}
+                  onChange={(e) => setNewSupportCard(prev => ({ ...prev, enable: e.target.checked }))}
+                  className="w-4 h-4 text-primary bg-creamey border-primary/50 rounded focus:ring-primaryLight"
+                />
+                <label htmlFor="new-card-enable" className="text-xs font-medium text-primary">
+                  Enable Card
+                </label>
               </div>
               <div>
                 <label className="block text-xs font-medium text-primary mb-1">Image *</label>

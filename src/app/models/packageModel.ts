@@ -12,6 +12,7 @@ const SupportCardSchema = new Schema<SupportCard>({
   title: { type: String, required: true },
   description: { type: [String], required: true },
   imagePath: { type: String, required: true },
+  enable: { type: Boolean, default: true },
 });
 
 // Define the Package schema
