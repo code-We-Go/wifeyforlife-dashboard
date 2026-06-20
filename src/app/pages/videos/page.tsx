@@ -2,12 +2,13 @@
 import AddVideoModal from "@/components/AddVideoModal";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import VideoComponent from "@/components/VideoComponent";
-import { Video } from "@/interfaces/interfaces";
+import { Video, PLAYLIST_CATEGORIES, Playlist } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 
 const VideosPage = () => {
   const [videos, setVideos] = useState<Video[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [addModalisOpen, setAddModalisOpen] = useState(false);
@@ -15,13 +16,14 @@ const VideosPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedPlaylist, setSelectedPlaylist] = useState("");
 
   const fetchVideos = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch dynamic pages of 12 videos
+      // Fetch dynamic pages of 12 videos with category and playlist filter
       const res = await axios.get(
-        `/api/videos?page=${page}&limit=12&search=${searchQuery}&category=${selectedCategory}&includeDetails=true`,
+        `/api/videos?page=${page}&limit=12&search=${searchQuery}&category=${selectedCategory}&playlist=${selectedPlaylist}&includeDetails=true`,
       );
       console.log("Videos data:", res.data);
       if (page === 1) {
@@ -35,11 +37,24 @@ const VideosPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchQuery, selectedCategory]);
+  }, [page, searchQuery, selectedCategory, selectedPlaylist]);
 
   useEffect(() => {
     fetchVideos();
   }, [fetchVideos]);
+
+  // Fetch all playlists once on mount
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const res = await axios.get("/api/playlists");
+        setPlaylists(res.data.data);
+      } catch (error) {
+        console.error("Error fetching playlists:", error);
+      }
+    };
+    fetchPlaylists();
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -66,13 +81,38 @@ const VideosPage = () => {
                   value={selectedCategory}
                   onChange={(e) => {
                     setSelectedCategory(e.target.value);
+                    setSelectedPlaylist(""); // Reset playlist selection when category changes
                     setPage(1);
                   }}
                   className="w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
                 >
                   <option value="">All Categories</option>
-                  <option value="Gehaz Bestie Experience">Gehaz Bestie Experience</option>
-                  <option value="Wedding Planning Experience">Wedding Planning Experience</option>
+                  {PLAYLIST_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full sm:w-64">
+                <select
+                  value={selectedPlaylist}
+                  onChange={(e) => {
+                    setSelectedPlaylist(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
+                >
+                  <option value="">All Playlists</option>
+                  {(selectedCategory
+                    ? playlists.filter((p) => p.category === selectedCategory)
+                    : playlists
+                  ).map((pl) => (
+                    <option key={pl._id} value={pl._id}>
+                      {pl.title}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

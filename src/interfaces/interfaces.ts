@@ -141,6 +141,11 @@ export interface PlaylistItem {
   order: number;
 }
 
+export const PLAYLIST_CATEGORIES = [
+  "Gehaz Bestie Experience",
+  "Wedding Planning Experience"
+] as const;
+
 export interface Playlist {
   _id?: string;
   title: string;

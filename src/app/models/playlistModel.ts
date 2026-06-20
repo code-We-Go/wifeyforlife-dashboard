@@ -1,11 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { Playlist } from "@/interfaces/interfaces";
+import { Playlist, PLAYLIST_CATEGORIES } from "@/interfaces/interfaces";
 
 // Define the Playlist schema
 const PlaylistSchema = new Schema({
   title: { type: String, required: true },
   description: { type: [String], required: false },
-  category:{type:String,required:false},
+  category: { type: String, enum: PLAYLIST_CATEGORIES, required: false },
   isPublic:{type:Boolean,default:false},
   folders: [
     {

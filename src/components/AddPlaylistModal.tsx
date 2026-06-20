@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Playlist, PlaylistFolder, Video } from "@/interfaces/interfaces";
+import { Playlist, PlaylistFolder, Video, PLAYLIST_CATEGORIES } from "@/interfaces/interfaces";
 import axios from "axios";
 import { UploadButton } from "@/utils/uploadthing";
 import Image from "next/image";
@@ -60,7 +60,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -185,13 +185,19 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 Category
               </label>
-              <input
-                type="text"
+              <select
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+                className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+              >
+                <option value="">No Category</option>
+                {PLAYLIST_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

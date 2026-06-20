@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Playlist, PlaylistFolder, Video } from "@/interfaces/interfaces";
+import { Playlist, PlaylistFolder, Video, PLAYLIST_CATEGORIES } from "@/interfaces/interfaces";
 import axios from "axios";
 import Image from "next/image";
 import { UploadButton } from "@/utils/uploadthing";
@@ -109,6 +109,7 @@ const DraggableVideoRow: React.FC<DraggableVideoRowProps> = ({
 interface PlaylistComponentProps {
   playlist: Playlist;
   setPlaylists: React.Dispatch<React.SetStateAction<Playlist[]>>;
+  viewMode?: "list" | "grid";
 }
 
 /** Convert any string to a URL-safe slug */
@@ -160,6 +161,7 @@ function resolveVideoEntry(v: unknown): { videoId: string; _video?: Video } {
 const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   playlist,
   setPlaylists,
+  viewMode = "list",
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -222,7 +224,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -404,13 +406,19 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
               <label className="mb-2 block text-sm font-medium text-secondary">
                 Category
               </label>
-              <input
-                type="text"
+              <select
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+                className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+              >
+                <option value="">No Category</option>
+                {PLAYLIST_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Description points */}
@@ -694,11 +702,13 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   // READ-ONLY CARD
   // ══════════════════════════════════════════════════════════════════════════
 
+  const isGrid = viewMode === "grid";
+
   return (
-    <div className="mb-4 w-full rounded-md bg-secondary p-6 text-creamey shadow-md">
-      <div className="flex flex-col gap-4 md:flex-row">
+    <div className={`rounded-md bg-secondary p-5 text-creamey shadow-md flex flex-col justify-between ${isGrid ? "w-full h-full" : "mb-4 w-full"}`}>
+      <div className={`flex ${isGrid ? "flex-col gap-3" : "flex-col gap-4 md:flex-row"}`}>
         {/* Thumbnail */}
-        <div className="relative h-32 w-full flex-shrink-0 md:w-48">
+        <div className={`relative flex-shrink-0 ${isGrid ? "aspect-video w-full" : "h-32 w-full md:w-48"}`}>
           <Image
             src={playlist.thumbnailUrl}
             alt={playlist.title}
@@ -710,104 +720,119 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
           </div>
         </div>
 
-        <div className="flex-1">
-          {/* Title + actions */}
-          <div className="mb-2 flex items-start justify-between">
-            <h3 className="text-lg font-semibold text-creamey">
-              {playlist.title}
-            </h3>
-            <div className="flex space-x-2">
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            {/* Title + actions */}
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <h3 className="text-lg font-semibold text-creamey line-clamp-2">
+                {playlist.title}
+              </h3>
+              {!isGrid && (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="rounded-md bg-creamey px-3 py-1 text-sm text-primary hover:bg-creamey/90"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 disabled:opacity-50"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Meta grid */}
+            <div className={`grid gap-2 text-xs ${isGrid ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}>
+              <div>
+                <span className="font-medium text-creamey/90 block">Category:</span>
+                <span className="text-creamey/70 truncate block">
+                  {playlist.category || "N/A"}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-creamey/90 block">Status:</span>
+                <span
+                  className={`block ${
+                    playlist.isPublic ? "text-green-400" : "text-yellow-400"
+                  }`}
+                >
+                  {playlist.isPublic ? "Public" : "Private"}
+                </span>
+              </div>
+              {!isGrid && (
+                <>
+                  <div>
+                    <span className="font-medium text-creamey/90 block">Videos:</span>
+                    <span className="text-creamey/70 block">{getVideoCount()}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-creamey/90 block">Featured:</span>
+                    <span
+                      className={`block ${
+                        playlist.featured ? "text-green-400" : "text-yellow-400"
+                      }`}
+                    >
+                      {playlist.featured ? "Yes" : "No"}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Folders badge row */}
+            {getFolderCount() > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1">
+                {(playlist.folders ?? []).map((f) => (
+                  <span
+                    key={f.slug}
+                    className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-creamey/80"
+                  >
+                    📁 {f.name}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Tags */}
+            {playlist.tags && playlist.tags.length > 0 && (
+              <div className="mt-3">
+                <div className="flex flex-wrap gap-1">
+                  {playlist.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="rounded-md bg-white/10 px-2 py-0.5 text-[10px] text-creamey/90"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Edit/Delete actions in grid mode */}
+          {isGrid && (
+            <div className="mt-4 flex items-center gap-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="rounded-md bg-creamey px-3 py-1 text-sm text-primary hover:bg-creamey/90"
+                className="flex-1 rounded-md bg-creamey py-1.5 text-xs text-primary hover:bg-creamey/90 transition text-center font-medium"
               >
                 Edit
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 disabled:opacity-50"
+                className="flex-1 rounded-md bg-red-500 py-1.5 text-xs text-white hover:bg-red-600 disabled:opacity-50 transition text-center font-medium"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
-          </div>
-
-          {/* Meta grid */}
-          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-            <div>
-              <span className="font-medium text-creamey/90">Category:</span>
-              <span className="ml-1 text-creamey/90">
-                {playlist.category || "N/A"}
-              </span>
-            </div>
-            <div>
-              <span className="font-medium text-creamey/90">Status:</span>
-              <span
-                className={`ml-1 ${
-                  playlist.isPublic ? "text-green-400" : "text-yellow-400"
-                }`}
-              >
-                {playlist.isPublic ? "Public" : "Private"}
-              </span>
-            </div>
-            <div>
-              <span className="font-medium text-creamey/90">Videos:</span>
-              <span className="ml-1 text-creamey/90">{getVideoCount()}</span>
-            </div>
-            <div>
-              <span className="font-medium text-creamey/90">Featured:</span>
-              <span
-                className={`ml-1 ${
-                  playlist.featured ? "text-green-400" : "text-yellow-400"
-                }`}
-              >
-                {playlist.featured ? "Yes" : "No"}
-              </span>
-            </div>
-          </div>
-
-          {/* Folders badge row */}
-          {getFolderCount() > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {(playlist.folders ?? []).map((f) => (
-                <span
-                  key={f.slug}
-                  className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-creamey/80"
-                >
-                  📁 {f.name}
-                </span>
-              ))}
-            </div>
           )}
-
-          {/* Tags */}
-          {playlist.tags && playlist.tags.length > 0 && (
-            <div className="mt-2">
-              <span className="text-sm font-medium text-creamey/90">Tags:</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {playlist.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="rounded-md bg-white/10 px-2 py-1 text-xs text-creamey/90"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Dates */}
-          <div className="mt-2 text-xs text-creamey/80">
-            Created: {new Date(playlist.createdAt).toLocaleDateString()}
-            {playlist.updatedAt &&
-              playlist.updatedAt !== playlist.createdAt && (
-                <span className="ml-4">
-                  Updated: {new Date(playlist.updatedAt).toLocaleDateString()}
-                </span>
-              )}
-          </div>
         </div>
       </div>
     </div>

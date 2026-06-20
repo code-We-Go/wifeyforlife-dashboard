@@ -67,21 +67,25 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   // const page = parseInt(searchParams.get("page") || "1", 10);
   const search = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "";
   const all = searchParams.get("all") === "true";
   // const limit = all ? 0 : 10;
   // const skip = all ? 0 : (page - 1) * limit;
 
   try {
     // Create search query
-    const searchQuery = search
+    const searchQuery: any = search
       ? { 
           $or: [
             { title: { $regex: search, $options: "i" } },
-            { description: { $regex: search, $options: "i" } },
-            { category: { $regex: search, $options: "i" } }
+            { description: { $regex: search, $options: "i" } }
           ]
         }
       : {};
+
+    if (category) {
+      searchQuery.category = category;
+    }
 
     // Get total count
     const totalPlaylists = await playlistModel.countDocuments(searchQuery);

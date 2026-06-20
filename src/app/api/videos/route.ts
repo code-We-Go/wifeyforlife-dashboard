@@ -70,6 +70,7 @@ export async function GET(req: Request) {
   const page = parseInt(searchParams.get("page") || "1", 10);
   const search = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
+  const playlistId = searchParams.get("playlist") || "";
   const all = searchParams.get("all") === "true";
   const limit = all ? 0 : parseInt(searchParams.get("limit") || "12", 10);
   const skip = all ? 0 : (page - 1) * limit;
@@ -85,7 +86,22 @@ export async function GET(req: Request) {
         }
       : {};
 
-    if (category) {
+    if (playlistId) {
+      const playlistObj = await playlistModel.findById(playlistId).select("videos");
+      if (!playlistObj || !playlistObj.videos || playlistObj.videos.length === 0) {
+        return NextResponse.json(
+          {
+            data: [],
+            total: 0,
+            currentPage: page,
+            totalPages: 1,
+          },
+          { status: 200 },
+        );
+      }
+      const vIds = playlistObj.videos.map((id: any) => new mongoose.Types.ObjectId(id));
+      searchQuery._id = { $in: vIds };
+    } else if (category) {
       // Find all playlists in this category
       const playlists = await playlistModel.find({ category }).select("videos");
       const videoIds = new Set<string>();

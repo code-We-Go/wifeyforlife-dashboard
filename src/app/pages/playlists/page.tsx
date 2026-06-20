@@ -2,7 +2,7 @@
 import AddPlaylistModal from "@/components/AddPlaylistModal";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import PlaylistComponent from "@/components/PlaylistComponent";
-import { Playlist } from "@/interfaces/interfaces";
+import { Playlist, PLAYLIST_CATEGORIES } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
@@ -28,7 +28,7 @@ function DraggablePlaylist({ playlist, index, movePlaylist, setPlaylists, childr
   });
   drag(drop(ref));
   return (
-    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }} className="h-full">
       {children}
     </div>
   );
@@ -39,6 +39,7 @@ const PlaylistsPage = () => {
   const [addModalisOpen, setAddModalisOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [prevOrder, setPrevOrder] = useState<string[]>([]);
   const [orderChanged, setOrderChanged] = useState(false);
 
@@ -46,7 +47,7 @@ const PlaylistsPage = () => {
     setIsLoading(true);
     try {
       const res = await axios.get(
-        `/api/playlists?search=${searchQuery}`
+        `/api/playlists?search=${searchQuery}&category=${selectedCategory}`
       );
       console.log("Playlists data:", res.data);
       setPlaylists(res.data.data);
@@ -55,11 +56,11 @@ const PlaylistsPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedCategory]);
 
   useEffect(() => {
     fetchPlaylists();
-  }, [fetchPlaylists, searchQuery]);
+  }, [fetchPlaylists]);
 
   useEffect(() => {
     setPrevOrder(playlists.map((p) => String(p._id)));
@@ -105,14 +106,30 @@ const PlaylistsPage = () => {
       <div className="flex h-auto px-2 md:px-4 min-h-screen w-full flex-col items-center justify-between gap-4 overflow-hidden bg-backgroundColor  md:py-4">
         <div className="flex h-full w-full flex-col items-center space-y-4">
           <div className="flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row">
-            <div className="w-full md:w-64">
-              <input
-                type="text"
-                placeholder="Search playlists..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
-              />
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center md:w-auto">
+              <div className="w-full sm:w-64">
+                <input
+                  type="text"
+                  placeholder="Search playlists..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div className="w-full sm:w-64">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
+                >
+                  <option value="">All Categories</option>
+                  {PLAYLIST_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex w-full justify-end text-primary underline md:w-auto">
               <button
@@ -129,20 +146,23 @@ const PlaylistsPage = () => {
               <div className="text-lg">Loading playlists...</div>
             </div>
           ) : playlists.length > 0 ? (
-            playlists.map((playlist, idx) => (
-              <DraggablePlaylist
-                key={playlist._id}
-                playlist={playlist}
-                index={idx}
-                movePlaylist={movePlaylist}
-                setPlaylists={setPlaylists}
-              >
-                <PlaylistComponent
-                  setPlaylists={setPlaylists}
+            <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {playlists.map((playlist, idx) => (
+                <DraggablePlaylist
+                  key={playlist._id}
                   playlist={playlist}
-                />
-              </DraggablePlaylist>
-            ))
+                  index={idx}
+                  movePlaylist={movePlaylist}
+                  setPlaylists={setPlaylists}
+                >
+                  <PlaylistComponent
+                    setPlaylists={setPlaylists}
+                    playlist={playlist}
+                    viewMode="grid"
+                  />
+                </DraggablePlaylist>
+              ))}
+            </div>
           ) : (
             <div className="flex items-center justify-center py-8">
               <h1 className="text-lg text-gray-500">No playlists found</h1>
