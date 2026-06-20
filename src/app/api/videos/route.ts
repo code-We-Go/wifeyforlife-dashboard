@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import videoModel from "@/app/models/videoModel";
+import playlistModel from "@/app/models/playlistModel";
 import { ConnectDB } from "@/config/db";
 import { NextResponse } from "next/server";
 import UserModel from "@/app/models/userModel";
@@ -68,21 +69,52 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1", 10);
   const search = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "";
   const all = searchParams.get("all") === "true";
-  const limit = all ? 0 : 10;
+  const limit = all ? 0 : parseInt(searchParams.get("limit") || "12", 10);
   const skip = all ? 0 : (page - 1) * limit;
-  console.log("registering" + UserModel);
+  console.log("registering" + UserModel +playlistModel);
   try {
     // Create search query
-    const searchQuery = search
+    const searchQuery: any = search
       ? {
           $or: [
             { title: { $regex: search, $options: "i" } },
             { description: { $regex: search, $options: "i" } },
-            { category: { $regex: search, $options: "i" } },
           ],
         }
       : {};
+
+    if (category) {
+      // Find all playlists in this category
+      const playlists = await playlistModel.find({ category }).select("videos");
+      const videoIds = new Set<string>();
+      playlists.forEach((p: any) => {
+        if (p.videos && Array.isArray(p.videos)) {
+          p.videos.forEach((vId: any) => {
+            if (vId) videoIds.add(vId.toString());
+          });
+        }
+      });
+
+      // If there are no videos in any playlist under this category, return empty data
+      if (videoIds.size === 0) {
+        return NextResponse.json(
+          {
+            data: [],
+            total: 0,
+            currentPage: page,
+            totalPages: 1,
+          },
+          { status: 200 },
+        );
+      }
+
+      // Filter by the collected video IDs
+      searchQuery._id = {
+        $in: Array.from(videoIds).map((id) => new mongoose.Types.ObjectId(id)),
+      };
+    }
 
     // Get total count
     const totalVideos = await videoModel.countDocuments(searchQuery);

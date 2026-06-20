@@ -9,11 +9,13 @@ import { UploadButton } from "@/utils/uploadthing";
 interface VideoComponentProps {
   video: Video;
   setVideos: React.Dispatch<React.SetStateAction<Video[]>>;
+  viewMode?: "list" | "grid";
 }
 
 const VideoComponent: React.FC<VideoComponentProps> = ({
   video,
   setVideos,
+  viewMode = "list",
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -154,7 +156,7 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
         >
           <div className="grid grid-cols-1 gap-4  md:col-span-2">
             <div className="w-full">
-              <label className="mb-2 block text-sm font-medium text-primary/80">
+              <label className="mb-2 block tracking-wide text-sm font-medium text-primary/80">
                 Title
               </label>
               <input
@@ -466,90 +468,102 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
       </div>
     );
   } else {
+    const isGrid = viewMode === "grid";
+
     return (
-      <div className="mb-4 w-full  rounded-2xl bg-secondary p-6 text-creamey shadow-md">
-        <div className="flex flex-col gap-4 md:flex-row">
-          <div className="relative h-32 w-full flex-shrink-0 max-md:h-52 md:w-48">
+      <div className={`rounded-2xl bg-secondary p-5 text-creamey shadow-md flex flex-col justify-between ${isGrid ? "w-full h-full" : "mb-4 w-full"}`}>
+        <div className={`flex ${isGrid ? "flex-col gap-3" : "flex-col gap-4 md:flex-row"}`}>
+          <div className={`relative flex-shrink-0 ${isGrid ? "aspect-video w-full" : "h-32 w-full max-md:h-52 md:w-48"}`}>
             <Image
               src={video.thumbnailUrl}
               alt={video.title}
               fill
-              className="aspect-video rounded-2xl object-cover"
+              className="rounded-2xl object-cover"
             />
           </div>
 
-          <div className="flex-1">
-            <div className="mb-2 flex items-start justify-between">
-              <h3
-                className={`${thirdFont.className} text-lg font-semibold md:text-2xl `}
-              >
-                {video.title}
-              </h3>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="rounded-2xl bg-creamey px-3 py-1 text-sm text-primary hover:bg-creamey/80"
+          <div className="flex-1 flex flex-col justify-between">
+            <div>
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <h3
+                  className={`${thirdFont.className} text-lg tracking-wide  line-clamp-2`}
+                  title={video.title}
                 >
-                  Edit
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="rounded-2xl bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 disabled:opacity-50"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </button>
+                  {video.title}
+                </h3>
+                {!isGrid && (
+                  <div className="flex space-x-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="rounded-2xl bg-creamey px-2.5 py-1 text-xs text-primary hover:bg-creamey/80"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="rounded-2xl bg-red-500 px-2.5 py-1 text-xs text-white hover:bg-red-600 disabled:opacity-50"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {!isGrid && video.description && (
+                <p className="mb-2 whitespace-pre-line text-sm text-creamey/90">{video.description}</p>
+              )}
+
+              {video.tags && video.tags.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-1.5">
+                  {video.tags.map(tag => (
+                    <span key={tag} className="rounded-full bg-creamey/20 px-2 py-0.5 text-[10px] capitalize text-creamey">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {video.description && (
-              <p className=" mb-2 whitespace-pre-line">{video.description}</p>
-            )}
-
-            {video.tags && video.tags.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-2">
-                {video.tags.map(tag => (
-                  <span key={tag} className="rounded-full bg-creamey/20 px-2 py-1 text-xs capitalize text-creamey">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="font-medium text-primary/80">Category:</span>
-            </div>
-            <div>
-              <span className="font-medium text-creamey/80">Status:</span>
+              {isGrid ? (
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex-1 rounded-2xl bg-creamey px-3 py-1.5 text-xs text-primary hover:bg-creamey/80 transition font-medium text-center"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="flex-1 rounded-2xl bg-red-500 px-3 py-1.5 text-xs text-white hover:bg-red-600 disabled:opacity-50 transition font-medium text-center"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-2 flex items-center space-x-4">
+                    <div className="flex items-center text-xs">
+                      <span className="mr-1">❤️</span>
+                      <span>{likesCount} likes</span>
+                    </div>
+                    <div className="flex items-center text-xs">
+                      <span className="mr-1">💬</span>
+                      <span>{commentsCount} comments</span>
+                    </div>
+                  </div>
 
-            </div>
-            <div>
-              <span className="font-medium text-creamey/80">Duration:</span>
-
-            </div>
-            <div>
-              <span className="font-medium text-creamey/80">Tags:</span>
-            </div>
-          </div> */}
-
-            <div className="mt-2 flex items-center space-x-4">
-              <div className="flex items-center text-sm">
-                <span className="mr-1">❤️</span>
-                <span>{likesCount} likes</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <span className="mr-1">💬</span>
-                <span>{commentsCount} comments</span>
-              </div>
-            </div>
-
-            <div className="mt-2 text-xs text-creamey/70">
-              Created: {new Date(video.createdAt).toLocaleDateString()}
-              {video.updatedAt && video.updatedAt !== video.createdAt && (
-                <span className="ml-4">
-                  Updated: {new Date(video.updatedAt).toLocaleDateString()}
-                </span>
+                  <div className="mt-2 text-[10px] text-creamey/70">
+                    Created: {new Date(video.createdAt).toLocaleDateString()}
+                    {video.updatedAt && video.updatedAt !== video.createdAt && (
+                      <span className="ml-4">
+                        Updated: {new Date(video.updatedAt).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>
