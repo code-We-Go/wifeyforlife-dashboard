@@ -263,6 +263,7 @@ export interface CartItem {
   quantity: number;
   imageUrl: string;
   collections?: string[];
+  originalPrice?: number;
 }
 
 export type FeaturedProduct = Omit<CartItem, "id" | "quantity">;
@@ -293,6 +294,7 @@ export interface IOrder {
   _id: string;
   email: string;
   orderID?: string;
+  paymentID?: string;
   country?: string;
   firstName?: string;
   lastName?: string;
@@ -308,6 +310,7 @@ export interface IOrder {
   shipping: number;
   appliedDiscount?: Discount;
   appliedDiscountAmount?: number;
+  redeemedLoyaltyPoints?: number;
   total?: number;
   currency?: string;
   status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";

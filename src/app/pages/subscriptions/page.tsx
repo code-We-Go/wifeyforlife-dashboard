@@ -31,6 +31,7 @@ interface Subscription {
   // Gift information
   isGift?: boolean;
   giftRecipientEmail?: string;
+  giftSenderEmail?: string;
   specialMessage?: string;
   giftCardName?: string;
   // Address information
@@ -138,6 +139,7 @@ const SubscriptionsPage = () => {
     // Gift information
     isGift: false,
     giftRecipientEmail: "",
+    giftSenderEmail: "",
     specialMessage: "",
     giftCardName: "",
     // Address information
@@ -217,7 +219,9 @@ const SubscriptionsPage = () => {
         (s.firstName &&
           s.firstName.toLowerCase().includes(search.toLowerCase())) ||
         (s.lastName &&
-          s.lastName.toLowerCase().includes(search.toLowerCase()))) &&
+          s.lastName.toLowerCase().includes(search.toLowerCase())) ||
+        (s.giftSenderEmail &&
+          s.giftSenderEmail.toLowerCase().includes(search.toLowerCase()))) &&
       (discountSearch === "" ||
         (typeof s.appliedDiscount === "object" &&
           s.appliedDiscount?.code?.toLowerCase() ===
@@ -401,6 +405,7 @@ const SubscriptionsPage = () => {
       "WhatsApp Number": sub.whatsAppNumber || "",
       "Is Gift": sub.isGift ? "Yes" : "No",
       "Gift Recipient Email": sub.giftRecipientEmail || "",
+      "Gift Sender Email": sub.giftSenderEmail || "",
       "Gift Card Name": sub.giftCardName || "",
       "Special Message": sub.specialMessage || "",
       Country: sub.country || "",
@@ -470,6 +475,7 @@ const SubscriptionsPage = () => {
         // Gift information
         isGift: subscription.isGift || false,
         giftRecipientEmail: subscription.giftRecipientEmail || "",
+        giftSenderEmail: subscription.giftSenderEmail || "",
         specialMessage: subscription.specialMessage || "",
         giftCardName: subscription.giftCardName || "",
         // Address information
@@ -524,6 +530,7 @@ const SubscriptionsPage = () => {
         // Gift information
         isGift: false,
         giftRecipientEmail: "",
+        giftSenderEmail: "",
         specialMessage: "",
         giftCardName: "",
         // Address information
@@ -851,7 +858,7 @@ const response = await axios.get(
           <div className="grid grid-cols-2 items-center gap-2 lg:grid-cols-3 2xl:grid-cols-5">
             <input
               type="text"
-              placeholder="Search by email or paymentID..."
+              placeholder="Search by email, paymentID or gift sender..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-64 rounded border p-2"
@@ -1193,11 +1200,10 @@ const response = await axios.get(
                   </label>
                   <input
                     type="email"
-                    value={form.email}
+                    value={form.email || ""}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, email: e.target.value.toLowerCase() }))
                     }
-                    required
                     className="w-full lowercase rounded border p-2"
                   />
                 </div>
@@ -1721,6 +1727,22 @@ const response = await axios.get(
                       }))
                     }
                     className="w-full rounded border p-2"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Gift Sender Email
+                  </label>
+                  <input
+                    type="email"
+                    value={form.giftSenderEmail || ""}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        giftSenderEmail: e.target.value.toLowerCase(),
+                      }))
+                    }
+                    className="w-full lowercase rounded border p-2"
                   />
                 </div>
                 <div>
@@ -2255,6 +2277,9 @@ const response = await axios.get(
                     
                     {selectedSubscription.isGift && (
                       <>
+                        <span className="text-gray-500">Gift Sender:</span>
+                        <span className="font-medium break-all">{selectedSubscription.giftSenderEmail || "-"}</span>
+
                         <span className="text-gray-500">Gift Recipient:</span>
                         <span className="font-medium break-all">{selectedSubscription.giftRecipientEmail}</span>
                         

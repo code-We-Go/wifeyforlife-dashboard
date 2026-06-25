@@ -21,6 +21,7 @@ export const CartItemSchema = new Schema({
     productId: { type: String, required: true },
     productName: { type: String, required: true },
     price: { type: Number, required: true },
+    originalPrice: { type: Number, required: false },
     quantity: { type: Number, required: true },
     imageUrl: { type: String, required: true },
     attributes: { type: attributeSchema, required: false },

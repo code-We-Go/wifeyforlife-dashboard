@@ -141,8 +141,8 @@ const OrderComponent = ({
     <div className="relative min-h-6 w-[97%] rounded-2xl border border-secondary bg-backgroundColor/25 bg-secondary px-4 py-8 text-sm text-creamey">
       <div className="flex w-full justify-between border-b border-white pb-1 text-sm">
         <div className="flex gap-2">
-          <h1>ORDER ID :</h1>
-          <p>{order._id}</p>
+          <h1>Payment ID:</h1>
+          <p>{order.paymentID || order._id}</p>
         </div>
 
         {/* Clickable Icon to Open Modal */}
@@ -196,7 +196,7 @@ const OrderComponent = ({
           </p>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <p>{order.total} LE</p>
+          <p>{((order.subTotal ?? 0) + (order.shipping ?? 0)).toFixed(2)} LE</p>
         </div>
         <div className="flex items-center justify-center gap-2">
           <p>{order.state}</p>
@@ -289,9 +289,14 @@ const OrderComponent = ({
 
             {/* Order Info */}
             <div className="space-y-2  text-left">
-              <p>
+              {/* <p>
                 <strong>Order ID:</strong> {order._id || "N/A"}
-              </p>
+              </p> */}
+              {order.paymentID && (
+                <p>
+                  <strong>Payment ID:</strong> {order.paymentID}
+                </p>
+              )}
 
               <p>
                 <strong>Email:</strong> {order.email}
@@ -387,7 +392,7 @@ const OrderComponent = ({
                 ))}
               </select>
               <p>
-                <strong>Sub-Total:</strong> {order.subTotal?.toFixed(2)} LE
+                <strong>Sub-Total:</strong> {((order.subTotal ?? 0) + (order.appliedDiscountAmount ?? 0) + (order.redeemedLoyaltyPoints?order.redeemedLoyaltyPoints/20:0)).toFixed(2)} LE
               </p>
               <p>
                 <strong>Shipping:</strong> {order.shipping?.toFixed(2)} LE
@@ -398,8 +403,14 @@ const OrderComponent = ({
                   {order.appliedDiscountAmount?.toFixed(2)} LE
                 </p>
               )}
+              {order.redeemedLoyaltyPoints ? (
+                <p>
+                  <strong>Loyalty Discount:</strong> -
+                  {(order.redeemedLoyaltyPoints/20).toFixed(2)} LE
+                </p>
+              ) : null}
               <p>
-                <strong>Total:</strong> {order.total?.toFixed(2)} LE
+                <strong>Total:</strong> {((order.subTotal ?? 0) + (order.shipping ?? 0)).toFixed(2)} LE
               </p>
               <p>
                 <strong>Created At:</strong>{" "}

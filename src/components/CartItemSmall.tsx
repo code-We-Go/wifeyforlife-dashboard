@@ -124,7 +124,20 @@ const CartItemSmall = ({
               {item.quantity}
               {/* <span onClick={()=>handleQuantity('+',item.id)} className='cursor-pointer'> +</span> */}
             </div>
-            <h3 className="">PRICE : {item.price} LE</h3>
+            <div className="flex flex-col items-end">
+              <h3 className="">PRICE : {item.price} LE</h3>
+              {(() => {
+                const realPrice = item.originalPrice || item.variant?.price || item.attributes?.price;
+                if (realPrice && realPrice !== item.price) {
+                  return (
+                    <h3 className="text-gray-500 line-through text-[10px] mt-1">
+                      REAL PRICE : {realPrice} LE
+                    </h3>
+                  );
+                }
+                return null;
+              })()}
+            </div>
           </div>
           <div className="flex w-full justify-between font-semibold">
             <h2 className="text-xs">
