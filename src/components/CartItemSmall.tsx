@@ -50,6 +50,11 @@ const CartItemSmall = ({
   //   }
   // }
   const [modalAppear, toggleRemoveModal] = useState(false);
+  const realPrice =
+    item.originalPrice ||
+    item.variant?.price ||
+    item.attributes?.price ||
+    item.price;
   // const {cart,setCart}=useContext(cartContext)
   // const {wishList,setWishList}=useContext(wishListContext)
   //   const deleteItem =(id:string,size:string,color:string)=>{
@@ -125,24 +130,13 @@ const CartItemSmall = ({
               {/* <span onClick={()=>handleQuantity('+',item.id)} className='cursor-pointer'> +</span> */}
             </div>
             <div className="flex flex-col items-end">
-              <h3 className="">PRICE : {item.price} LE</h3>
-              {(() => {
-                const realPrice = item.originalPrice || item.variant?.price || item.attributes?.price;
-                if (realPrice && realPrice !== item.price) {
-                  return (
-                    <h3 className="text-gray-500 line-through text-[10px] mt-1">
-                      REAL PRICE : {realPrice} LE
-                    </h3>
-                  );
-                }
-                return null;
-              })()}
+              <h3 className="">PRICE : {realPrice} LE</h3>
             </div>
           </div>
           <div className="flex w-full justify-between font-semibold">
             <h2 className="text-xs">
               {" "}
-              TOTAL : {item.quantity * item.price} LE{" "}
+              TOTAL : {item.quantity * realPrice} LE{" "}
             </h2>
             {/* {wishListBool && <h1   onClick={()=>{
 

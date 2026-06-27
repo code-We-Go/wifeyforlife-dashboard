@@ -174,7 +174,11 @@ export async function DELETE(request: Request) {
         status: 200,
       });
     } else {
-      const sub = await subscriptionsModel.findById(orderID);
+      let sub = null;
+      if (orderID && mongoose.Types.ObjectId.isValid(orderID)) {
+        sub = await subscriptionsModel.findById(orderID);
+      }
+
       if (sub && sub.paymentID) {
         const res = await subscriptionsModel.deleteMany({ paymentID: sub.paymentID });
         return new Response(JSON.stringify({ deletedCount: res.deletedCount }), {
