@@ -93,23 +93,10 @@ function formatSubsAsOrder(subs: any[]) {
     }
   });
 
-  let calculatedSubTotal = 0;
-  cart.forEach((item) => {
-    calculatedSubTotal += (item.price || 0) * (item.quantity || 1);
-  });
-
-  const subTotal = calculatedSubTotal;
-  let shipping = master.shipping || 0;
-  const dbTotal = master.total || 0;
-  const dbSubTotal = master.subTotal || 0;
-  const dbDiscount = master.appliedDiscountAmount || 0;
-  
-  if (shipping !== (dbTotal - dbSubTotal + dbDiscount)) {
-    shipping = 0;
-  }
-
-  const appliedDiscountAmount = dbDiscount;
-  const total = Math.max(0, subTotal + shipping - appliedDiscountAmount);
+  const subTotal = master.subTotal || 0;
+  const shipping = master.shipping || 0;
+  const appliedDiscountAmount = master.appliedDiscountAmount || 0;
+  const total = master.total || 0;
 
   let paymentMethod = master.paymentMethod || "card";
   if (paymentMethod === "paymob") paymentMethod = "card";

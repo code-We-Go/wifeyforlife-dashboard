@@ -203,7 +203,7 @@ const OrderComponent = ({
           </p>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <p>{((order.subTotal ?? 0) + (order.shipping ?? 0)).toFixed(2)} LE</p>
+          <p>{((order.total ?? 0)).toFixed(2)} LE</p>
         </div>
         <div className="flex items-center justify-center gap-2">
           <p>{order.state}</p>
@@ -417,7 +417,7 @@ const OrderComponent = ({
                 </button>
               )}
               <p>
-                <strong>Sub-Total:</strong> {((order.subTotal ?? 0) + (order.appliedDiscountAmount ?? 0) + (order.redeemedLoyaltyPoints ? order.redeemedLoyaltyPoints / 20 : 0)).toFixed(2)} LE
+                <strong>Sub-Total:</strong> {order.subTotal?.toFixed(2)} LE
               </p>
               <p>
                 <strong>Shipping:</strong> {order.shipping?.toFixed(2)} LE
@@ -435,7 +435,8 @@ const OrderComponent = ({
                 </p>
               ) : null}
               <p>
-                <strong>Total:</strong> {((order.subTotal ?? 0) + (order.shipping ?? 0)).toFixed(2)} LE
+                {/* <strong>Total:</strong> {((order.subTotal ?? 0) - (order.appliedDiscountAmount ?? 0) - (order.redeemedLoyaltyPoints ? order.redeemedLoyaltyPoints / 20 : 0) + (order.shipping ?? 0)).toFixed(2)} LE */}
+                <strong>Total:</strong> {(order.total ?? 0).toFixed(2)} LE
               </p>
               <p>
                 <strong>Created At:</strong>{" "}
