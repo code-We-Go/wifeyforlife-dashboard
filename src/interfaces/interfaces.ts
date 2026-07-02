@@ -313,7 +313,7 @@ export interface IOrder {
   redeemedLoyaltyPoints?: number;
   total?: number;
   currency?: string;
-  status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  status?: "pending" | "confirmed" | "shipped" | "failed" | "delivered" | "cancelled";
   payment?: "pending" | "failed" | "confirmed";
   billingCountry?: string;
   billingFirstName?: string;

@@ -1,11 +1,9 @@
-// lib/mongodb.ts or utils/db.ts
-
 import mongoose from "mongoose";
 
-const MONGODB_URI = `mongodb+srv://wifeyforlifey:${process.env.MONGO_PASSWORD}@wifeyforlifey.j0pm4vx.mongodb.net/wifeyforlifey?retryWrites=true&w=majority&appName=WifeyForLifey`;
+const MONGODB_URI = process.env.MONGODB_URI || `mongodb+srv://wifeyforlifey:${process.env.MONGO_PASSWORD}@wifeyforlifey.j0pm4vx.mongodb.net/wifeyforlifey?retryWrites=true&w=majority&appName=WifeyForLifey`;
 
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGO_PASSWORD environment variable");
+  throw new Error("Please define the MONGODB_URI or MONGO_PASSWORD environment variable");
 }
 
 export const ConnectDB = async () => {

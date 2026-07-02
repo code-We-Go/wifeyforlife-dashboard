@@ -8,6 +8,34 @@ import { thirdFont } from '@/app/lib/fonts';
 
 const RecentOrders = () => {
     const [orders, setOrders] = useState<IOrder[]>([]);
+    const [approvingId, setApprovingId] = useState<string | null>(null);
+
+    const handleApproveInstapay = async (orderID: string) => {
+      setApprovingId(orderID);
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback?success=true&order=${orderID}&json=true`
+        );
+
+        console.log("response", response);
+        if (response.status === 200) {
+          alert("Payment approved successfully!");
+          const res = await axios.get(`/api/orders?page=1`);
+          setOrders(res.data.data);
+        } else {
+          alert("Failed to approve payment. Status code: " + response.status);
+        }
+      } catch (error: any) {
+        console.error("Error approving payment:", error);
+        alert(
+          "An error occurred while approving the payment: " +
+            (error.response?.data?.message || error.message)
+        );
+      } finally {
+        setApprovingId(null);
+      }
+    };
+
       useEffect(() => {
         const fetchOrders = async () => {
           try {
@@ -28,7 +56,13 @@ const RecentOrders = () => {
       {orders.length > 0 ? (
   orders.map((order, index) => {
     return index < 7 ? (
-      <OrderComponent setOrders={setOrders} key={index} order={order} />
+      <OrderComponent
+        setOrders={setOrders}
+        key={index}
+        order={order}
+        handleApproveInstapay={handleApproveInstapay}
+        approvingId={approvingId}
+      />
     ) : (
       <div key={index}></div>
     );

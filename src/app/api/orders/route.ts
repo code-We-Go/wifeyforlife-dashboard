@@ -1,5 +1,6 @@
 import ordersModel from "@/app/models/ordersModel";
 import subscriptionsModel from "@/app/models/subscriptionsModel";
+import subscriptionPaymentModel from "@/app/models/subscriptionPaymentModel";
 import packageModel from "@/app/models/packageModel";
 import { ConnectDB } from "@/config/db";
 import { DiscountModel } from "@/models/Discount";
@@ -174,20 +175,31 @@ export async function DELETE(request: Request) {
         status: 200,
       });
     } else {
-      const sub = await subscriptionsModel.findById(orderID);
-      if (sub && sub.paymentID) {
-        const res = await subscriptionsModel.deleteMany({ paymentID: sub.paymentID });
-        return new Response(JSON.stringify({ deletedCount: res.deletedCount }), {
-          headers: { "Content-Type": "application/json" },
-          status: 200,
-        });
-      } else {
-        const res = await subscriptionsModel.deleteMany({ paymentID: orderID });
-        return new Response(JSON.stringify({ deletedCount: res.deletedCount }), {
-          headers: { "Content-Type": "application/json" },
-          status: 200,
-        });
+      let sub = null;
+      if (orderID && mongoose.Types.ObjectId.isValid(orderID)) {
+        sub = await subscriptionsModel.findById(orderID);
+        if (!sub) {
+          sub = await subscriptionPaymentModel.findById(orderID);
+        }
       }
+
+      let pId = orderID;
+      if (sub && sub.paymentID) {
+        pId = sub.paymentID;
+      }
+
+      const resSub = await subscriptionsModel.deleteMany({ paymentID: pId });
+      const resPay = await subscriptionPaymentModel.deleteMany({ paymentID: pId });
+
+      return new Response(
+        JSON.stringify({
+          deletedCount: (resSub.deletedCount || 0) + (resPay.deletedCount || 0),
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
     }
   } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });
@@ -218,7 +230,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ data: updated }, { status: 200 });
     } else {
       let pId = orderID;
-      const sub = await subscriptionsModel.findById(orderID);
+      let sub = await subscriptionsModel.findById(orderID);
+      if (!sub) {
+        sub = await subscriptionPaymentModel.findById(orderID);
+      }
       if (sub && sub.paymentID) {
         pId = sub.paymentID;
       }
@@ -227,14 +242,19 @@ export async function PUT(request: Request) {
       if (req.status !== undefined) updateFields.status = req.status;
       if (req.payment !== undefined) {
         updateFields.subscribed = req.payment === "confirmed";
+        updateFields.status = req.payment;
       }
 
       await subscriptionsModel.updateMany(
         { paymentID: pId },
         { $set: updateFields }
       );
+      await subscriptionPaymentModel.updateMany(
+        { paymentID: pId },
+        { $set: updateFields }
+      );
 
-      const subs = await subscriptionsModel
+      let subs = await subscriptionsModel
         .find({ paymentID: pId })
         .populate({
           path: "packageID",
@@ -246,6 +266,21 @@ export async function PUT(request: Request) {
           model: DiscountModel,
           options: { strictPopulate: false },
         });
+
+      if (subs.length === 0) {
+        subs = await subscriptionPaymentModel
+          .find({ paymentID: pId })
+          .populate({
+            path: "packageID",
+            model: packageModel,
+            options: { strictPopulate: false },
+          })
+          .populate({
+            path: "appliedDiscount",
+            model: DiscountModel,
+            options: { strictPopulate: false },
+          });
+      }
 
       if (subs.length > 0) {
         const formatted = formatSubsAsOrder(subs);
@@ -283,15 +318,38 @@ export async function GET(req: Request) {
         model: DiscountModel,
         options: { strictPopulate: false },
       });
+      const paymentSubs = await subscriptionPaymentModel.find({ email }).populate({
+        path: "packageID",
+        model: packageModel,
+        options: { strictPopulate: false },
+      }).populate({
+        path: "appliedDiscount",
+        model: DiscountModel,
+        options: { strictPopulate: false },
+      });
 
       const groupedSubs: { [paymentID: string]: any[] } = {};
+      const confirmedPaymentIDs = new Set<string>();
+
       subs.forEach((sub) => {
         const pId = sub.paymentID || sub._id.toString();
+        confirmedPaymentIDs.add(pId);
         if (!groupedSubs[pId]) {
           groupedSubs[pId] = [];
         }
         groupedSubs[pId].push(sub);
       });
+
+      paymentSubs.forEach((sub) => {
+        const pId = sub.paymentID || sub._id.toString();
+        if (!confirmedPaymentIDs.has(pId)) {
+          if (!groupedSubs[pId]) {
+            groupedSubs[pId] = [];
+          }
+          groupedSubs[pId].push(sub);
+        }
+      });
+
       const subOrders = Object.values(groupedSubs).map((group) => formatSubsAsOrder(group));
 
       const mappedOrders = orders.map((order: any) => {
@@ -449,13 +507,40 @@ export async function GET(req: Request) {
       })
       .sort({ createdAt: -1 });
 
+    const paymentSubscriptions = await subscriptionPaymentModel
+      .find(subFilter)
+      .populate({
+        path: "packageID",
+        model: packageModel,
+        options: { strictPopulate: false },
+      })
+      .populate({
+        path: "appliedDiscount",
+        model: DiscountModel,
+        options: { strictPopulate: false },
+      })
+      .sort({ createdAt: -1 });
+
     const groupedSubs: { [paymentID: string]: any[] } = {};
+    const confirmedPaymentIDs = new Set<string>();
+
     subscriptions.forEach((sub) => {
       const pId = sub.paymentID || sub._id.toString();
+      confirmedPaymentIDs.add(pId);
       if (!groupedSubs[pId]) {
         groupedSubs[pId] = [];
       }
       groupedSubs[pId].push(sub);
+    });
+
+    paymentSubscriptions.forEach((sub) => {
+      const pId = sub.paymentID || sub._id.toString();
+      if (!confirmedPaymentIDs.has(pId)) {
+        if (!groupedSubs[pId]) {
+          groupedSubs[pId] = [];
+        }
+        groupedSubs[pId].push(sub);
+      }
     });
 
     const subOrders = Object.values(groupedSubs).map((group) => formatSubsAsOrder(group));

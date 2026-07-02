@@ -93,10 +93,17 @@ const OrderComponent = ({
     setIsModalOpen(false);
     try {
       const res = await axios.delete(`/api/orders`, {
-        data: { orderID: order._id },
+        data: { orderID: order.paymentID || order._id },
       });
       if (res.status === 200) {
-        setOrders((prev) => prev.filter((o) => o._id !== order._id));
+        setOrders((prev) =>
+          prev.filter((o) => {
+            if (order.paymentID && o.paymentID === order.paymentID) {
+              return false;
+            }
+            return o._id !== order._id;
+          })
+        );
         // fetchOrders();
         Swal.fire({
           background: "#FFFFF",
@@ -201,38 +208,40 @@ const OrderComponent = ({
         <div className="flex items-center justify-center gap-2">
           <p>{order.state}</p>
         </div>
-        {order.cash === "instapay" && (
-          <div className="flex items-center justify-center gap-4">
-            {order.instapayReciept ? (
-              <a
-                href={order.instapayReciept}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-accent underline"
-              >
-                Receipt
-              </a>
-            ) : (
-              <span className="italic text-gray-400">No receipt</span>
-            )}
-            {order.payment !== "confirmed" && handleApproveInstapay && (
-              <button
-                disabled={approvingId === order.orderID}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleApproveInstapay(order.orderID || "");
-                }}
-                className={`rounded px-3 py-1 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 ${
-                  approvingId === order.orderID
-                    ? "cursor-not-allowed bg-gray-400"
-                    : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+        <div className="flex items-center justify-center gap-4">
+          {order.cash === "instapay" && (
+            <>
+              {order.instapayReciept ? (
+                <a
+                  href={order.instapayReciept}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-accent underline"
+                >
+                  Receipt
+                </a>
+              ) : (
+                <span className="italic text-gray-400">No receipt</span>
+              )}
+            </>
+          )}
+          <span className="text-xs text-gray-400">({status || "undefined"})</span>
+          {status !== "confirmed" && status !== "delivered" && handleApproveInstapay && (
+            <button
+              disabled={approvingId === (order.paymentID || order._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleApproveInstapay(order.paymentID || order._id || "");
+              }}
+              className={`rounded px-3 py-1 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 ${approvingId === (order.paymentID || order._id)
+                ? "cursor-not-allowed bg-gray-400"
+                : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
                 }`}
-              >
-                {approvingId === order._id ? "..." : "Approve"}
-              </button>
-            )}
-          </div>
-        )}
+            >
+              {approvingId === (order.paymentID || order._id) ? "..." : "Approve"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Confirmation Modal */}
@@ -333,6 +342,7 @@ const OrderComponent = ({
                 value={status}
                 onChange={(e) => {
                   const newStatus = e.target.value as
+                    | "failed"
                     | "pending"
                     | "confirmed"
                     | "shipped"
@@ -391,8 +401,23 @@ const OrderComponent = ({
                   </option>
                 ))}
               </select>
+              {status !== "confirmed" && status !== "delivered" && handleApproveInstapay && (
+                <button
+                  disabled={approvingId === (order.paymentID || order._id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleApproveInstapay(order.paymentID || order._id || "");
+                  }}
+                  className={`mt-2 block rounded px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 ${approvingId === (order.paymentID || order._id)
+                    ? "cursor-not-allowed bg-gray-400"
+                    : "bg-primary from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+                    }`}
+                >
+                  {approvingId === (order.paymentID || order._id) ? "..." : "Approve Payment"}
+                </button>
+              )}
               <p>
-                <strong>Sub-Total:</strong> {((order.subTotal ?? 0) + (order.appliedDiscountAmount ?? 0) + (order.redeemedLoyaltyPoints?order.redeemedLoyaltyPoints/20:0)).toFixed(2)} LE
+                <strong>Sub-Total:</strong> {((order.subTotal ?? 0) + (order.appliedDiscountAmount ?? 0) + (order.redeemedLoyaltyPoints ? order.redeemedLoyaltyPoints / 20 : 0)).toFixed(2)} LE
               </p>
               <p>
                 <strong>Shipping:</strong> {order.shipping?.toFixed(2)} LE
@@ -406,7 +431,7 @@ const OrderComponent = ({
               {order.redeemedLoyaltyPoints ? (
                 <p>
                   <strong>Loyalty Discount:</strong> -
-                  {(order.redeemedLoyaltyPoints/20).toFixed(2)} LE
+                  {(order.redeemedLoyaltyPoints / 20).toFixed(2)} LE
                 </p>
               ) : null}
               <p>
