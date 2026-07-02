@@ -41,7 +41,7 @@ function formatSubsAsOrder(subs: any[]) {
       } else {
         let price = pkg.price || 0;
         if (!sub.cart || sub.cart.length === 0) {
-          price = sub.total !== undefined ? sub.total : price;
+          price = sub.subTotal !== undefined ? sub.subTotal : price;
         }
 
         cart.push({
