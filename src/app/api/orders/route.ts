@@ -18,9 +18,11 @@ function formatSubsAsOrder(subs: any[]) {
   const sortedSubs = [...subs].sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
 
   // Find the master subscription that contains the full checkout details
-  let master = sortedSubs.find(sub => !sub.isGift && (sub.billingFirstName || sub.email));
+  let master = sortedSubs.find(sub => !sub.isGift && (sub.total || 0) > 0 && (sub.billingFirstName || sub.email));
   if (!master) {
-    master = sortedSubs.reduce((max, sub) => ((sub.total || 0) > (max.total || 0) ? sub : max), sortedSubs[0]);
+    const nonZeroSubs = sortedSubs.filter(sub => (sub.total || 0) > 0);
+    const candidates = nonZeroSubs.length > 0 ? nonZeroSubs : sortedSubs;
+    master = candidates.reduce((max, sub) => ((sub.total || 0) > (max.total || 0) ? sub : max), candidates[0]);
   }
   
   const cart: any[] = [];
@@ -136,6 +138,8 @@ function formatSubsAsOrder(subs: any[]) {
     billingCity: master.billingCity || "",
     billingPhone: master.billingPhone || "",
     instapayReciept: master.instapayReciept || "",
+    giftCardName: sortedSubs.find(s => s.giftCardName)?.giftCardName || "",
+    specialMessage: sortedSubs.find(s => s.specialMessage)?.specialMessage || "",
     createdAt: master.createdAt,
     updatedAt: master.updatedAt,
   };
@@ -288,6 +292,7 @@ export async function GET(req: Request) {
   const discountCode = searchParams.get("discountCode");
   const orderDate = searchParams.get("orderDate");
   const email = searchParams.get("email");
+  const statusParam = searchParams.get("status");
 
   if (email) {
     try {
@@ -372,6 +377,9 @@ export async function GET(req: Request) {
   const filter: any = {};
   if (cash) {
     filter.cash = cash;
+  }
+  if (statusParam) {
+    filter.status = statusParam;
   }
   if (discountCode) {
     try {
@@ -460,6 +468,10 @@ export async function GET(req: Request) {
       $gte: startOfDay,
       $lte: endOfDay,
     };
+  }
+
+  if (statusParam) {
+    subFilter.status = statusParam;
   }
 
   try {

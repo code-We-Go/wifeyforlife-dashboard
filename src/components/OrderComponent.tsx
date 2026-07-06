@@ -216,7 +216,7 @@ const OrderComponent = ({
                   href={order.instapayReciept}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-accent underline"
+                  className="flex items-center gap-1 text-white underline"
                 >
                   Receipt
                 </a>
@@ -322,6 +322,18 @@ const OrderComponent = ({
                   <CartItemSmall key={index} item={item} wishListBool={false} />
                 ))}
               </div>
+
+              {order.giftCardName && (
+                <p>
+                  <strong>Gift Card Name:</strong> {order.giftCardName}
+                </p>
+              )}
+              {order.specialMessage && (
+                <p>
+                  <strong>Special Message:</strong> {order.specialMessage}
+                </p>
+              )}
+
               <p>
                 <strong>Phone:</strong> {order.phone || "N/A"}
               </p>
