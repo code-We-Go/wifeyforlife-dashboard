@@ -134,13 +134,17 @@ const ChartOne: React.FC = () => {
             monthlyTotals[key] = 0;
           }
 
-          // Aggregate orders by month
+          // Aggregate standard orders by month
           orders.forEach((order: any) => {
-            const orderDate = new Date(order.createdAt);
-            const key = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
+            if (!order.isSubscriptionOrder) {
+              const orderDate = new Date(order.createdAt);
+              const key = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
 
-            if (monthlyTotals.hasOwnProperty(key)) {
-              monthlyTotals[key] += order.subTotal || 0; // Sum up order totals
+              if (monthlyTotals.hasOwnProperty(key)) {
+                if (order.status !== "failed" && order.status !== "cancelled") {
+                  monthlyTotals[key] += order.subTotal || 0; // Sum up order totals
+                }
+              }
             }
           });
 
@@ -155,6 +159,7 @@ const ChartOne: React.FC = () => {
                 const key = `${subDate.getFullYear()}-${subDate.getMonth()}`;
                 
                 if (monthlyTotals.hasOwnProperty(key)) {
+                  // The user requested to only calculate subscriptionsModel.ts:cart
                   const cartValue = (sub.cart || []).reduce(
                     (sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0),
                     0
@@ -196,9 +201,9 @@ const ChartOne: React.FC = () => {
             </span>
             <div className="w-full">
               <p
-                className={`${thirdFont.className} text-2xl font-semibold tracking-normal text-secondary`}
+                className={`${thirdFont.className} whitespace-nowrap text-2xl font-semibold tracking-normal text-secondary`}
               >
-                Monthly sales
+                Products Monthly sales
               </p>
             </div>
           </div>

@@ -9,7 +9,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 });
 
 const options: ApexOptions = {
-  colors: ["#D32333"],
+  colors: ["#D32333", "#D4A017"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
     type: "bar",
@@ -22,21 +22,12 @@ const options: ApexOptions = {
     {
       title: { text: "Local Profit (EGP)" },
       min: 0,
-      max: 25000,
-      tickAmount: 5, 
+      max: 10000,
+      tickAmount: 10, 
       labels: {
         formatter: (value) => value.toFixed(0),
       },
     },
-    // {
-    //   title: { text: "Global Profit ($)" },
-    //   min: 0,
-    //   max: 1000,
-    //   tickAmount: 5,
-    //   labels: {
-    //     formatter: (value) => value.toFixed(0),
-    //   },
-    // },
   ],
   responsive: [
     {
@@ -45,7 +36,7 @@ const options: ApexOptions = {
         plotOptions: {
           bar: {
             borderRadius: 0,
-            columnWidth: "25%",
+            columnWidth: "40%",
           },
         },
       },
@@ -55,7 +46,7 @@ const options: ApexOptions = {
     bar: {
       horizontal: false,
       borderRadius: 0,
-      columnWidth: "25%",
+      columnWidth: "40%",
     },
   },
   dataLabels: { enabled: false },
@@ -74,36 +65,72 @@ const options: ApexOptions = {
 
 const ChartTwo: React.FC = () => {
   const [series, setSeries] = useState([
-    { name: "Local Profit", data: [0, 0, 0, 0, 0, 0, 0] },
-    // { name: "Global Profit", data: [0, 0, 0, 0, 0, 0, 0] },
+    { name: "Orders", data: [0, 0, 0, 0, 0, 0, 0] },
+    { name: "Sessions", data: [0, 0, 0, 0, 0, 0, 0] },
   ]);
   const [week, setWeek] = useState("thisWeek"); // state to store week selection
 
+  const getWeekRange = (week: string) => {
+    const today = new Date();
+    let startOfWeek: Date;
+    let endOfWeek: Date;
+
+    if (week === "lastWeek") {
+      startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay() - 7);
+      startOfWeek.setHours(0, 0, 0, 0);
+      endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+    } else {
+      startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+    }
+
+    return { startOfWeek, endOfWeek };
+  };
+
   const fetchOrders = async (week: string) => {
     try {
-      const response = await axios.get(`/api/localGlobalProfit?week=${week}`);
-      const orders = response.data.data || [];
-  
-      if (!Array.isArray(orders)) {
-        console.error("Invalid data format:", orders);
-        return;
-      }
-  
+      const [localRes, partnerRes] = await Promise.all([
+        axios.get(`/api/localGlobalProfit?week=${week}`),
+        axios.get(`/api/partner-session-orders`),
+      ]);
+
+      // Process local orders
+      const orders = localRes.data.data || [];
       const localProfits = new Array(7).fill(0);
-      // const globalProfits = new Array(7).fill(0);
-  
-      orders.forEach((order: any) => {
-        const date = new Date(order.createdAt);
-        const dayOfWeek = date.getDay();
-  
-       
+
+      if (Array.isArray(orders)) {
+        orders.forEach((order: any) => {
+          const date = new Date(order.createdAt);
+          const dayOfWeek = date.getDay();
           localProfits[dayOfWeek] += order.subTotal || 0;
- 
-      });
-  
+        });
+      }
+
+      // Process partner session orders (filter by week on client side)
+      const partnerOrders = partnerRes.data.data || [];
+      const partnerProfits = new Array(7).fill(0);
+      const { startOfWeek, endOfWeek } = getWeekRange(week);
+
+      if (Array.isArray(partnerOrders)) {
+        partnerOrders.forEach((order: any) => {
+          const date = new Date(order.createdAt);
+          if (date >= startOfWeek && date <= endOfWeek) {
+            const dayOfWeek = date.getDay();
+            partnerProfits[dayOfWeek] += order.finalPrice || 0;
+          }
+        });
+      }
+
       setSeries([
-        { name: "Local Profit", data: localProfits },
-        // { name: "Global Profit", data: globalProfits },
+        { name: "Orders", data: localProfits },
+        { name: "Sessions", data: partnerProfits },
       ]);
     } catch (error) {
       console.error("Error fetching orders:", error);

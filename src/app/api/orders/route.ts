@@ -140,6 +140,7 @@ function formatSubsAsOrder(subs: any[]) {
     instapayReciept: master.instapayReciept || "",
     giftCardName: sortedSubs.find(s => s.giftCardName)?.giftCardName || "",
     specialMessage: sortedSubs.find(s => s.specialMessage)?.specialMessage || "",
+    isSubscriptionOrder: true,
     createdAt: master.createdAt,
     updatedAt: master.updatedAt,
   };
@@ -552,7 +553,7 @@ export async function GET(req: Request) {
     });
 
     const totalOrders = allCombined.length;
-    const paginated = allCombined.slice(skip, skip + limit);
+    const paginated = limit === 0 ? allCombined : allCombined.slice(skip, skip + limit);
 
     return NextResponse.json(
       {
