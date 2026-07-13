@@ -1089,7 +1089,7 @@ const response = await axios.get(
                       </button>
                       {/* Debug info: showing status */}
                       <span className="text-xs text-gray-400">({sub.status || "undefined"})</span>
-                      {sub.status !== "confirmed" && sub.status !== "delivered" && (
+                      {sub.paymentMethod === "instapay" && sub.status !== "confirmed" && sub.status !== "delivered" && (
                         <button
                           disabled={approvingId === sub.paymentID}
                           onClick={() => handleApproveInstapay(sub.paymentID)}
