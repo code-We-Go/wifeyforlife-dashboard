@@ -77,6 +77,8 @@ const SubscriptionPaymentSchema = new Schema(
     billingPostalZip: { type: String, required: false },
     billingCity: { type: String, required: false },
     billingPhone: { type: String, required: false },
+    billingWhatsAppNumber: { type: String, required: false },
+    billingEmail: { type: String, required: false },
 
     // Payment information
     total: { type: Number, required: false },

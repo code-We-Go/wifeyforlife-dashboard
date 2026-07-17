@@ -51,6 +51,8 @@ interface Subscription {
   billingPostalZip?: string;
   billingCity?: string;
   billingPhone?: string;
+  billingWhatsAppNumber?: string;
+  billingEmail?: string;
   // Payment information
   total?: number;
   subTotal?: number;
@@ -159,6 +161,8 @@ const SubscriptionsPage = () => {
     billingPostalZip: "",
     billingCity: "",
     billingPhone: "",
+    billingWhatsAppNumber: "",
+    billingEmail: "",
     // Payment information
     total: 0,
     subTotal: 0,
@@ -173,6 +177,18 @@ const SubscriptionsPage = () => {
     cart: [] as ICartItem[],
     pickupFromBazar: false,
   });
+
+  const [activeSections, setActiveSections] = useState({
+    contact: true,
+    subscription: false,
+    gift: false,
+    address: false,
+    payment: false,
+  });
+
+  const toggleSection = (section: keyof typeof activeSections) => {
+    setActiveSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   // Calculate totals whenever cart or package or discount/shipping changes
   useEffect(() => {
@@ -423,6 +439,8 @@ const SubscriptionsPage = () => {
       "Billing Postal/Zip": sub.billingPostalZip || "",
       "Billing City": sub.billingCity || "",
       "Billing Phone": sub.billingPhone || "",
+      "Billing WhatsApp Number": sub.billingWhatsAppNumber || "",
+      "Billing Email": sub.billingEmail || "",
       Total: sub.total || 0,
       SubTotal: sub.subTotal || 0,
       Shipping: sub.shipping || 0,
@@ -495,6 +513,8 @@ const SubscriptionsPage = () => {
         billingPostalZip: subscription.billingPostalZip || "",
         billingCity: subscription.billingCity || "",
         billingPhone: subscription.billingPhone || "",
+        billingWhatsAppNumber: subscription.billingWhatsAppNumber || "",
+        billingEmail: subscription.billingEmail || "",
         // Payment information
         total: subscription.total || 0,
         subTotal: subscription.subTotal || 0,
@@ -550,6 +570,8 @@ const SubscriptionsPage = () => {
         billingPostalZip: "",
         billingCity: "",
         billingPhone: "",
+        billingWhatsAppNumber: "",
+        billingEmail: "",
         // Payment information
         total: 0,
         subTotal: 0,
@@ -1193,704 +1215,855 @@ const response = await axios.get(
                 onSubmit={handleSubmit}
                 className="max-h-[80vh] space-y-4 overflow-y-auto p-2"
               >
-                <h3 className="text-lg font-medium">Basic Information</h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email || ""}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, email: e.target.value.toLowerCase() }))
-                    }
-                    className="w-full lowercase rounded border p-2"
-                  />
+                {/* 1. Contact Info Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("contact")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      1. Contact Info
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.contact ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.contact && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact First Name
+                          </label>
+                          <input
+                            type="text"
+                            value={form.billingFirstName}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, billingFirstName: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact Last Name
+                          </label>
+                          <input
+                            type="text"
+                            value={form.billingLastName}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, billingLastName: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact Email
+                          </label>
+                          <input
+                            type="email"
+                            value={form.billingEmail || ""}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, billingEmail: e.target.value.toLowerCase() }))
+                            }
+                            className="w-full lowercase rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact Phone
+                          </label>
+                          <input
+                            type="text"
+                            value={form.billingPhone}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, billingPhone: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact WhatsApp Number
+                          </label>
+                          <input
+                            type="text"
+                            value={form.billingWhatsAppNumber}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, billingWhatsAppNumber: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Payment ID
-                  </label>
-                  <input
-                    type="text"
-                    value={form.paymentID}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, paymentID: e.target.value }))
-                    }
-                    required
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Instapay Receipt
-                  </label>
-                  <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-gray-300 p-4">
-                    {form.instapayReciept ? (
-                      <div className="relative h-48 w-full overflow-hidden rounded-lg">
-                        <CldImage
-                          width="400"
-                          height="300"
-                          src={form.instapayReciept}
-                          alt="Instapay Receipt"
-                          className="h-full w-full object-contain"
+
+                {/* 2. Subscription Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("subscription")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                      </svg>
+                      2. Subscription Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.subscription ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.subscription && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={form.email || ""}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, email: e.target.value.toLowerCase() }))
+                          }
+                          className="w-full lowercase rounded border p-2 text-sm"
                         />
-                        <button
-                          type="button"
-                          onClick={() => setForm({ ...form, instapayReciept: "" })}
-                          className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </button>
                       </div>
-                    ) : (
-                      <div className="flex h-48 w-full items-center justify-center bg-gray-50 text-gray-400 text-sm">
-                        No receipt uploaded
-                      </div>
-                    )}
-                    <CldUploadWidget
-                      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-                      onSuccess={(result: any) => {
-                        setForm({ ...form, instapayReciept: result.info.secure_url });
-                      }}
-                    >
-                      {({ open }) => (
-                        <button
-                          type="button"
-                          onClick={() => open()}
-                          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-opacity-90"
-                        >
-                          {form.instapayReciept ? "Change Receipt" : "Upload Receipt"}
-                        </button>
-                      )}
-                    </CldUploadWidget>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Package
-                  </label>
-
-                  <select
-                    value={form.packageID}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, packageID: e.target.value }))
-                    }
-                    required
-                    className="w-full rounded border p-2"
-                  >
-                    <option value="">Select a package</option>
-                    {packages.map((pkg) => (
-                      <option key={pkg._id} value={pkg._id}>
-                        {pkg.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Paid</label>
-                  <select
-                    value={form.subscribed ? "true" : "false"}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        subscribed: e.target.value === "true",
-                      }))
-                    }
-                    className="w-full rounded border p-2"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Mini Subscription Activated</label>
-                  <select
-                    value={form.miniSubscriptionActivated ? "true" : "false"}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        miniSubscriptionActivated: e.target.value === "true",
-                      }))
-                    }
-                    className="w-full rounded border p-2"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                {activeTab !== "paymob" && activeTab !== "instapay" && (
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Expiry Date
-                    </label>
-                    <input
-                      type="date"
-                      value={form.expiryDate}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, expiryDate: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Pickup from Bazar
-                  </label>
-                  <select
-                    value={form.pickupFromBazar ? "true" : "false"}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, pickupFromBazar: e.target.value === "true" }))
-                    }
-                    className="w-full rounded border p-2"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Shipment Status
-                  </label>
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, status: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="returned">Returned</option>
-                  </select>
-                </div>
-
-                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2">Allowed Playlists</h3>
-                  
-                  {/* List of allowed playlists */}
-                  <div className="space-y-3 mb-4">
-                    {form.allowedPlaylists.map((playlist: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between border p-2 rounded bg-white shadow-sm">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={playlist.playlistID?.thumbnailUrl} 
-                            alt={playlist.playlistID?.title || "Playlist"}
-                            className="w-16 h-10 object-cover rounded"
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            value={form.firstName}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, firstName: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
                           />
-                          <div>
-                            <p className="font-medium text-sm">{playlist.playlistID?.title || "Unknown Playlist"}</p>
-                            <p className="text-xs text-gray-500">Expires: {playlist.expiryDate ? new Date(playlist.expiryDate).toLocaleDateString() : ""}</p>
-                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePlaylist(idx)}
-                          className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    {form.allowedPlaylists.length === 0 && (
-                      <p className="text-sm text-gray-500 italic">No playlists allowed specifically.</p>
-                    )}
-                  </div>
-
-                  {/* Add new playlist */}
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end border-t pt-3 mt-2">
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Select Playlist</label>
-                      <select
-                        value={newPlaylistId}
-                        onChange={(e) => setNewPlaylistId(e.target.value)}
-                        className="w-full rounded border p-1 text-sm"
-                      >
-                        <option value="">Select playlist...</option>
-                        {allPlaylists
-                          .filter(p => !form.allowedPlaylists.some((ap: any) => (ap.playlistID._id || ap.playlistID) === p._id))
-                          .map(p => (
-                            <option key={p._id} value={p._id}>{p.title}</option>
-                          ))
-                        }
-                      </select>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Expiry Date</label>
-                      <input
-                        type="date"
-                        value={newPlaylistExpiry}
-                        onChange={(e) => setNewPlaylistExpiry(e.target.value)}
-                        className="w-full rounded border p-1 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <button
-                        type="button"
-                        onClick={handleAddPlaylist}
-                        disabled={!newPlaylistId || !newPlaylistExpiry}
-                        className="w-full bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 100-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                    Cart Items (Bundled Products)
-                  </h3>
-                  
-                  {/* List of cart items */}
-                  <div className="space-y-3 mb-4">
-                    {form.cart.map((item: ICartItem, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={item.imageUrl} 
-                            alt={item.productName}
-                            className="w-12 h-12 object-cover rounded border"
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            value={form.lastName}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, lastName: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
                           />
-                          <div>
-                            <p className="font-medium text-sm">{item.productName}</p>
-                            <p className="text-xs text-gray-500">{form.currency} {item.price}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center border rounded">
-                            <button 
-                              type="button"
-                              onClick={() => handleUpdateCartQuantity(idx, item.quantity - 1)}
-                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
-                            >-</button>
-                            <span className="px-3 text-sm">{item.quantity}</span>
-                            <button 
-                              type="button"
-                              onClick={() => handleUpdateCartQuantity(idx, item.quantity + 1)}
-                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
-                            >+</button>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCartItem(idx)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                            </svg>
-                          </button>
                         </div>
                       </div>
-                    ))}
-                    {form.cart.length === 0 && (
-                      <p className="text-sm text-gray-500 italic text-center py-4 bg-white rounded border border-dashed">No products bundled with this subscription.</p>
-                    )}
-                  </div>
-
-                  {/* Add product search */}
-                  <div className="relative mt-4 pt-4 border-t">
-                    <label className="block text-xs font-medium text-gray-700 mb-2">Search & Add Product</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Type product name..."
-                        value={productSearch}
-                        onChange={(e) => setProductSearch(e.target.value)}
-                        className="flex-1 rounded border p-2 text-sm"
-                      />
-                    </div>
-                    
-                    {/* Search Results Dropdown */}
-                    {productSearch.length > 1 && (
-                      <div className="absolute left-0 right-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-md border bg-white shadow-lg">
-                        {allProducts
-                          .filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()))
-                          .map(p => (
-                            <div 
-                              key={p._id} 
-                              onClick={() => {
-                                handleAddToCart(p);
-                                setProductSearch("");
-                              }}
-                              className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer border-b last:border-0"
-                            >
-                              <img 
-                                src={p.variations?.[0]?.images?.[0]?.url} 
-                                alt={p.title} 
-                                className="w-10 h-10 object-cover rounded"
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Bride's Phone
+                          </label>
+                          <input
+                            type="text"
+                            value={form.phone}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, phone: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Bride's WhatsApp Number
+                          </label>
+                          <input
+                            type="text"
+                            value={form.whatsAppNumber}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                whatsAppNumber: e.target.value,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Payment ID
+                        </label>
+                        <input
+                          type="text"
+                          value={form.paymentID}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, paymentID: e.target.value }))
+                          }
+                          required
+                          className="w-full rounded border p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Instapay Receipt
+                        </label>
+                        <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-gray-300 p-4">
+                          {form.instapayReciept ? (
+                            <div className="relative h-48 w-full overflow-hidden rounded-lg">
+                              <CldImage
+                                width="400"
+                                height="300"
+                                src={form.instapayReciept}
+                                alt="Instapay Receipt"
+                                className="h-full w-full object-contain"
                               />
-                              <div>
-                                <p className="text-sm font-medium">{p.title}</p>
-                                <p className="text-xs text-gray-500">{form.currency} {p.price.local}</p>
+                              <button
+                                type="button"
+                                onClick={() => setForm({ ...form, instapayReciept: "" })}
+                                className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex h-48 w-full items-center justify-center bg-gray-50 text-gray-400 text-sm">
+                              No receipt uploaded
+                            </div>
+                          )}
+                          <CldUploadWidget
+                            uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+                            onSuccess={(result: any) => {
+                              setForm({ ...form, instapayReciept: result.info.secure_url });
+                            }}
+                          >
+                            {({ open }) => (
+                              <button
+                                type="button"
+                                onClick={() => open()}
+                                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-opacity-90"
+                              >
+                                {form.instapayReciept ? "Change Receipt" : "Upload Receipt"}
+                              </button>
+                            )}
+                          </CldUploadWidget>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Package
+                        </label>
+                        <select
+                          value={form.packageID}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, packageID: e.target.value }))
+                          }
+                          required
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="">Select a package</option>
+                          {packages.map((pkg) => (
+                            <option key={pkg._id} value={pkg._id}>
+                              {pkg.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Paid</label>
+                        <select
+                          value={form.subscribed ? "true" : "false"}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              subscribed: e.target.value === "true",
+                            }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="false">No</option>
+                          <option value="true">Yes</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Mini Subscription Activated</label>
+                        <select
+                          value={form.miniSubscriptionActivated ? "true" : "false"}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              miniSubscriptionActivated: e.target.value === "true",
+                            }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="false">No</option>
+                          <option value="true">Yes</option>
+                        </select>
+                      </div>
+                      {activeTab !== "paymob" && activeTab !== "instapay" && (
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Expiry Date
+                          </label>
+                          <input
+                            type="date"
+                            value={form.expiryDate}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, expiryDate: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Pickup from Bazar
+                        </label>
+                        <select
+                          value={form.pickupFromBazar ? "true" : "false"}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, pickupFromBazar: e.target.value === "true" }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="false">No</option>
+                          <option value="true">Yes</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Shipment Status
+                        </label>
+                        <select
+                          value={form.status}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, status: e.target.value }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                          <option value="returned">Returned</option>
+                        </select>
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                        <h3 className="text-sm font-medium mb-2">Allowed Playlists</h3>
+                        
+                        {/* List of allowed playlists */}
+                        <div className="space-y-3 mb-4">
+                          {form.allowedPlaylists.map((playlist: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between border p-2 rounded bg-white shadow-sm">
+                              <div className="flex items-center gap-3">
+                                <img 
+                                  src={playlist.playlistID?.thumbnailUrl} 
+                                  alt={playlist.playlistID?.title || "Playlist"}
+                                  className="w-16 h-10 object-cover rounded"
+                                />
+                                <div>
+                                  <p className="font-medium text-sm">{playlist.playlistID?.title || "Unknown Playlist"}</p>
+                                  <p className="text-xs text-gray-500">Expires: {playlist.expiryDate ? new Date(playlist.expiryDate).toLocaleDateString() : ""}</p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePlaylist(idx)}
+                                className="text-red-600 hover:text-red-800 text-xs px-2 py-1"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                          {form.allowedPlaylists.length === 0 && (
+                            <p className="text-xs text-gray-500 italic">No playlists allowed specifically.</p>
+                          )}
+                        </div>
+
+                        {/* Add new playlist */}
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end border-t pt-3 mt-2">
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Select Playlist</label>
+                            <select
+                              value={newPlaylistId}
+                              onChange={(e) => setNewPlaylistId(e.target.value)}
+                              className="w-full rounded border p-1 text-sm"
+                            >
+                              <option value="">Select playlist...</option>
+                              {allPlaylists
+                                .filter(p => !form.allowedPlaylists.some((ap: any) => (ap.playlistID._id || ap.playlistID) === p._id))
+                                .map(p => (
+                                  <option key={p._id} value={p._id}>{p.title}</option>
+                                ))
+                              }
+                            </select>
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Expiry Date</label>
+                            <input
+                              type="date"
+                              value={newPlaylistExpiry}
+                              onChange={(e) => setNewPlaylistExpiry(e.target.value)}
+                              className="w-full rounded border p-1 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={handleAddPlaylist}
+                              disabled={!newPlaylistId || !newPlaylistExpiry}
+                              className="w-full bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 100-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                          </svg>
+                          Cart Items (Bundled Products)
+                        </h3>
+                        
+                        {/* List of cart items */}
+                        <div className="space-y-3 mb-4">
+                          {form.cart.map((item: ICartItem, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                              <div className="flex items-center gap-3">
+                                <img 
+                                  src={item.imageUrl} 
+                                  alt={item.productName}
+                                  className="w-12 h-12 object-cover rounded border"
+                                />
+                                <div>
+                                  <p className="font-medium text-sm">{item.productName}</p>
+                                  <p className="text-xs text-gray-500">{form.currency} {item.price}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center border rounded">
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleUpdateCartQuantity(idx, item.quantity - 1)}
+                                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
+                                  >-</button>
+                                  <span className="px-3 text-sm">{item.quantity}</span>
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleUpdateCartQuantity(idx, item.quantity + 1)}
+                                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
+                                  >+</button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCartItem(idx)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
                               </div>
                             </div>
-                          ))
-                        }
-                        {allProducts.filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase())).length === 0 && (
-                          <p className="p-3 text-sm text-gray-500 italic">No products found.</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                          ))}
+                          {form.cart.length === 0 && (
+                            <p className="text-xs text-gray-500 italic text-center py-4 bg-white rounded border border-dashed">No products bundled with this subscription.</p>
+                          )}
+                        </div>
 
-                {/* ── Sub-Subscriptions (Invitations) ─────────────────────── */}
-                {modalType === "edit" && selectedSubscription && (
-                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                    </svg>
-                    Sub-Subscriptions (Invitations)
-                    <button
-                      type="button"
-                      onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
-                      className="ml-auto text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
-                    >
-                      {loadingSubSubs ? "Loading..." : "Refresh"}
-                    </button>
-                  </h3>
-
-                  {/* List */}
-                  <div className="space-y-2 mb-4">
-                    {subSubscriptions.map((ss) => (
-                      <div key={ss._id} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{ss.inviteeEmail}</p>
-                          <div className="flex gap-2 mt-1">
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
-                              {ss.role}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              ss.status === "accepted" ? "bg-green-100 text-green-700" :
-                              ss.status === "revoked" ? "bg-red-100 text-red-700" :
-                              "bg-yellow-100 text-yellow-700"
-                            }`}>
-                              {ss.status}
-                            </span>
+                        {/* Add product search */}
+                        <div className="relative mt-4 pt-4 border-t">
+                          <label className="block text-xs font-medium text-gray-700 mb-2">Search & Add Product</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Type product name..."
+                              value={productSearch}
+                              onChange={(e) => setProductSearch(e.target.value)}
+                              className="flex-1 rounded border p-2 text-sm"
+                            />
                           </div>
-                          {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic truncate">{ss.inviteMessage}</p>}
-                        </div>
-                        <div className="flex gap-1 ml-2">
-                          <button type="button" onClick={() => startEditSubSub(ss)} className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1">Edit</button>
-                          <button type="button" onClick={() => handleSubSubDelete(ss._id, selectedSubscription._id)} className="text-red-600 hover:text-red-800 text-xs px-2 py-1">Delete</button>
+                          
+                          {/* Search Results Dropdown */}
+                          {productSearch.length > 1 && (
+                            <div className="absolute left-0 right-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-md border bg-white shadow-lg">
+                              {allProducts
+                                .filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()))
+                                .map(p => (
+                                  <div 
+                                    key={p._id} 
+                                    onClick={() => {
+                                      handleAddToCart(p);
+                                      setProductSearch("");
+                                    }}
+                                    className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer border-b last:border-0"
+                                  >
+                                    <img 
+                                      src={p.variations?.[0]?.images?.[0]?.url} 
+                                      alt={p.title} 
+                                      className="w-10 h-10 object-cover rounded"
+                                    />
+                                    <div>
+                                      <p className="text-sm font-medium">{p.title}</p>
+                                      <p className="text-xs text-gray-500">{form.currency} {p.price.local}</p>
+                                    </div>
+                                  </div>
+                                ))
+                              }
+                              {allProducts.filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase())).length === 0 && (
+                                <p className="p-3 text-xs text-gray-500 italic">No products found.</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    ))}
-                    {subSubscriptions.length === 0 && !loadingSubSubs && (
-                      <p className="text-sm text-gray-500 italic text-center py-3 bg-white rounded border border-dashed">
-                        No invitations yet.
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Add / Edit form */}
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end border-t pt-3 mt-2">
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Invitee Email</label>
-                      <input
-                        type="email"
-                        value={subSubForm.inviteeEmail}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, inviteeEmail: e.target.value.toLowerCase() }))}
-                        placeholder="email@example.com"
-                        className="w-full rounded border p-1 text-sm lowercase"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
-                      <select
-                        value={subSubForm.role}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, role: e.target.value as "groom" | "bridesmaids" }))}
-                        className="w-full rounded border p-1 text-sm"
-                      >
-                        <option value="groom">Groom</option>
-                        <option value="bridesmaids">Bridesmaids</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                      <select
-                        value={subSubForm.status}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, status: e.target.value as "pending" | "accepted" | "revoked" }))}
-                        className="w-full rounded border p-1 text-sm"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="revoked">Revoked</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Message</label>
-                      <input
-                        type="text"
-                        value={subSubForm.inviteMessage}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, inviteMessage: e.target.value }))}
-                        placeholder="Optional"
-                        className="w-full rounded border p-1 text-sm"
-                      />
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSubSubSubmit(selectedSubscription._id)}
-                        disabled={!subSubForm.inviteeEmail}
-                        className="flex-1 bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
-                      >
-                        {editingSubSubId ? "Update" : "Add"}
-                      </button>
-                      {editingSubSubId && (
-                        <button
-                          type="button"
-                          onClick={resetSubSubForm}
-                          className="bg-gray-300 text-gray-700 rounded p-1 text-sm hover:bg-gray-400"
-                        >
-                          Cancel
-                        </button>
+                      {/* ── Sub-Subscriptions (Invitations) ─────────────────────── */}
+                      {modalType === "edit" && selectedSubscription && (
+                        <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                          <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                            </svg>
+                            Sub-Subscriptions (Invitations)
+                            <button
+                              type="button"
+                              onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
+                              className="ml-auto text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
+                            >
+                              {loadingSubSubs ? "Loading..." : "Refresh"}
+                            </button>
+                          </h3>
+
+                          {/* List */}
+                          <div className="space-y-2 mb-4">
+                            {subSubscriptions.map((ss) => (
+                              <div key={ss._id} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate">{ss.inviteeEmail}</p>
+                                  <div className="flex gap-2 mt-1">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
+                                      {ss.role}
+                                    </span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                      ss.status === "accepted" ? "bg-green-100 text-green-700" :
+                                      ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                                      "bg-yellow-100 text-yellow-700"
+                                    }`}>
+                                      {ss.status}
+                                    </span>
+                                  </div>
+                                  {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic truncate">{ss.inviteMessage}</p>}
+                                </div>
+                                <div className="flex gap-1 ml-2">
+                                  <button type="button" onClick={() => startEditSubSub(ss)} className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1">Edit</button>
+                                  <button type="button" onClick={() => handleSubSubDelete(ss._id, selectedSubscription._id)} className="text-red-600 hover:text-red-800 text-xs px-2 py-1">Delete</button>
+                                </div>
+                              </div>
+                            ))}
+                            {subSubscriptions.length === 0 && !loadingSubSubs && (
+                              <p className="text-xs text-gray-500 italic text-center py-3 bg-white rounded border border-dashed">
+                                No invitations yet.
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Add / Edit form */}
+                          <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end border-t pt-3 mt-2">
+                            <div className="md:col-span-2">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Invitee Email</label>
+                              <input
+                                type="email"
+                                value={subSubForm.inviteeEmail}
+                                onChange={(e) => setSubSubForm(f => ({ ...f, inviteeEmail: e.target.value.toLowerCase() }))}
+                                placeholder="email@example.com"
+                                className="w-full rounded border p-1 text-sm lowercase"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
+                              <select
+                                value={subSubForm.role}
+                                onChange={(e) => setSubSubForm(f => ({ ...f, role: e.target.value as "groom" | "bridesmaids" }))}
+                                className="w-full rounded border p-1 text-sm"
+                              >
+                                <option value="groom">Groom</option>
+                                <option value="bridesmaids">Bridesmaids</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                              <select
+                                value={subSubForm.status}
+                                onChange={(e) => setSubSubForm(f => ({ ...f, status: e.target.value as "pending" | "accepted" | "revoked" }))}
+                                className="w-full rounded border p-1 text-sm"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="revoked">Revoked</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Message</label>
+                              <input
+                                type="text"
+                                value={subSubForm.inviteMessage}
+                                onChange={(e) => setSubSubForm(f => ({ ...f, inviteMessage: e.target.value }))}
+                                placeholder="Optional"
+                                className="w-full rounded border p-1 text-sm"
+                              />
+                            </div>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleSubSubSubmit(selectedSubscription._id)}
+                                disabled={!subSubForm.inviteeEmail}
+                                className="flex-1 bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
+                              >
+                                {editingSubSubId ? "Update" : "Add"}
+                              </button>
+                              {editingSubSubId && (
+                                <button
+                                  type="button"
+                                  onClick={resetSubSubForm}
+                                  className="bg-gray-300 text-gray-700 rounded p-1 text-sm hover:bg-gray-400"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
-                )}
 
-                <h3 className="mt-6 text-lg font-medium">User Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      value={form.firstName}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, firstName: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      value={form.lastName}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, lastName: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                </div>
-                <h3 className="mt-6 text-lg font-medium">Gift Information</h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Gifted
-                  </label>
-                  <select
-                    value={form.isGift ? "true" : "false"}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        isGift: e.target.value === "true",
-                      }))
-                    }
-                    className="w-full rounded border p-2"
+                {/* <h3 className="mt-6 text-lg font-medium">User Information</h3> */}
+
+                {/* 3. Gift Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("gift")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
                   >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Gift Card Name
-                  </label>
-                  <input
-                    type="text"
-                    value={form.giftCardName || ""}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        giftCardName: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Gift Sender Email
-                  </label>
-                  <input
-                    type="email"
-                    value={form.giftSenderEmail || ""}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        giftSenderEmail: e.target.value.toLowerCase(),
-                      }))
-                    }
-                    className="w-full lowercase rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Gift Recipient Email
-                  </label>
-                  <input
-                    type="email"
-                    value={form.giftRecipientEmail}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        giftRecipientEmail: e.target.value.toLowerCase(),
-                      }))
-                    }
-                    className="w-full lowercase rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Special Message
-                  </label>
-                  <textarea
-                    value={form.specialMessage}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, specialMessage: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Phone
-                    </label>
-                    <input
-                      type="text"
-                      value={form.phone}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, phone: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      WhatsApp Number
-                    </label>
-                    <input
-                      type="text"
-                      value={form.whatsAppNumber}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          whatsAppNumber: e.target.value,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1.375 1.375 0 00-2.75 0V6H9zm2 0h2.75A1.375 1.375 0 0012 5v1h-1zM4 12h7v7H4v-7zm9 0h3v7h-3v-7z" clipRule="evenodd" />
+                      </svg>
+                      3. Gift Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.gift ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.gift && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gifted
+                        </label>
+                        <select
+                          value={form.isGift ? "true" : "false"}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              isGift: e.target.value === "true",
+                            }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="false">No</option>
+                          <option value="true">Yes</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gift Card Name
+                        </label>
+                        <input
+                          type="text"
+                          value={form.giftCardName || ""}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              giftCardName: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gift Sender Email
+                        </label>
+                        <input
+                          type="email"
+                          value={form.giftSenderEmail || ""}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              giftSenderEmail: e.target.value.toLowerCase(),
+                            }))
+                          }
+                          className="w-full lowercase rounded border p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gift Recipient Email
+                        </label>
+                        <input
+                          type="email"
+                          value={form.giftRecipientEmail}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              giftRecipientEmail: e.target.value.toLowerCase(),
+                            }))
+                          }
+                          className="w-full lowercase rounded border p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Special Message
+                        </label>
+                        <textarea
+                          value={form.specialMessage}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, specialMessage: e.target.value }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <h3 className="mt-6 text-lg font-medium">
-                  Address Information
-                </h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    value={form.country}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, country: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, address: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">
-                    Apartment
-                  </label>
-                  <input
-                    type="text"
-                    value={form.apartment}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, apartment: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      value={form.city}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, city: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      State
-                    </label>
-                    <input
-                      type="text"
-                      value={form.state}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, state: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Postal/Zip
-                    </label>
-                    <input
-                      type="text"
-                      value={form.postalZip}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, postalZip: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
+
+
+                {/* 4. Address Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("address")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      4. Address Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.address ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.address && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          value={form.country}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, country: e.target.value }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Address
+                        </label>
+                        <input
+                          type="text"
+                          value={form.address}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, address: e.target.value }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        />
+                      </div>
+                      {/* <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Apartment
+                        </label>
+                        <input
+                          type="text"
+                          value={form.apartment}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, apartment: e.target.value }))
+                          }
+                          className="w-full rounded border p-2 text-sm"
+                        />
+                      </div> */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            value={form.city}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, city: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            State
+                          </label>
+                          <input
+                            type="text"
+                            value={form.state}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, state: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Postal/Zip
+                          </label>
+                          <input
+                            type="text"
+                            value={form.postalZip}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, postalZip: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
+                {/* 
                 <h3 className="mt-6 text-lg font-medium">
                   Billing Information
                 </h3>
@@ -2027,125 +2200,144 @@ const response = await axios.get(
                     className="w-full rounded border p-2"
                   />
                 </div>
+                */}
 
-                <h3 className="mt-6 text-lg font-medium">
-                  Payment Information
-                </h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Total
-                    </label>
-                    <input
-                      type="number"
-                      value={form.total}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          total: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Subtotal
-                    </label>
-                    <input
-                      type="number"
-                      value={form.subTotal}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          subTotal: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Shipping
-                    </label>
-                    <input
-                      type="number"
-                      value={form.shipping}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          shipping: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Currency
-                    </label>
-                    <input
-                      type="text"
-                      value={form.currency}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, currency: e.target.value }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Redeemed Loyalty Points
-                    </label>
-                    <input
-                      type="number"
-                      value={form.redeemedLoyaltyPoints}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          redeemedLoyaltyPoints: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Applied Discount
-                    </label>
-                    <input
-                      type="text"
-                      value={form.appliedDiscount}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          appliedDiscount: e.target.value,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">
-                      Discount Amount
-                    </label>
-                    <input
-                      type="number"
-                      value={form.appliedDiscountAmount}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          appliedDiscountAmount:
-                            parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
+                {/* 5. Payment Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("payment")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                        <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                      </svg>
+                      5. Payment Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.payment ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.payment && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Total
+                          </label>
+                          <input
+                            type="number"
+                            value={form.total}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                total: parseFloat(e.target.value) || 0,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Subtotal
+                          </label>
+                          <input
+                            type="number"
+                            value={form.subTotal}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                subTotal: parseFloat(e.target.value) || 0,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Shipping
+                          </label>
+                          <input
+                            type="number"
+                            value={form.shipping}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                shipping: parseFloat(e.target.value) || 0,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Currency
+                          </label>
+                          <input
+                            type="text"
+                            value={form.currency}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, currency: e.target.value }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Redeemed Loyalty Points
+                          </label>
+                          <input
+                            type="number"
+                            value={form.redeemedLoyaltyPoints}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                redeemedLoyaltyPoints: parseInt(e.target.value) || 0,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Applied Discount
+                          </label>
+                          <input
+                            type="text"
+                            value={form.appliedDiscount}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                appliedDiscount: e.target.value,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Discount Amount
+                          </label>
+                          <input
+                            type="number"
+                            value={form.appliedDiscountAmount}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                appliedDiscountAmount:
+                                  parseFloat(e.target.value) || 0,
+                              }))
+                            }
+                            className="w-full rounded border p-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 flex justify-end gap-2">
@@ -2325,7 +2517,7 @@ const response = await axios.get(
                 </div>
 
                 {/* Billing Info */}
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Billing Information</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <span className="text-gray-500">Name:</span>
@@ -2341,9 +2533,15 @@ const response = await axios.get(
                     <span className="font-medium">{selectedSubscription.billingCountry}</span>
                     
                     <span className="text-gray-500">Phone:</span>
-                    <span className="font-medium">{selectedSubscription.billingPhone}</span>
+                    <span className="font-medium">{selectedSubscription.billingPhone || "-"}</span>
+
+                    <span className="text-gray-500">WhatsApp:</span>
+                    <span className="font-medium">{selectedSubscription.billingWhatsAppNumber || "-"}</span>
+
+                    <span className="text-gray-500">Email:</span>
+                    <span className="font-medium break-all">{selectedSubscription.billingEmail || "-"}</span>
                   </div>
-                </div>
+                </div> */}
                 
                 {/* Financial Info */}
                 <div className="space-y-4 md:col-span-2">
