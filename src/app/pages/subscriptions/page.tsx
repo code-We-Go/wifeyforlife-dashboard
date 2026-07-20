@@ -472,6 +472,24 @@ const SubscriptionsPage = () => {
     setSubSubscriptions([]);
     resetSubSubForm();
 
+    if (type === "view") {
+      setActiveSections({
+        contact: true,
+        subscription: false,
+        gift: false,
+        address: false,
+        payment: false,
+      });
+    } else {
+      setActiveSections({
+        contact: true,
+        subscription: false,
+        gift: false,
+        address: false,
+        payment: false,
+      });
+    }
+
     if ((type === "edit" || type === "view") && subscription) {
       fetchSubSubscriptions(subscription._id);
     }
@@ -1758,8 +1776,8 @@ const SubscriptionsPage = () => {
                                       {ss.role}
                                     </span>
                                     <span className={`text-xs px-2 py-0.5 rounded-full ${ss.status === "accepted" ? "bg-green-100 text-green-700" :
-                                        ss.status === "revoked" ? "bg-red-100 text-red-700" :
-                                          "bg-yellow-100 text-yellow-700"
+                                      ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                                        "bg-yellow-100 text-yellow-700"
                                       }`}>
                                       {ss.status}
                                     </span>
@@ -2389,8 +2407,8 @@ const SubscriptionsPage = () => {
               className="max-h-[90vh] w-[800px] overflow-y-auto rounded-lg bg-white p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 className="text-2xl font-bold">Subscription Details</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">View Subscription</h2>
                 <button
                   onClick={() => closeModal()}
                   className="text-gray-500 hover:text-gray-700 font-bold text-xl"
@@ -2399,286 +2417,693 @@ const SubscriptionsPage = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Basic Info */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-gray-500">Email:</span>
-                    <span className="font-medium break-all">{selectedSubscription.email}</span>
-
-                    <span className="text-gray-500">Name:</span>
-                    <span className="font-medium">{`${selectedSubscription.firstName || ""} ${selectedSubscription.lastName || ""}`}</span>
-
-                    <span className="text-gray-500">Phone:</span>
-                    <span className="font-medium">{selectedSubscription.phone || "-"}</span>
-
-                    <span className="text-gray-500">WhatsApp:</span>
-                    <span className="font-medium">{selectedSubscription.whatsAppNumber || "-"}</span>
-
-                    <span className="text-gray-500">Payment ID:</span>
-                    <span className="font-medium">{selectedSubscription.paymentID}</span>
-
-                    <span className="text-gray-500">Success:</span>
-                    <span className={`font-medium ${selectedSubscription.subscribed ? "text-green-600" : "text-red-600"}`}>
-                      {selectedSubscription.subscribed ? "Yes" : "No"}
+              <div className="max-h-[80vh] space-y-4 overflow-y-auto p-2">
+                {/* 1. Contact Info Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("contact")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      1. Contact Info
                     </span>
-
-                    <span className="text-gray-500">Mini Activated:</span>
-                    <span className={`font-medium ${selectedSubscription.miniSubscriptionActivated ? "text-green-600" : "text-gray-600"}`}>
-                      {selectedSubscription.miniSubscriptionActivated ? "Yes" : "No"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Package Info */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Package & Status</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-gray-500">Package:</span>
-                    <span className="font-medium">{selectedSubscription.packageID?.name || "-"}</span>
-
-                    {activeTab !== "paymob" && activeTab !== "instapay" && (
-                      <>
-                        <span className="text-gray-500">Expiry Date:</span>
-                        <span className="font-medium">
-                          {selectedSubscription.expiryDate
-                            ? new Date(
-                              selectedSubscription.expiryDate,
-                            ).toLocaleDateString()
-                            : "-"}
-                        </span>
-                      </>
-                    )}
-
-                    <span className="text-gray-500">Created At:</span>
-                    <span className="font-medium">
-                      {selectedSubscription.createdAt ? new Date(selectedSubscription.createdAt).toLocaleString() : "-"}
-                    </span>
-
-                    <span className="text-gray-500">Is Gift:</span>
-                    <span className="font-medium">{selectedSubscription.isGift ? "Yes" : "No"}</span>
-
-                    {selectedSubscription.isGift && (
-                      <>
-                        <span className="text-gray-500">Gift Sender:</span>
-                        <span className="font-medium break-all">{selectedSubscription.giftSenderEmail || "-"}</span>
-
-                        <span className="text-gray-500">Gift Recipient:</span>
-                        <span className="font-medium break-all">{selectedSubscription.giftRecipientEmail}</span>
-
-                        <span className="text-gray-500">Gift Message:</span>
-                        <span className="font-medium italic">{selectedSubscription.specialMessage}</span>
-                      </>
-                    )}
-
-                    <span className="text-gray-500">Pickup from Bazar:</span>
-                    <span className={`font-medium ${selectedSubscription.pickupFromBazar ? "text-green-600" : "text-gray-600"}`}>
-                      {selectedSubscription.pickupFromBazar ? "Yes" : "No"}
-                    </span>
-
-                    <span className="text-gray-500">Shipment Status:</span>
-                    <span className={`font-medium px-2 py-0.5 rounded-full text-xs inline-block ${selectedSubscription.status === "delivered" ? "bg-green-100 text-green-800" :
-                      selectedSubscription.status === "shipped" ? "bg-blue-100 text-blue-800" :
-                        selectedSubscription.status === "confirmed" ? "bg-purple-100 text-purple-800" :
-                          selectedSubscription.status === "cancelled" || selectedSubscription.status === "returned" ? "bg-red-100 text-red-800" :
-                            "bg-yellow-100 text-yellow-800"
-                      }`}>
-                      {(selectedSubscription.status || "pending").toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Address Info */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Address</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-gray-500">Address:</span>
-                    <span className="font-medium col-span-2">{selectedSubscription.address} {selectedSubscription.apartment}</span>
-
-                    <span className="text-gray-500">City/State:</span>
-                    <span className="font-medium">{selectedSubscription.city}, {selectedSubscription.state}</span>
-
-                    <span className="text-gray-500">Country:</span>
-                    <span className="font-medium">{selectedSubscription.country}</span>
-
-                    <span className="text-gray-500">Postal Code:</span>
-                    <span className="font-medium">{selectedSubscription.postalZip}</span>
-                  </div>
-                </div>
-
-                {/* Billing Info */}
-                {/* <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Billing Information</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-gray-500">Name:</span>
-                    <span className="font-medium">{`${selectedSubscription.billingFirstName || ""} ${selectedSubscription.billingLastName || ""}`}</span>
-
-                    <span className="text-gray-500">Address:</span>
-                    <span className="font-medium col-span-2">{selectedSubscription.billingAddress} {selectedSubscription.billingApartment}</span>
-
-                    <span className="text-gray-500">City/State:</span>
-                    <span className="font-medium">{selectedSubscription.billingCity}, {selectedSubscription.billingState}</span>
-
-                    <span className="text-gray-500">Country:</span>
-                    <span className="font-medium">{selectedSubscription.billingCountry}</span>
-
-                    <span className="text-gray-500">Phone:</span>
-                    <span className="font-medium">{selectedSubscription.billingPhone || "-"}</span>
-
-                    <span className="text-gray-500">WhatsApp:</span>
-                    <span className="font-medium">{selectedSubscription.billingWhatsAppNumber || "-"}</span>
-
-                    <span className="text-gray-500">Email:</span>
-                    <span className="font-medium break-all">{selectedSubscription.billingEmail || "-"}</span>
-                  </div>
-                </div> */}
-
-                {/* Financial Info */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Financial Details</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-gray-50 p-4 rounded">
-                    <div>
-                      <span className="block text-gray-500">Subtotal</span>
-                      <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.subTotal}</span>
-                    </div>
-                    <div>
-                      <span className="block text-gray-500">Shipping</span>
-                      <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.shipping}</span>
-                    </div>
-                    <div>
-                      <span className="block text-gray-500">Discount</span>
-                      <span className="font-bold text-red-500">
-                        {selectedSubscription.appliedDiscountAmount ? `-${selectedSubscription.currency} ${selectedSubscription.appliedDiscountAmount}` : "0"}
-                        {selectedSubscription.appliedDiscount && (
-                          <span className="text-xs text-gray-400 block">
-                            (Code: {typeof selectedSubscription.appliedDiscount === 'object' ? selectedSubscription.appliedDiscount.code : 'Yes'})
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-gray-500">Total</span>
-                      <span className="font-bold text-lg text-green-700">{selectedSubscription.currency} {selectedSubscription.total}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Allowed Playlists */}
-                {selectedSubscription.allowedPlaylists && selectedSubscription.allowedPlaylists.length > 0 && (
-                  <div className="space-y-4 md:col-span-2">
-                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Allowed Playlists</h3>
-                    <div className="space-y-2">
-                      {selectedSubscription.allowedPlaylists.map((item: any, idx) => (
-                        <div key={idx} className="flex items-center gap-4 bg-gray-50 p-2 rounded">
-                          <img
-                            src={typeof item.playlistID === 'object' ? item.playlistID.thumbnailUrl : ''}
-                            alt="Thumbnail"
-                            className="w-16 h-10 object-cover rounded"
+                    <span className="text-xs text-gray-500">{activeSections.contact ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.contact && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact First Name
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.billingFirstName || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
                           />
-                          <div>
-                            <p className="font-medium">{typeof item.playlistID === 'object' ? item.playlistID.title : 'Unknown Playlist'}</p>
-                            <p className="text-xs text-gray-500">Expires: {new Date(item.expiryDate).toLocaleDateString()}</p>
-                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact Last Name
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.billingLastName || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
 
-                {/* Bundled Items (Cart) */}
-                {selectedSubscription.cart && selectedSubscription.cart.length > 0 && (
-                  <div className="space-y-4 md:col-span-2">
-                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 100-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                      </svg>
-                      Bundled Products
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {selectedSubscription.cart.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-4 bg-white border p-3 rounded-lg shadow-sm">
-                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                            <img
-                              src={item.imageUrl}
-                              alt={item.productName}
-                              className="h-full w-full object-cover object-center"
-                            />
-                          </div>
-                          <div className="flex flex-1 flex-col">
-                            <div>
-                              <div className="flex justify-between text-sm font-medium text-gray-900">
-                                <h4 className="line-clamp-1">{item.productName}</h4>
-                                <p className="ml-4">{selectedSubscription.currency} {item.price}</p>
-                              </div>
-                              {item.variant && (
-                                <p className="mt-1 text-xs text-gray-500">
-                                  {item.variant.name}: {item.attributes?.name}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex flex-1 items-end justify-between text-xs text-gray-500">
-                              <p>Qty: {item.quantity}</p>
-                            </div>
-                          </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact Email
+                          </label>
+                          <input
+                            type="email"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.billingEmail || ""}
+                            className="w-full lowercase rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Sub-Subscriptions (Invitations) */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                      </svg>
-                      Sub-Subscriptions
-                    </span>
-                    <button
-                      onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
-                      className="text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
-                    >
-                      {loadingSubSubs ? "Loading..." : "Refresh"}
-                    </button>
-                  </h3>
-                  {subSubscriptions.length > 0 ? (
-                    <div className="space-y-2">
-                      {subSubscriptions.map((ss) => (
-                        <div key={ss._id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                          <div>
-                            <p className="font-medium text-sm">{ss.inviteeEmail}</p>
-                            <div className="flex gap-2 mt-1">
-                              <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
-                                {ss.role}
-                              </span>
-                              <span className={`text-xs px-2 py-0.5 rounded-full ${ss.status === "accepted" ? "bg-green-100 text-green-700" :
-                                ss.status === "revoked" ? "bg-red-100 text-red-700" :
-                                  "bg-yellow-100 text-yellow-700"
-                                }`}>
-                                {ss.status}
-                              </span>
-                            </div>
-                            {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic">{ss.inviteMessage}</p>}
-                            <p className="text-xs text-gray-400 mt-1">Created: {new Date(ss.createdAt).toLocaleDateString()}</p>
-                          </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact Phone
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.billingPhone || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
                         </div>
-                      ))}
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Contact WhatsApp Number
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.billingWhatsAppNumber || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No invitations yet.</p>
                   )}
                 </div>
-              </div>
 
-              <div className="mt-8 flex justify-end">
-                <button
-                  onClick={() => closeModal()}
-                  className="rounded bg-primary px-6 py-2 text-white hover:bg-opacity-90 transition"
-                >
-                  Close
-                </button>
+                {/* 2. Subscription Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("subscription")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                      </svg>
+                      2. Subscription Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.subscription ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.subscription && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.email || ""}
+                          className="w-full lowercase rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.firstName || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.lastName || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Bride's Phone
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.phone || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Bride's WhatsApp Number
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.whatsAppNumber || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Payment ID
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.paymentID || ""}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Instapay Receipt
+                        </label>
+                        <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-gray-300 p-4">
+                          {selectedSubscription.instapayReciept ? (
+                            <div className="relative h-48 w-full overflow-hidden rounded-lg">
+                              <CldImage
+                                width="400"
+                                height="300"
+                                src={selectedSubscription.instapayReciept}
+                                alt="Instapay Receipt"
+                                className="h-full w-full object-contain"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-48 w-full items-center justify-center bg-gray-50 text-gray-400 text-sm">
+                              No receipt uploaded
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Package
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.packageID?.name || "-"}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Paid</label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.subscribed ? "Yes" : "No"}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Mini Subscription Activated</label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.miniSubscriptionActivated ? "Yes" : "No"}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      {activeTab !== "paymob" && activeTab !== "instapay" && (
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Expiry Date
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={
+                              selectedSubscription.expiryDate
+                                ? new Date(selectedSubscription.expiryDate).toLocaleDateString()
+                                : "-"
+                            }
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Pickup from Bazar
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.pickupFromBazar ? "Yes" : "No"}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Shipment Status
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={(selectedSubscription.status || "pending").toUpperCase()}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                        <h3 className="text-sm font-medium mb-2">Allowed Playlists</h3>
+                        <div className="space-y-3">
+                          {selectedSubscription.allowedPlaylists && selectedSubscription.allowedPlaylists.length > 0 ? (
+                            selectedSubscription.allowedPlaylists.map((playlist: any, idx: number) => (
+                              <div key={idx} className="flex items-center justify-between border p-2 rounded bg-white shadow-sm">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={typeof playlist.playlistID === 'object' ? playlist.playlistID?.thumbnailUrl : ''}
+                                    alt={typeof playlist.playlistID === 'object' ? playlist.playlistID?.title || "Playlist" : "Playlist"}
+                                    className="w-16 h-10 object-cover rounded"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-sm">{typeof playlist.playlistID === 'object' ? playlist.playlistID?.title || "Unknown Playlist" : "Unknown Playlist"}</p>
+                                    <p className="text-xs text-gray-500">Expires: {playlist.expiryDate ? new Date(playlist.expiryDate).toLocaleDateString() : ""}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-gray-500 italic">No playlists allowed specifically.</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 100-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                          </svg>
+                          Cart Items (Bundled Products)
+                        </h3>
+                        <div className="space-y-3">
+                          {selectedSubscription.cart && selectedSubscription.cart.length > 0 ? (
+                            selectedSubscription.cart.map((item: ICartItem, idx: number) => (
+                              <div key={idx} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={item.imageUrl}
+                                    alt={item.productName}
+                                    className="w-12 h-12 object-cover rounded border"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-sm">{item.productName}</p>
+                                    <p className="text-xs text-gray-500">{selectedSubscription.currency} {item.price}</p>
+                                    {item.variant && (
+                                      <p className="text-xs text-gray-400">
+                                        {item.variant.name}: {item.attributes?.name}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-sm font-medium text-gray-700">
+                                  Qty: {item.quantity}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-gray-500 italic text-center py-4 bg-white rounded border border-dashed">
+                              No products bundled with this subscription.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Sub-Subscriptions (Invitations) */}
+                      <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                          </svg>
+                          Sub-Subscriptions (Invitations)
+                          <button
+                            type="button"
+                            onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
+                            className="ml-auto text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
+                          >
+                            {loadingSubSubs ? "Loading..." : "Refresh"}
+                          </button>
+                        </h3>
+                        <div className="space-y-2">
+                          {subSubscriptions.length > 0 ? (
+                            subSubscriptions.map((ss) => (
+                              <div key={ss._id} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate">{ss.inviteeEmail}</p>
+                                  <div className="flex gap-2 mt-1">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
+                                      {ss.role}
+                                    </span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${ss.status === "accepted" ? "bg-green-100 text-green-700" :
+                                      ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                                        "bg-yellow-100 text-yellow-700"
+                                      }`}>
+                                      {ss.status}
+                                    </span>
+                                  </div>
+                                  {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic truncate">{ss.inviteMessage}</p>}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            !loadingSubSubs && (
+                              <p className="text-xs text-gray-500 italic text-center py-3 bg-white rounded border border-dashed">
+                                No invitations yet.
+                              </p>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Gift Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("gift")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1.375 1.375 0 00-2.75 0V6H9zm2 0h2.75A1.375 1.375 0 0012 5v1h-1zM4 12h7v7H4v-7zm9 0h3v7h-3v-7z" clipRule="evenodd" />
+                      </svg>
+                      3. Gift Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.gift ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.gift && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gifted
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.isGift ? "Yes" : "No"}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gift Card Name
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.giftCardName || ""}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gift Sender Email
+                        </label>
+                        <input
+                          type="email"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.giftSenderEmail || ""}
+                          className="w-full lowercase rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Gift Recipient Email
+                        </label>
+                        <input
+                          type="email"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.giftRecipientEmail || ""}
+                          className="w-full lowercase rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Special Message
+                        </label>
+                        <textarea
+                          readOnly
+                          disabled
+                          value={selectedSubscription.specialMessage || ""}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Address Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("address")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      4. Address Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.address ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.address && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.country || ""}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Address
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={selectedSubscription.address || ""}
+                          className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.city || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            State
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.state || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Postal/Zip
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.postalZip || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Payment Information Section */}
+                <div className="border rounded-lg overflow-hidden mb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection("payment")}
+                    className="flex w-full items-center justify-between bg-gray-50 px-4 py-3 text-left font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                        <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                      </svg>
+                      5. Payment Information
+                    </span>
+                    <span className="text-xs text-gray-500">{activeSections.payment ? "▲" : "▼"}</span>
+                  </button>
+                  {activeSections.payment && (
+                    <div className="p-4 space-y-4 bg-white border-t">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Total
+                          </label>
+                          <input
+                            type="number"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.total ?? 0}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Subtotal
+                          </label>
+                          <input
+                            type="number"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.subTotal ?? 0}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Shipping
+                          </label>
+                          <input
+                            type="number"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.shipping ?? 0}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Currency
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.currency || ""}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Redeemed Loyalty Points
+                          </label>
+                          <input
+                            type="number"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.redeemedLoyaltyPoints ?? 0}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Applied Discount
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={
+                              typeof selectedSubscription.appliedDiscount === "object" &&
+                                selectedSubscription.appliedDiscount !== null
+                                ? selectedSubscription.appliedDiscount.code
+                                : selectedSubscription.appliedDiscount || ""
+                            }
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium">
+                            Discount Amount
+                          </label>
+                          <input
+                            type="number"
+                            readOnly
+                            disabled
+                            value={selectedSubscription.appliedDiscountAmount ?? 0}
+                            className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => closeModal()}
+                    className="rounded bg-primary px-6 py-2 text-white hover:bg-opacity-90 transition"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
