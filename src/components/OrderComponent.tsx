@@ -203,7 +203,7 @@ const OrderComponent = ({
           </p>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <p>{((order.subTotal ?? 0) + (order.shipping ?? 0)).toFixed(2)} LE</p>
+          <p>{((order.total ?? 0)).toFixed(2)} LE</p>
         </div>
         <div className="flex items-center justify-center gap-2">
           <p>{order.state}</p>
@@ -216,7 +216,7 @@ const OrderComponent = ({
                   href={order.instapayReciept}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-accent underline"
+                  className="flex items-center gap-1 text-white underline"
                 >
                   Receipt
                 </a>
@@ -322,6 +322,18 @@ const OrderComponent = ({
                   <CartItemSmall key={index} item={item} wishListBool={false} />
                 ))}
               </div>
+
+              {order.giftCardName && (
+                <p>
+                  <strong>Gift Card Name:</strong> {order.giftCardName}
+                </p>
+              )}
+              {order.specialMessage && (
+                <p>
+                  <strong>Special Message:</strong> {order.specialMessage}
+                </p>
+              )}
+
               <p>
                 <strong>Phone:</strong> {order.phone || "N/A"}
               </p>
@@ -417,7 +429,7 @@ const OrderComponent = ({
                 </button>
               )}
               <p>
-                <strong>Sub-Total:</strong> {((order.subTotal ?? 0) + (order.appliedDiscountAmount ?? 0) + (order.redeemedLoyaltyPoints ? order.redeemedLoyaltyPoints / 20 : 0)).toFixed(2)} LE
+                <strong>Sub-Total:</strong> {order.subTotal?.toFixed(2)} LE
               </p>
               <p>
                 <strong>Shipping:</strong> {order.shipping?.toFixed(2)} LE
@@ -435,7 +447,8 @@ const OrderComponent = ({
                 </p>
               ) : null}
               <p>
-                <strong>Total:</strong> {((order.subTotal ?? 0) + (order.shipping ?? 0)).toFixed(2)} LE
+                {/* <strong>Total:</strong> {((order.subTotal ?? 0) - (order.appliedDiscountAmount ?? 0) - (order.redeemedLoyaltyPoints ? order.redeemedLoyaltyPoints / 20 : 0) + (order.shipping ?? 0)).toFixed(2)} LE */}
+                <strong>Total:</strong> {(order.total ?? 0).toFixed(2)} LE
               </p>
               <p>
                 <strong>Created At:</strong>{" "}

@@ -18,9 +18,11 @@ function formatSubsAsOrder(subs: any[]) {
   const sortedSubs = [...subs].sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
 
   // Find the master subscription that contains the full checkout details
-  let master = sortedSubs.find(sub => !sub.isGift && (sub.billingFirstName || sub.email));
+  let master = sortedSubs.find(sub => !sub.isGift && (sub.total || 0) > 0 && (sub.billingFirstName || sub.email));
   if (!master) {
-    master = sortedSubs.reduce((max, sub) => ((sub.total || 0) > (max.total || 0) ? sub : max), sortedSubs[0]);
+    const nonZeroSubs = sortedSubs.filter(sub => (sub.total || 0) > 0);
+    const candidates = nonZeroSubs.length > 0 ? nonZeroSubs : sortedSubs;
+    master = candidates.reduce((max, sub) => ((sub.total || 0) > (max.total || 0) ? sub : max), candidates[0]);
   }
   
   const cart: any[] = [];
@@ -42,7 +44,7 @@ function formatSubsAsOrder(subs: any[]) {
       } else {
         let price = pkg.price || 0;
         if (!sub.cart || sub.cart.length === 0) {
-          price = sub.total !== undefined ? sub.total : price;
+          price = sub.subTotal !== undefined ? sub.subTotal : price;
         }
 
         cart.push({
@@ -93,23 +95,10 @@ function formatSubsAsOrder(subs: any[]) {
     }
   });
 
-  let calculatedSubTotal = 0;
-  cart.forEach((item) => {
-    calculatedSubTotal += (item.price || 0) * (item.quantity || 1);
-  });
-
-  const subTotal = calculatedSubTotal;
-  let shipping = master.shipping || 0;
-  const dbTotal = master.total || 0;
-  const dbSubTotal = master.subTotal || 0;
-  const dbDiscount = master.appliedDiscountAmount || 0;
-  
-  if (shipping !== (dbTotal - dbSubTotal + dbDiscount)) {
-    shipping = 0;
-  }
-
-  const appliedDiscountAmount = dbDiscount;
-  const total = Math.max(0, subTotal + shipping - appliedDiscountAmount);
+  const subTotal = master.subTotal || 0;
+  const shipping = master.shipping || 0;
+  const appliedDiscountAmount = master.appliedDiscountAmount || 0;
+  const total = master.total || 0;
 
   let paymentMethod = master.paymentMethod || "card";
   if (paymentMethod === "paymob") paymentMethod = "card";
@@ -149,6 +138,9 @@ function formatSubsAsOrder(subs: any[]) {
     billingCity: master.billingCity || "",
     billingPhone: master.billingPhone || "",
     instapayReciept: master.instapayReciept || "",
+    giftCardName: sortedSubs.find(s => s.giftCardName)?.giftCardName || "",
+    specialMessage: sortedSubs.find(s => s.specialMessage)?.specialMessage || "",
+    isSubscriptionOrder: true,
     createdAt: master.createdAt,
     updatedAt: master.updatedAt,
   };
@@ -301,6 +293,7 @@ export async function GET(req: Request) {
   const discountCode = searchParams.get("discountCode");
   const orderDate = searchParams.get("orderDate");
   const email = searchParams.get("email");
+  const statusParam = searchParams.get("status");
 
   if (email) {
     try {
@@ -385,6 +378,9 @@ export async function GET(req: Request) {
   const filter: any = {};
   if (cash) {
     filter.cash = cash;
+  }
+  if (statusParam) {
+    filter.status = statusParam;
   }
   if (discountCode) {
     try {
@@ -475,6 +471,10 @@ export async function GET(req: Request) {
     };
   }
 
+  if (statusParam) {
+    subFilter.status = statusParam;
+  }
+
   try {
     const standardOrders = await ordersModel
       .find(filter)
@@ -553,7 +553,7 @@ export async function GET(req: Request) {
     });
 
     const totalOrders = allCombined.length;
-    const paginated = allCombined.slice(skip, skip + limit);
+    const paginated = limit === 0 ? allCombined : allCombined.slice(skip, skip + limit);
 
     return NextResponse.json(
       {

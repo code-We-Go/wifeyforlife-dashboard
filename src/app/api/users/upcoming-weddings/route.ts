@@ -36,7 +36,7 @@ console.log("registering subscription + packages"+subscriptionsModel +packageMod
 
     const users = await UserModel.find(query)
       .populate({
-        path: "subscription",
+        path: "subscriptions",
         model: "subscriptions",
         populate: {
           path: "packageID",

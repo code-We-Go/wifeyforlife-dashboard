@@ -14,6 +14,7 @@ const OrdersPage = () => {
   const [orderDate, setOrderDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "cash" | "card" | "instapay">("all");
+  const [statusFilter, setStatusFilter] = useState("");
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
@@ -24,6 +25,7 @@ const OrdersPage = () => {
       if (discountCode) params.append("discountCode", discountCode);
       if (orderDate) params.append("orderDate", orderDate);
       if (activeTab !== "all") params.append("cash", activeTab);
+      if (statusFilter) params.append("status", statusFilter);
       const res = await axios.get(`/api/orders?${params.toString()}`);
       setOrders(res.data.data);
       setTotalPages(res.data.totalPages);
@@ -32,15 +34,15 @@ const OrdersPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, search, discountCode, orderDate, activeTab]);
+  }, [page, search, discountCode, orderDate, activeTab, statusFilter]);
 
   useEffect(() => {
     fetchOrders();
-  }, [page, search, discountCode, orderDate, activeTab]);
+  }, [page, search, discountCode, orderDate, activeTab, statusFilter]);
 
   useEffect(() => {
     setPage(1); // Reset to first page when filters change
-  }, [search, discountCode, orderDate, activeTab]);
+  }, [search, discountCode, orderDate, activeTab, statusFilter]);
 
   const handleApproveInstapay = async (orderID: string) => {
     setApprovingId(orderID);
@@ -141,6 +143,19 @@ const OrdersPage = () => {
             onChange={(e) => setOrderDate(e.target.value)}
             className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
           />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="failed">Failed</option>
+          </select>
         </div>
         
         {isLoading ? (
@@ -151,8 +166,7 @@ const OrdersPage = () => {
               setOrders={setOrders}
               key={order._id}
               order={order}
-              handleApproveInstapay={handleApproveInstapay}
-              approvingId={approvingId}
+              {...(order.cash === "instapay" ? { handleApproveInstapay, approvingId } : {})}
             />
           ))
         ) : (

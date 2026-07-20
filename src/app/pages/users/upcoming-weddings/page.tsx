@@ -114,18 +114,44 @@ const UpcomingWeddingsPage = () => {
                     <td className="border p-2 capitalize">{user.role}</td>
                     <td className="border p-2">
                        <span className="font-bold">
-                        {(() => {
-                           const activeSubs = user.subscriptions?.filter(s => s.subscribed) || [];
-                           if (activeSubs.length === 0) return <span className="text-red-500">Not Subscribed</span>;
-                           
-                           const hasFull = activeSubs.some(s => {
-                             const pkgId = s.packageID?._id || s.packageID;
-                             return pkgId?.toString() !== "68bf6ae9c4d5c1af12cdcd37";
-                           });
+                         {(() => {
+                            const now = new Date();
+                            const activeSubs = user.subscriptions?.filter(s => {
+                              if (!s.subscribed) return false;
+                              const pkg: any = s.packageID;
+                              const pkgName = pkg?.name ? pkg.name.toLowerCase() : "";
+                              const isMini = pkgName.includes("mini");
+                              if (isMini) return true; // bypass expiry date check for mini
+                              return !s.expiryDate || new Date(s.expiryDate) > now;
+                            }) || [];
 
-                           if (hasFull) return <span className="text-success">Full Experience</span>;
-                           return <span className="text-orange-500">Mini Experience</span>;
-                        })()}
+                            if (activeSubs.length === 0) return <span className="text-red-500">Not Subscribed</span>;
+
+                            // Prioritize full subscriptions if any
+                            const fullSub = activeSubs.find(s => {
+                              const pkg: any = s.packageID;
+                              const pkgName = pkg?.name ? pkg.name.toLowerCase() : "";
+                              return !pkgName.includes("mini");
+                            });
+
+                            if (fullSub) {
+                              const pkg: any = fullSub.packageID;
+                              const pkgName = pkg?.name ? pkg.name.toLowerCase() : "";
+                              if (pkgName.includes("wedding")) {
+                                return <span className="text-success">Full Wedding Experience</span>;
+                              }
+                              return <span className="text-success">Full Wifey Experience</span>;
+                            }
+
+                            // If no full subscriptions, show the mini experience
+                            const miniSub = activeSubs[0];
+                            const pkg: any = miniSub.packageID;
+                            const pkgName = pkg?.name ? pkg.name.toLowerCase() : "";
+                            if (pkgName.includes("wedding")) {
+                              return <span className="text-orange-500">Mini Wedding Experience</span>;
+                            }
+                            return <span className="text-orange-500">Wifey’s Mini Experince</span>;
+                         })()}
                       </span>
                     </td>
                     <td className="border p-2">

@@ -1,3 +1,5 @@
+"use client";
+
 import { ApexOptions } from "apexcharts";
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -9,59 +11,14 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 });
 
 const options: ApexOptions = {
-  colors: ["#D32333"],
   chart: {
     fontFamily: "Satoshi, sans-serif",
-    type: "bar",
+    type: "area",
     height: 335,
-    stacked: false,
     toolbar: { show: false },
     zoom: { enabled: false },
   },
-  yaxis: [
-    {
-      title: { text: "Local Profit (EGP)" },
-      min: 0,
-      max: 25000,
-      tickAmount: 5, 
-      labels: {
-        formatter: (value) => value.toFixed(0),
-      },
-    },
-    // {
-    //   title: { text: "Global Profit ($)" },
-    //   min: 0,
-    //   max: 1000,
-    //   tickAmount: 5,
-    //   labels: {
-    //     formatter: (value) => value.toFixed(0),
-    //   },
-    // },
-  ],
-  responsive: [
-    {
-      breakpoint: 1536,
-      options: {
-        plotOptions: {
-          bar: {
-            borderRadius: 0,
-            columnWidth: "25%",
-          },
-        },
-      },
-    },
-  ],
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      borderRadius: 0,
-      columnWidth: "25%",
-    },
-  },
-  dataLabels: { enabled: false },
-  xaxis: {
-    categories: ["S","M", "T", "W", "T", "F", "S" ],
-  },
+  colors: ["#D32333", "#D4A017"],
   legend: {
     position: "top",
     horizontalAlign: "left",
@@ -69,94 +26,198 @@ const options: ApexOptions = {
     fontWeight: 500,
     fontSize: "14px",
   },
-  fill: { opacity: 1 },
+  dataLabels: {
+    enabled: false,
+  },
+  stroke: {
+    curve: "smooth",
+    width: 2,
+  },
+  grid: {
+    xaxis: {
+      lines: {
+        show: true,
+      },
+    },
+    yaxis: {
+      lines: {
+        show: true,
+      },
+    },
+  },
+  tooltip: {
+    shared: true,
+    intersect: false,
+    y: {
+      formatter: (value) => `${Math.round(value).toLocaleString()} EGP`,
+    },
+  },
+  xaxis: {
+    type: "category",
+    categories: [], // Will be populated dynamically
+    axisBorder: {
+      show: false,
+    },
+    axisTicks: {
+      show: false,
+    },
+  },
+  yaxis: {
+    title: {
+      text: "Amount (EGP)",
+      style: {
+        fontSize: "12px",
+      },
+    },
+    min: 0,
+    labels: {
+      formatter: function (val) {
+        return Math.round(val).toString();
+      },
+    },
+  },
+  responsive: [
+    {
+      breakpoint: 1024,
+      options: {
+        chart: {
+          height: 300,
+        },
+      },
+    },
+    {
+      breakpoint: 1366,
+      options: {
+        chart: {
+          height: 350,
+        },
+      },
+    },
+  ],
 };
 
-const ChartTwo: React.FC = () => {
-  const [series, setSeries] = useState([
-    { name: "Local Profit", data: [0, 0, 0, 0, 0, 0, 0] },
-    // { name: "Global Profit", data: [0, 0, 0, 0, 0, 0, 0] },
-  ]);
-  const [week, setWeek] = useState("thisWeek"); // state to store week selection
+const monthNames = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
-  const fetchOrders = async (week: string) => {
-    try {
-      const response = await axios.get(`/api/localGlobalProfit?week=${week}`);
-      const orders = response.data.data || [];
-  
-      if (!Array.isArray(orders)) {
-        console.error("Invalid data format:", orders);
-        return;
-      }
-  
-      const localProfits = new Array(7).fill(0);
-      // const globalProfits = new Array(7).fill(0);
-  
-      orders.forEach((order: any) => {
-        const date = new Date(order.createdAt);
-        const dayOfWeek = date.getDay();
-  
-       
-          localProfits[dayOfWeek] += order.subTotal || 0;
- 
-      });
-  
-      setSeries([
-        { name: "Local Profit", data: localProfits },
-        // { name: "Global Profit", data: globalProfits },
-      ]);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
-  };
+const ChartTwo: React.FC = () => {
+  const [series, setSeries] = useState<{ name: string; data: number[] }[]>([
+    { name: "Orders", data: [] },
+    { name: "Sessions", data: [] },
+  ]);
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchOrders(week); // fetch orders based on selected week
-  }, [week]); // fetch data again when 'week' state changes
-  
+    const fetchMonthlyData = async () => {
+      try {
+        const currentDate = new Date();
+        const monthLabels: string[] = [];
+        const ordersMonthly = new Array(12).fill(0);
+        const sessionsMonthly = new Array(12).fill(0);
+
+        // Build month labels and date ranges for the last 12 months
+        const monthRanges: { start: Date; end: Date; label: string }[] = [];
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          const monthLabel = monthNames[date.getMonth()];
+          monthLabels.push(monthLabel);
+
+          const start = new Date(date.getFullYear(), date.getMonth(), 1);
+          const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+          monthRanges.push({ start, end, label: monthLabel });
+        }
+
+        // Fetch both APIs in parallel
+        const [localRes, partnerRes] = await Promise.all([
+          axios.get(`/api/localGlobalProfit?week=all`),
+          axios.get(`/api/partner-session-orders?status=paid`),
+        ]);
+
+        // Process local orders
+        const orders = localRes.data.data || [];
+        console.log(`[ChartTwo] Total orders fetched: ${orders.length}`);
+        if (Array.isArray(orders)) {
+          orders.forEach((order: any) => {
+            const date = new Date(order.createdAt);
+            // Find which month bucket this order belongs to
+            for (let idx = 0; idx < monthRanges.length; idx++) {
+              if (date >= monthRanges[idx].start && date <= monthRanges[idx].end) {
+                ordersMonthly[idx] += order.subTotal || 0;
+                break;
+              }
+            }
+          });
+        }
+        console.log(`[ChartTwo] Orders monthly totals:`, ordersMonthly);
+
+        // Process partner session orders
+        const partnerOrders = partnerRes.data.data || [];
+        if (Array.isArray(partnerOrders)) {
+          partnerOrders.forEach((order: any) => {
+            const date = new Date(order.createdAt);
+            for (let idx = 0; idx < monthRanges.length; idx++) {
+              if (date >= monthRanges[idx].start && date <= monthRanges[idx].end) {
+                sessionsMonthly[idx] += order.finalPrice || 0;
+                break;
+              }
+            }
+          });
+        }
+
+        setCategories(monthLabels);
+        setSeries([
+          { name: "Orders", data: ordersMonthly },
+          { name: "Sessions", data: sessionsMonthly },
+        ]);
+      } catch (error) {
+        console.error("Error fetching monthly profit data:", error);
+
+        // Set default data with zeros
+        const currentDate = new Date();
+        const defaultMonths: string[] = [];
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          defaultMonths.push(monthNames[date.getMonth()]);
+        }
+
+        setCategories(defaultMonths);
+        setSeries([
+          { name: "Orders", data: Array(12).fill(0) },
+          { name: "Sessions", data: Array(12).fill(0) },
+        ]);
+      }
+    };
+
+    fetchMonthlyData();
+  }, []);
+
   return (
-    <div className="col-span-12 rounded-2xl border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-6">
-      <div className="mb-4 justify-between gap-4 sm:flex">
-        <div>
-          <h4 className={`${thirdFont.className} text-secondary text-2xl tracking-normal font-semibold  dark:text-white`}>
-            Profit this week
-          </h4>
+    <div className="col-span-12 rounded-2xl border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-6">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
+        <div className="flex min-w-47.5">
+          <div className="w-full">
+            <h4
+              className={`${thirdFont.className} text-2xl font-semibold tracking-normal text-secondary`}
+            >
+              Profit Overview
+            </h4>
+            <p className="text-sm text-gray-500">
+              Orders & Sessions by Month
+            </p>
+          </div>
         </div>
         <div>
-          <div className="relative z-20 inline-block">
-            <select
-              name="#"
-              id="#"
-              className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
-              onChange={(e) => setWeek(e.target.value)} // Update 'week' state on selection
-            >
-              <option value="thisWeek" className="dark:bg-boxdark">This Week</option>
-              <option value="lastWeek" className="dark:bg-boxdark">Last Week</option>
-            </select>
-            <span className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
-              <svg
-                width="10"
-                height="6"
-                viewBox="0 0 10 6"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M0.47072 1.08816C0.47072 1.02932 0.500141 0.955772 0.54427 0.911642C0.647241 0.808672 0.809051 0.808672 0.912022 0.896932L4.85431 4.60386C4.92785 4.67741 5.06025 4.67741 5.14851 4.60386L9.09079 0.896932C9.19376 0.793962 9.35557 0.808672 9.45854 0.911642C9.56151 1.01461 9.5468 1.17642 9.44383 1.27939L5.50155 4.98632C5.22206 5.23639 4.78076 5.23639 4.51598 4.98632L0.558981 1.27939C0.50014 1.22055 0.47072 1.16171 0.47072 1.08816Z"
-                  fill="#637381"
-                />
-              </svg>
-            </span>
-          </div>
+          <p className="text-sm text-gray-500">Last 12 Months</p>
         </div>
       </div>
 
       <div>
-        <div id="chartTwo" className="-mb-9 -ml-5">
+        <div id="chartTwo" className="-ml-5">
           <ReactApexChart
-            options={options}
+            options={{ ...options, xaxis: { ...options.xaxis, categories } }}
             series={series}
-            type="bar"
+            type="area"
             height={350}
             width={"100%"}
           />

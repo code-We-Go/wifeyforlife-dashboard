@@ -315,6 +315,10 @@ export interface IOrder {
   currency?: string;
   status?: "pending" | "confirmed" | "shipped" | "failed" | "delivered" | "cancelled";
   payment?: "pending" | "failed" | "confirmed";
+  specialMessage?: string;
+  giftCardName?: string;
+  isGift?: boolean;
+  giftRecipientEmail?: string;
   billingCountry?: string;
   billingFirstName?: string;
   billingState?: string;

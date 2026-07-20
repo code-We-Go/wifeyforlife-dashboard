@@ -112,8 +112,10 @@ export async function GET(request: Request) {
     let totalRedeemedPoints = 0;
     let totalRedeemedPointsValue = 0; // in pounds (20 points = 1 pound)
     let totalPaymobFees = 0; // 2.75% of total, 0 if isGift
-    let totalWifeyFull = 0;
-    let totalWifeyMini = 0;
+    let totalGehazFull = 0;
+    let totalGehazMini = 0;
+    let totalWeddingFull = 0;
+    let totalWeddingMini = 0;
 
     // Group by package
     const packageStats: Record<
@@ -137,14 +139,19 @@ export async function GET(request: Request) {
       const pkg = sub.packageID as any;
       if (!pkg) return;
 
-      // Count Wifey Full vs Mini
+      // Count by category (Gehaz vs Wedding) and type (Full vs Mini)
+      // Gehaz: "The Full Wifey Experience", "Wifey's Mini Experince"
+      // Wedding: "Mini Wedding Experience", "Full Wedding Experince"
       const pkgName = pkg.name ? pkg.name.toLowerCase() : "";
-      if (pkgName.includes("mini")) {
-        totalWifeyMini++;
+      const isMini = pkgName.includes("mini");
+      const isWedding = pkgName.includes("wedding");
+      if (isWedding) {
+        if (isMini) totalWeddingMini++;
+        else totalWeddingFull++;
       } else {
-        // Assuming if it's not mini, it's likely the full package
-        // Adjust this logic if there are other packages to exclude
-        totalWifeyFull++;
+        // Default to gehaz category (wifey packages)
+        if (isMini) totalGehazMini++;
+        else totalGehazFull++;
       }
 
       // Calculate the total value of items in the cart to exclude it from subscription calculations
@@ -314,8 +321,10 @@ export async function GET(request: Request) {
             totalRedeemedPoints,
             totalRedeemedPointsValue,
             totalPaymobFees,
-            totalWifeyFull,
-            totalWifeyMini,
+            totalGehazFull,
+            totalGehazMini,
+            totalWeddingFull,
+            totalWeddingMini,
           },
           packageStats: Object.values(packageStats),
           allPackages: allPackages.map((pkg) => ({

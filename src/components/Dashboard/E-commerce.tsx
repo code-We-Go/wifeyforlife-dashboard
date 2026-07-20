@@ -30,8 +30,10 @@ interface AnalyticsData {
     totalRedeemedPoints: number;
     totalRedeemedPointsValue: number;
     totalPaymobFees: number;
-    totalWifeyFull: number;
-    totalWifeyMini: number;
+    totalGehazFull: number;
+    totalGehazMini: number;
+    totalWeddingFull: number;
+    totalWeddingMini: number;
   };
 }
 
@@ -39,13 +41,31 @@ const ECommerce: React.FC = () => {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
     null,
   );
+  const [sessionData, setSessionData] = useState<{
+    totalSessions: number;
+    totalProfit: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await axios.get("/api/analytics/subscriptions");
-        setAnalyticsData(response.data.data);
+        const [analyticsRes, sessionsRes] = await Promise.all([
+          axios.get("/api/analytics/subscriptions"),
+          axios.get("/api/partner-session-orders"),
+        ]);
+        setAnalyticsData(analyticsRes.data.data);
+
+        const orders = sessionsRes.data.data || [];
+        const paidOrders = orders.filter((o: any) => o.status === "paid");
+        const totalProfit = paidOrders.reduce(
+          (sum: number, o: any) => sum + (o.ourProfitAmount || 0),
+          0,
+        );
+        setSessionData({
+          totalSessions: paidOrders.length,
+          totalProfit,
+        });
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
       } finally {
@@ -87,8 +107,12 @@ const ECommerce: React.FC = () => {
                 </h4>
                 <span className="text-sm font-medium">Total Subscriptions</span>
                 <div className="mt-1 text-xs text-gray-500">
-                  Full: {analyticsData.summary.totalWifeyFull || 0} | Mini:{" "}
-                  {analyticsData.summary.totalWifeyMini || 0}
+                  Gehaz — Full: {analyticsData.summary.totalGehazFull || 0} | Mini:{" "}
+                  {analyticsData.summary.totalGehazMini || 0}
+                </div>
+                <div className="mt-0.5 text-xs text-gray-500">
+                  Wedding — Full: {analyticsData.summary.totalWeddingFull || 0} | Mini:{" "}
+                  {analyticsData.summary.totalWeddingMini || 0}
                 </div>
               </div>
             </div>
@@ -301,11 +325,54 @@ const ECommerce: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {sessionData && (
+            <div className="rounded-lg border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+              <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4">
+                <svg
+                  className="fill-primary dark:fill-white"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M17.6 4.4H4.4C3.08 4.4 2.012 5.48 2.012 6.8L2 17.6C2 18.92 3.08 20 4.4 20H17.6C18.92 20 20 18.92 20 17.6V6.8C20 5.48 18.92 4.4 17.6 4.4ZM17.6 17.6H4.4V12.2H17.6V17.6ZM17.6 8.6H4.4V6.8H17.6V8.6Z"
+                    fill=""
+                  />
+                  <path
+                    d="M7 2V4.4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M15 2V4.4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+              <div className="mt-4 flex items-end justify-between">
+                <div>
+                  <h4 className="text-title-md font-bold text-black dark:text-white">
+                    {sessionData.totalSessions}
+                  </h4>
+                  <span className="text-sm font-medium">Partner Sessions</span>
+                  <div className="mt-1 text-xs text-gray-500">
+                    Our Profit: LE{sessionData.totalProfit.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       <div className="mt-4 grid grid-cols-12 gap-4  md:gap-6  2xl:gap-7.5">
         <ChartSubscriptions />
-        <RecentOrders />
+        {/* <RecentOrders /> */}
         <ChartOne />
         <ChartVisits />
         <ChartTwo />
