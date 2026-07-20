@@ -83,11 +83,11 @@ const SubscriptionsPage = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  
+
   // New playlist form state
   const [newPlaylistId, setNewPlaylistId] = useState("");
   const [newPlaylistExpiry, setNewPlaylistExpiry] = useState("");
-  
+
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | "view" | "quicksub" | null>(
     null,
   );
@@ -180,9 +180,9 @@ const SubscriptionsPage = () => {
 
     const selectedPkg = packages.find(p => p._id === form.packageID);
     const packagePrice = selectedPkg ? selectedPkg.price : 0;
-    
+
     const cartTotal = form.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
+
     const newSubTotal = packagePrice + cartTotal;
     const newTotal = newSubTotal + (Number(form.shipping) || 0) - (Number(form.appliedDiscountAmount) || 0);
 
@@ -225,7 +225,7 @@ const SubscriptionsPage = () => {
       (discountSearch === "" ||
         (typeof s.appliedDiscount === "object" &&
           s.appliedDiscount?.code?.toLowerCase() ===
-            discountSearch.toLowerCase())) &&
+          discountSearch.toLowerCase())) &&
       (activeTab !== "paymob" || s.paymentMethod !== "instapay"),
   );
 
@@ -250,7 +250,7 @@ const SubscriptionsPage = () => {
       if (typeFilter !== "all") params.type = typeFilter;
       if (packageFilter !== "all") params.packageID = packageFilter;
       if (statusFilter !== "all") params.status = statusFilter;
-      
+
       if (activeTab === "mini") {
         params.startDate = "2026-02-01";
         params.isMini = "true";
@@ -288,10 +288,10 @@ const SubscriptionsPage = () => {
       const query = new URLSearchParams(params).toString();
       const res = await axios.get(`/api/subscriptions?${query}`);
       const data: Subscription[] = res.data.data || [];
-      
+
       const total = data.length;
       const activated = data.filter(s => s.miniSubscriptionActivated).length;
-      
+
       setMiniStats({ total, activated });
     } catch (error) {
       console.error("Error fetching mini stats:", error);
@@ -453,7 +453,7 @@ const SubscriptionsPage = () => {
     setNewPlaylistExpiry("");
     setSubSubscriptions([]);
     resetSubSubForm();
-    
+
     if ((type === "edit" || type === "view") && subscription) {
       fetchSubSubscriptions(subscription._id);
     }
@@ -503,7 +503,7 @@ const SubscriptionsPage = () => {
         redeemedLoyaltyPoints: subscription.redeemedLoyaltyPoints || 0,
         appliedDiscount:
           typeof subscription.appliedDiscount === "object" &&
-          subscription.appliedDiscount !== null
+            subscription.appliedDiscount !== null
             ? subscription.appliedDiscount.code
             : subscription.appliedDiscount || "",
         appliedDiscountAmount: subscription.appliedDiscountAmount || 0,
@@ -688,9 +688,9 @@ const SubscriptionsPage = () => {
   const handleApproveInstapay = async (paymentID: string) => {
     setApprovingId(paymentID);
     try {
-const response = await axios.get(
-  `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback?success=true&order=${paymentID}&json=true`
-);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback?success=true&order=${paymentID}&json=true`
+      );
 
       console.log("response", response);
       if (response.status === 200) {
@@ -703,7 +703,7 @@ const response = await axios.get(
       console.error("Error approving instapay payment:", error);
       alert(
         "An error occurred while approving the payment: " +
-          (error.response?.data?.message || error.message),
+        (error.response?.data?.message || error.message),
       );
     } finally {
       setApprovingId(null);
@@ -783,41 +783,37 @@ const response = await axios.get(
         <div className="mb-6 flex w-full space-x-4 border-b">
           <button
             onClick={() => setActiveTab("all")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "all"
+            className={`px-4 py-2 font-medium ${activeTab === "all"
                 ? "border-b-2 border-primary text-primary"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             All Subscriptions
           </button>
           <button
             onClick={() => setActiveTab("mini")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "mini"
+            className={`px-4 py-2 font-medium ${activeTab === "mini"
                 ? "border-b-2 border-primary text-primary"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Mini Experience (activation analytics)
           </button>
           <button
             onClick={() => setActiveTab("paymob")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "paymob"
+            className={`px-4 py-2 font-medium ${activeTab === "paymob"
                 ? "border-b-2 border-primary text-primary"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Paymob Logs
           </button>
           <button
             onClick={() => setActiveTab("instapay")}
-            className={`px-4 py-2 font-medium relative ${
-              activeTab === "instapay"
+            className={`px-4 py-2 font-medium relative ${activeTab === "instapay"
                 ? "border-b-2 border-primary text-primary"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Instapay Requests
             {subscriptions.filter(s => s.paymentMethod === "instapay" && s.status !== "confirmed").length > 0 && activeTab !== "instapay" && (
@@ -930,7 +926,7 @@ const response = await axios.get(
               onChange={(e) => setDiscountSearch(e.target.value)}
               className="w-64 rounded border p-2"
             />
-            
+
           </div>
           <div className="flex gap-2">
             <button
@@ -963,11 +959,11 @@ const response = await axios.get(
                 <th className="border p-2">Payment ID</th>
                 <th className="border p-2">Package</th>
                 {/* <th className="p-2 border">Total</th> */}
-                               {activeTab !== "paymob" && activeTab !== "instapay" && (
-                <th className="border p-2">Paid</th>
+                {activeTab !== "paymob" && activeTab !== "instapay" && (
+                  <th className="border p-2">Paid</th>
                 )}
                 <th className="border p-2">Gift</th>
-              
+
                 {activeTab !== "paymob" && activeTab !== "instapay" && (
                   <th className="border p-2">Expiry</th>
                 )}
@@ -983,11 +979,11 @@ const response = await axios.get(
                   <td colSpan={9} className="border p-8 text-center">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
-                                     {activeTab !== "paymob" && activeTab !== "instapay" ? (
-                      <p className="text-gray-600">Loading subscriptions...</p>
-                                     ) : (
-                                      <p className="text-gray-600">Loading logs...</p>
-                                     ) }
+                      {activeTab !== "paymob" && activeTab !== "instapay" ? (
+                        <p className="text-gray-600">Loading subscriptions...</p>
+                      ) : (
+                        <p className="text-gray-600">Loading logs...</p>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -1002,8 +998,8 @@ const response = await axios.get(
                 </tr>
               ) : (
                 paginatedSubscriptions.map((sub, idx) => (
-                  <tr 
-                    key={sub._id} 
+                  <tr
+                    key={sub._id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => openModal("view", sub)}
                   >
@@ -1018,11 +1014,11 @@ const response = await axios.get(
                       {sub.packageID ? sub.packageID.name : "-"}
                     </td>
                     {/* <td className="p-2 border">{sub.total ? `${sub.currency || ""} ${sub.total.toFixed(2)}` : "-"}</td> */}
-                                       {activeTab !== "paymob" && activeTab !== "instapay" && (
+                    {activeTab !== "paymob" && activeTab !== "instapay" && (
 
-                    <td className="border p-2">
-                      {sub.subscribed ? "Yes" : "No"}
-                    </td>)}
+                      <td className="border p-2">
+                        {sub.subscribed ? "Yes" : "No"}
+                      </td>)}
                     <td className="border p-2">{sub.isGift ? "Yes" : "No"}</td>
                     {activeTab !== "paymob" && activeTab !== "instapay" && (
                       <td className="border p-2">
@@ -1034,9 +1030,9 @@ const response = await axios.get(
                     {activeTab === "instapay" && (
                       <td className="border p-2">
                         {sub.instapayReciept ? (
-                          <a 
-                            href={sub.instapayReciept} 
-                            target="_blank" 
+                          <a
+                            href={sub.instapayReciept}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary underline flex items-center gap-1"
                             onClick={(e) => e.stopPropagation()}
@@ -1044,36 +1040,35 @@ const response = await axios.get(
                             View Receipt
                           </a>
                         ) : (
-                        <span className="text-gray-400 italic">No receipt</span>
+                          <span className="text-gray-400 italic">No receipt</span>
+                        )}
+                      </td>
+                    )}
+                    <td className="border p-2" onClick={(e) => e.stopPropagation()}>
+                      <select
+                        value={sub.status || "pending"}
+                        onChange={(e) => handleStatusChange(sub._id, e.target.value)}
+                        className={`rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset cursor-pointer focus:outline-none ${sub.status === "delivered" ? "bg-green-50 text-green-700 ring-green-600/20" :
+                            sub.status === "shipped" ? "bg-blue-50 text-blue-700 ring-blue-600/20" :
+                              sub.status === "confirmed" ? "bg-purple-50 text-purple-700 ring-purple-600/20" :
+                                sub.status === "cancelled" || sub.status === "returned" ? "bg-red-50 text-red-700 ring-red-600/20" :
+                                  "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
+                          }`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="returned">Returned</option>
+                      </select>
+                      {sub.cart && sub.cart.length > 0 && (
+                        <span className="ml-1 text-[10px] text-primary font-bold block mt-1">
+                          +{sub.cart.length} items
+                        </span>
                       )}
                     </td>
-                  )}
-                  <td className="border p-2" onClick={(e) => e.stopPropagation()}>
-                    <select
-                      value={sub.status || "pending"}
-                      onChange={(e) => handleStatusChange(sub._id, e.target.value)}
-                      className={`rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset cursor-pointer focus:outline-none ${
-                        sub.status === "delivered" ? "bg-green-50 text-green-700 ring-green-600/20" :
-                        sub.status === "shipped" ? "bg-blue-50 text-blue-700 ring-blue-600/20" :
-                        sub.status === "confirmed" ? "bg-purple-50 text-purple-700 ring-purple-600/20" :
-                        sub.status === "cancelled" || sub.status === "returned" ? "bg-red-50 text-red-700 ring-red-600/20" :
-                        "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
-                      }`}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                      <option value="returned">Returned</option>
-                    </select>
-                    {sub.cart && sub.cart.length > 0 && (
-                      <span className="ml-1 text-[10px] text-primary font-bold block mt-1">
-                        +{sub.cart.length} items
-                      </span>
-                    )}
-                  </td>
-                  <td className="space-x-2 border p-2" onClick={(e) => e.stopPropagation()}>
+                    <td className="space-x-2 border p-2" onClick={(e) => e.stopPropagation()}>
 
                       <button
                         onClick={() => openModal("edit", sub)}
@@ -1089,15 +1084,14 @@ const response = await axios.get(
                       </button>
                       {/* Debug info: showing status */}
                       <span className="text-xs text-gray-400">({sub.status || "undefined"})</span>
-                      {sub.status !== "confirmed" && sub.status !== "delivered" && (
+                      {sub.status !== "confirmed" && sub.status !== "delivered" && sub.status !== "shipped" && (
                         <button
                           disabled={approvingId === sub.paymentID}
                           onClick={() => handleApproveInstapay(sub.paymentID)}
-                          className={`ml-2 rounded mt-2 px-3 py-1 text-xs font-semibold text-white shadow-sm bg-secondary transition-all active:scale-95 disabled:opacity-50 ${
-                            approvingId === sub.paymentID
+                          className={`ml-2 rounded mt-2 px-3 py-1 text-xs font-semibold text-white shadow-sm bg-secondary transition-all active:scale-95 disabled:opacity-50 ${approvingId === sub.paymentID
                               ? "bg-gray-400 cursor-not-allowed"
                               : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
-                          }`}
+                            }`}
                         >
                           {approvingId === sub.paymentID ? "..." : "Approve"}
                         </button>
@@ -1144,11 +1138,10 @@ const response = await axios.get(
                         <button
                           key={page}
                           onClick={() => handlePageChange(page)}
-                          className={`rounded px-3 py-1 text-sm ${
-                            currentPage === page
+                          className={`rounded px-3 py-1 text-sm ${currentPage === page
                               ? "bg-blue-500 text-white"
                               : "border hover:bg-gray-50"
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
@@ -1376,14 +1369,14 @@ const response = await axios.get(
 
                 <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
                   <h3 className="text-lg font-medium mb-2">Allowed Playlists</h3>
-                  
+
                   {/* List of allowed playlists */}
                   <div className="space-y-3 mb-4">
                     {form.allowedPlaylists.map((playlist: any, idx: number) => (
                       <div key={idx} className="flex items-center justify-between border p-2 rounded bg-white shadow-sm">
                         <div className="flex items-center gap-3">
-                          <img 
-                            src={playlist.playlistID?.thumbnailUrl} 
+                          <img
+                            src={playlist.playlistID?.thumbnailUrl}
                             alt={playlist.playlistID?.title || "Playlist"}
                             className="w-16 h-10 object-cover rounded"
                           />
@@ -1453,14 +1446,14 @@ const response = await axios.get(
                     </svg>
                     Cart Items (Bundled Products)
                   </h3>
-                  
+
                   {/* List of cart items */}
                   <div className="space-y-3 mb-4">
                     {form.cart.map((item: ICartItem, idx: number) => (
                       <div key={idx} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
                         <div className="flex items-center gap-3">
-                          <img 
-                            src={item.imageUrl} 
+                          <img
+                            src={item.imageUrl}
                             alt={item.productName}
                             className="w-12 h-12 object-cover rounded border"
                           />
@@ -1471,13 +1464,13 @@ const response = await axios.get(
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center border rounded">
-                            <button 
+                            <button
                               type="button"
                               onClick={() => handleUpdateCartQuantity(idx, item.quantity - 1)}
                               className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
                             >-</button>
                             <span className="px-3 text-sm">{item.quantity}</span>
-                            <button 
+                            <button
                               type="button"
                               onClick={() => handleUpdateCartQuantity(idx, item.quantity + 1)}
                               className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
@@ -1512,24 +1505,24 @@ const response = await axios.get(
                         className="flex-1 rounded border p-2 text-sm"
                       />
                     </div>
-                    
+
                     {/* Search Results Dropdown */}
                     {productSearch.length > 1 && (
                       <div className="absolute left-0 right-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-md border bg-white shadow-lg">
                         {allProducts
                           .filter(p => p.title.toLowerCase().includes(productSearch.toLowerCase()))
                           .map(p => (
-                            <div 
-                              key={p._id} 
+                            <div
+                              key={p._id}
                               onClick={() => {
                                 handleAddToCart(p);
                                 setProductSearch("");
                               }}
                               className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer border-b last:border-0"
                             >
-                              <img 
-                                src={p.variations?.[0]?.images?.[0]?.url} 
-                                alt={p.title} 
+                              <img
+                                src={p.variations?.[0]?.images?.[0]?.url}
+                                alt={p.title}
                                 className="w-10 h-10 object-cover rounded"
                               />
                               <div>
@@ -1549,120 +1542,119 @@ const response = await axios.get(
 
                 {/* ── Sub-Subscriptions (Invitations) ─────────────────────── */}
                 {modalType === "edit" && selectedSubscription && (
-                <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                    </svg>
-                    Sub-Subscriptions (Invitations)
-                    <button
-                      type="button"
-                      onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
-                      className="ml-auto text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
-                    >
-                      {loadingSubSubs ? "Loading..." : "Refresh"}
-                    </button>
-                  </h3>
-
-                  {/* List */}
-                  <div className="space-y-2 mb-4">
-                    {subSubscriptions.map((ss) => (
-                      <div key={ss._id} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{ss.inviteeEmail}</p>
-                          <div className="flex gap-2 mt-1">
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
-                              {ss.role}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              ss.status === "accepted" ? "bg-green-100 text-green-700" :
-                              ss.status === "revoked" ? "bg-red-100 text-red-700" :
-                              "bg-yellow-100 text-yellow-700"
-                            }`}>
-                              {ss.status}
-                            </span>
-                          </div>
-                          {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic truncate">{ss.inviteMessage}</p>}
-                        </div>
-                        <div className="flex gap-1 ml-2">
-                          <button type="button" onClick={() => startEditSubSub(ss)} className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1">Edit</button>
-                          <button type="button" onClick={() => handleSubSubDelete(ss._id, selectedSubscription._id)} className="text-red-600 hover:text-red-800 text-xs px-2 py-1">Delete</button>
-                        </div>
-                      </div>
-                    ))}
-                    {subSubscriptions.length === 0 && !loadingSubSubs && (
-                      <p className="text-sm text-gray-500 italic text-center py-3 bg-white rounded border border-dashed">
-                        No invitations yet.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Add / Edit form */}
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end border-t pt-3 mt-2">
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Invitee Email</label>
-                      <input
-                        type="email"
-                        value={subSubForm.inviteeEmail}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, inviteeEmail: e.target.value.toLowerCase() }))}
-                        placeholder="email@example.com"
-                        className="w-full rounded border p-1 text-sm lowercase"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
-                      <select
-                        value={subSubForm.role}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, role: e.target.value as "groom" | "bridesmaids" }))}
-                        className="w-full rounded border p-1 text-sm"
-                      >
-                        <option value="groom">Groom</option>
-                        <option value="bridesmaids">Bridesmaids</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                      <select
-                        value={subSubForm.status}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, status: e.target.value as "pending" | "accepted" | "revoked" }))}
-                        className="w-full rounded border p-1 text-sm"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="revoked">Revoked</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Message</label>
-                      <input
-                        type="text"
-                        value={subSubForm.inviteMessage}
-                        onChange={(e) => setSubSubForm(f => ({ ...f, inviteMessage: e.target.value }))}
-                        placeholder="Optional"
-                        className="w-full rounded border p-1 text-sm"
-                      />
-                    </div>
-                    <div className="flex gap-1">
+                  <div className="col-span-1 md:col-span-2 border p-4 rounded-lg bg-gray-50">
+                    <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                      </svg>
+                      Sub-Subscriptions (Invitations)
                       <button
                         type="button"
-                        onClick={() => handleSubSubSubmit(selectedSubscription._id)}
-                        disabled={!subSubForm.inviteeEmail}
-                        className="flex-1 bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
+                        onClick={() => fetchSubSubscriptions(selectedSubscription._id)}
+                        className="ml-auto text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
                       >
-                        {editingSubSubId ? "Update" : "Add"}
+                        {loadingSubSubs ? "Loading..." : "Refresh"}
                       </button>
-                      {editingSubSubId && (
-                        <button
-                          type="button"
-                          onClick={resetSubSubForm}
-                          className="bg-gray-300 text-gray-700 rounded p-1 text-sm hover:bg-gray-400"
-                        >
-                          Cancel
-                        </button>
+                    </h3>
+
+                    {/* List */}
+                    <div className="space-y-2 mb-4">
+                      {subSubscriptions.map((ss) => (
+                        <div key={ss._id} className="flex items-center justify-between border p-3 rounded bg-white shadow-sm">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{ss.inviteeEmail}</p>
+                            <div className="flex gap-2 mt-1">
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
+                                {ss.role}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${ss.status === "accepted" ? "bg-green-100 text-green-700" :
+                                  ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                                    "bg-yellow-100 text-yellow-700"
+                                }`}>
+                                {ss.status}
+                              </span>
+                            </div>
+                            {ss.inviteMessage && <p className="text-xs text-gray-400 mt-1 italic truncate">{ss.inviteMessage}</p>}
+                          </div>
+                          <div className="flex gap-1 ml-2">
+                            <button type="button" onClick={() => startEditSubSub(ss)} className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1">Edit</button>
+                            <button type="button" onClick={() => handleSubSubDelete(ss._id, selectedSubscription._id)} className="text-red-600 hover:text-red-800 text-xs px-2 py-1">Delete</button>
+                          </div>
+                        </div>
+                      ))}
+                      {subSubscriptions.length === 0 && !loadingSubSubs && (
+                        <p className="text-sm text-gray-500 italic text-center py-3 bg-white rounded border border-dashed">
+                          No invitations yet.
+                        </p>
                       )}
                     </div>
+
+                    {/* Add / Edit form */}
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end border-t pt-3 mt-2">
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Invitee Email</label>
+                        <input
+                          type="email"
+                          value={subSubForm.inviteeEmail}
+                          onChange={(e) => setSubSubForm(f => ({ ...f, inviteeEmail: e.target.value.toLowerCase() }))}
+                          placeholder="email@example.com"
+                          className="w-full rounded border p-1 text-sm lowercase"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
+                        <select
+                          value={subSubForm.role}
+                          onChange={(e) => setSubSubForm(f => ({ ...f, role: e.target.value as "groom" | "bridesmaids" }))}
+                          className="w-full rounded border p-1 text-sm"
+                        >
+                          <option value="groom">Groom</option>
+                          <option value="bridesmaids">Bridesmaids</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <select
+                          value={subSubForm.status}
+                          onChange={(e) => setSubSubForm(f => ({ ...f, status: e.target.value as "pending" | "accepted" | "revoked" }))}
+                          className="w-full rounded border p-1 text-sm"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="accepted">Accepted</option>
+                          <option value="revoked">Revoked</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Message</label>
+                        <input
+                          type="text"
+                          value={subSubForm.inviteMessage}
+                          onChange={(e) => setSubSubForm(f => ({ ...f, inviteMessage: e.target.value }))}
+                          placeholder="Optional"
+                          className="w-full rounded border p-1 text-sm"
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleSubSubSubmit(selectedSubscription._id)}
+                          disabled={!subSubForm.inviteeEmail}
+                          className="flex-1 bg-blue-600 text-white rounded p-1 text-sm hover:bg-blue-700 disabled:bg-blue-300"
+                        >
+                          {editingSubSubId ? "Update" : "Add"}
+                        </button>
+                        {editingSubSubId && (
+                          <button
+                            type="button"
+                            onClick={resetSubSubForm}
+                            className="bg-gray-300 text-gray-700 rounded p-1 text-sm hover:bg-gray-400"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
                 )}
 
                 <h3 className="mt-6 text-lg font-medium">User Information</h3>
@@ -2207,7 +2199,7 @@ const response = await axios.get(
             >
               <div className="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 className="text-2xl font-bold">Subscription Details</h2>
-                <button 
+                <button
                   onClick={() => closeModal()}
                   className="text-gray-500 hover:text-gray-700 font-bold text-xl"
                 >
@@ -2222,24 +2214,24 @@ const response = await axios.get(
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <span className="text-gray-500">Email:</span>
                     <span className="font-medium break-all">{selectedSubscription.email}</span>
-                    
+
                     <span className="text-gray-500">Name:</span>
                     <span className="font-medium">{`${selectedSubscription.firstName || ""} ${selectedSubscription.lastName || ""}`}</span>
-                    
+
                     <span className="text-gray-500">Phone:</span>
                     <span className="font-medium">{selectedSubscription.phone || "-"}</span>
-                    
+
                     <span className="text-gray-500">WhatsApp:</span>
                     <span className="font-medium">{selectedSubscription.whatsAppNumber || "-"}</span>
-                    
+
                     <span className="text-gray-500">Payment ID:</span>
                     <span className="font-medium">{selectedSubscription.paymentID}</span>
-                    
+
                     <span className="text-gray-500">Success:</span>
                     <span className={`font-medium ${selectedSubscription.subscribed ? "text-green-600" : "text-red-600"}`}>
                       {selectedSubscription.subscribed ? "Yes" : "No"}
                     </span>
-                    
+
                     <span className="text-gray-500">Mini Activated:</span>
                     <span className={`font-medium ${selectedSubscription.miniSubscriptionActivated ? "text-green-600" : "text-gray-600"}`}>
                       {selectedSubscription.miniSubscriptionActivated ? "Yes" : "No"}
@@ -2253,28 +2245,28 @@ const response = await axios.get(
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <span className="text-gray-500">Package:</span>
                     <span className="font-medium">{selectedSubscription.packageID?.name || "-"}</span>
-                    
+
                     {activeTab !== "paymob" && activeTab !== "instapay" && (
                       <>
                         <span className="text-gray-500">Expiry Date:</span>
                         <span className="font-medium">
                           {selectedSubscription.expiryDate
                             ? new Date(
-                                selectedSubscription.expiryDate,
-                              ).toLocaleDateString()
+                              selectedSubscription.expiryDate,
+                            ).toLocaleDateString()
                             : "-"}
                         </span>
                       </>
                     )}
-                    
+
                     <span className="text-gray-500">Created At:</span>
                     <span className="font-medium">
                       {selectedSubscription.createdAt ? new Date(selectedSubscription.createdAt).toLocaleString() : "-"}
                     </span>
-                    
+
                     <span className="text-gray-500">Is Gift:</span>
                     <span className="font-medium">{selectedSubscription.isGift ? "Yes" : "No"}</span>
-                    
+
                     {selectedSubscription.isGift && (
                       <>
                         <span className="text-gray-500">Gift Sender:</span>
@@ -2282,7 +2274,7 @@ const response = await axios.get(
 
                         <span className="text-gray-500">Gift Recipient:</span>
                         <span className="font-medium break-all">{selectedSubscription.giftRecipientEmail}</span>
-                        
+
                         <span className="text-gray-500">Gift Message:</span>
                         <span className="font-medium italic">{selectedSubscription.specialMessage}</span>
                       </>
@@ -2294,13 +2286,12 @@ const response = await axios.get(
                     </span>
 
                     <span className="text-gray-500">Shipment Status:</span>
-                    <span className={`font-medium px-2 py-0.5 rounded-full text-xs inline-block ${
-                      selectedSubscription.status === "delivered" ? "bg-green-100 text-green-800" :
-                      selectedSubscription.status === "shipped" ? "bg-blue-100 text-blue-800" :
-                      selectedSubscription.status === "confirmed" ? "bg-purple-100 text-purple-800" :
-                      selectedSubscription.status === "cancelled" || selectedSubscription.status === "returned" ? "bg-red-100 text-red-800" :
-                      "bg-yellow-100 text-yellow-800"
-                    }`}>
+                    <span className={`font-medium px-2 py-0.5 rounded-full text-xs inline-block ${selectedSubscription.status === "delivered" ? "bg-green-100 text-green-800" :
+                        selectedSubscription.status === "shipped" ? "bg-blue-100 text-blue-800" :
+                          selectedSubscription.status === "confirmed" ? "bg-purple-100 text-purple-800" :
+                            selectedSubscription.status === "cancelled" || selectedSubscription.status === "returned" ? "bg-red-100 text-red-800" :
+                              "bg-yellow-100 text-yellow-800"
+                      }`}>
                       {(selectedSubscription.status || "pending").toUpperCase()}
                     </span>
                   </div>
@@ -2312,13 +2303,13 @@ const response = await axios.get(
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <span className="text-gray-500">Address:</span>
                     <span className="font-medium col-span-2">{selectedSubscription.address} {selectedSubscription.apartment}</span>
-                    
+
                     <span className="text-gray-500">City/State:</span>
                     <span className="font-medium">{selectedSubscription.city}, {selectedSubscription.state}</span>
-                    
+
                     <span className="text-gray-500">Country:</span>
                     <span className="font-medium">{selectedSubscription.country}</span>
-                    
+
                     <span className="text-gray-500">Postal Code:</span>
                     <span className="font-medium">{selectedSubscription.postalZip}</span>
                   </div>
@@ -2330,48 +2321,48 @@ const response = await axios.get(
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <span className="text-gray-500">Name:</span>
                     <span className="font-medium">{`${selectedSubscription.billingFirstName || ""} ${selectedSubscription.billingLastName || ""}`}</span>
-                    
+
                     <span className="text-gray-500">Address:</span>
                     <span className="font-medium col-span-2">{selectedSubscription.billingAddress} {selectedSubscription.billingApartment}</span>
-                    
+
                     <span className="text-gray-500">City/State:</span>
                     <span className="font-medium">{selectedSubscription.billingCity}, {selectedSubscription.billingState}</span>
-                    
+
                     <span className="text-gray-500">Country:</span>
                     <span className="font-medium">{selectedSubscription.billingCountry}</span>
-                    
+
                     <span className="text-gray-500">Phone:</span>
                     <span className="font-medium">{selectedSubscription.billingPhone}</span>
                   </div>
                 </div>
-                
+
                 {/* Financial Info */}
                 <div className="space-y-4 md:col-span-2">
                   <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Financial Details</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-gray-50 p-4 rounded">
-                     <div>
-                       <span className="block text-gray-500">Subtotal</span>
-                       <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.subTotal}</span>
-                     </div>
-                     <div>
-                       <span className="block text-gray-500">Shipping</span>
-                       <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.shipping}</span>
-                     </div>
-                     <div>
-                       <span className="block text-gray-500">Discount</span>
-                       <span className="font-bold text-red-500">
-                         {selectedSubscription.appliedDiscountAmount ? `-${selectedSubscription.currency} ${selectedSubscription.appliedDiscountAmount}` : "0"}
-                         {selectedSubscription.appliedDiscount && (
-                           <span className="text-xs text-gray-400 block">
-                             (Code: {typeof selectedSubscription.appliedDiscount === 'object' ? selectedSubscription.appliedDiscount.code : 'Yes'})
-                           </span>
-                         )}
-                       </span>
-                     </div>
-                     <div>
-                       <span className="block text-gray-500">Total</span>
-                       <span className="font-bold text-lg text-green-700">{selectedSubscription.currency} {selectedSubscription.total}</span>
-                     </div>
+                    <div>
+                      <span className="block text-gray-500">Subtotal</span>
+                      <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.subTotal}</span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-500">Shipping</span>
+                      <span className="font-bold">{selectedSubscription.currency} {selectedSubscription.shipping}</span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-500">Discount</span>
+                      <span className="font-bold text-red-500">
+                        {selectedSubscription.appliedDiscountAmount ? `-${selectedSubscription.currency} ${selectedSubscription.appliedDiscountAmount}` : "0"}
+                        {selectedSubscription.appliedDiscount && (
+                          <span className="text-xs text-gray-400 block">
+                            (Code: {typeof selectedSubscription.appliedDiscount === 'object' ? selectedSubscription.appliedDiscount.code : 'Yes'})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-500">Total</span>
+                      <span className="font-bold text-lg text-green-700">{selectedSubscription.currency} {selectedSubscription.total}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -2382,9 +2373,9 @@ const response = await axios.get(
                     <div className="space-y-2">
                       {selectedSubscription.allowedPlaylists.map((item: any, idx) => (
                         <div key={idx} className="flex items-center gap-4 bg-gray-50 p-2 rounded">
-                          <img 
-                            src={typeof item.playlistID === 'object' ? item.playlistID.thumbnailUrl : ''} 
-                            alt="Thumbnail" 
+                          <img
+                            src={typeof item.playlistID === 'object' ? item.playlistID.thumbnailUrl : ''}
+                            alt="Thumbnail"
                             className="w-16 h-10 object-cover rounded"
                           />
                           <div>
@@ -2410,9 +2401,9 @@ const response = await axios.get(
                       {selectedSubscription.cart.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-4 bg-white border p-3 rounded-lg shadow-sm">
                           <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                            <img 
-                              src={item.imageUrl} 
-                              alt={item.productName} 
+                            <img
+                              src={item.imageUrl}
+                              alt={item.productName}
                               className="h-full w-full object-cover object-center"
                             />
                           </div>
@@ -2464,11 +2455,10 @@ const response = await axios.get(
                               <span className={`text-xs px-2 py-0.5 rounded-full ${ss.role === "groom" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"}`}>
                                 {ss.role}
                               </span>
-                              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                ss.status === "accepted" ? "bg-green-100 text-green-700" :
-                                ss.status === "revoked" ? "bg-red-100 text-red-700" :
-                                "bg-yellow-100 text-yellow-700"
-                              }`}>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${ss.status === "accepted" ? "bg-green-100 text-green-700" :
+                                  ss.status === "revoked" ? "bg-red-100 text-red-700" :
+                                    "bg-yellow-100 text-yellow-700"
+                                }`}>
                                 {ss.status}
                               </span>
                             </div>
@@ -2483,7 +2473,7 @@ const response = await axios.get(
                   )}
                 </div>
               </div>
-              
+
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={() => closeModal()}

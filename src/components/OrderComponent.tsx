@@ -226,7 +226,7 @@ const OrderComponent = ({
             </>
           )}
           <span className="text-xs text-gray-400">({status || "undefined"})</span>
-          {status !== "confirmed" && status !== "delivered" && handleApproveInstapay && (
+          {status !== "confirmed" && status !== "delivered" && status !== "shipped" && handleApproveInstapay && (
             <button
               disabled={approvingId === (order.paymentID || order._id)}
               onClick={(e) => {
@@ -401,7 +401,7 @@ const OrderComponent = ({
                   </option>
                 ))}
               </select>
-              {status !== "confirmed" && status !== "delivered" && handleApproveInstapay && (
+              {status !== "confirmed" && status !== "delivered" && status !== "shipped" && handleApproveInstapay && (
                 <button
                   disabled={approvingId === (order.paymentID || order._id)}
                   onClick={(e) => {
