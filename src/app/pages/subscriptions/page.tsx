@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Ipackage, Playlist, Product, Variant, attribute, CartItem as ICartItem } from "@/interfaces/interfaces";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
@@ -210,7 +210,7 @@ const SubscriptionsPage = () => {
         total: newTotal
       }));
     }
-  }, [form.cart, form.packageID, form.shipping, form.appliedDiscountAmount, modalType, packages]);
+  }, [form.cart, form.packageID, form.shipping, form.appliedDiscountAmount, form.subTotal, form.total, modalType, packages]);
 
   useEffect(() => {
     fetchPackages();
@@ -219,13 +219,50 @@ const SubscriptionsPage = () => {
     // fetchSubscriptions(); // Initial fetch handled by the other useEffect
   }, []);
 
+  const fetchSubscriptions = useCallback(async () => {
+    setLoading(true);
+    try {
+      let params: any = {};
+      if (subscribedFilter !== "all") params.subscribed = subscribedFilter;
+      if (typeFilter !== "all") params.type = typeFilter;
+      if (packageFilter !== "all") params.packageID = packageFilter;
+      if (statusFilter !== "all") params.status = statusFilter;
+
+      if (activeTab === "mini") {
+        params.startDate = "2026-02-01";
+        params.isMini = "true";
+        if (miniActivationFilter !== "all") {
+          params.miniSubscriptionActivated = miniActivationFilter;
+        }
+      }
+
+      if (activeTab === "instapay") {
+        params.paymentMethod = "instapay";
+      }
+
+      if (activeTab === "paymob") {
+        params.paymentMethod = "paymob";
+      }
+
+      const query = new URLSearchParams(params).toString();
+      const res = await axios.get(
+        `/api/subscriptions${query ? `?${query}` : ""}`,
+      );
+      setSubscriptions(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [subscribedFilter, typeFilter, packageFilter, statusFilter, activeTab, miniActivationFilter]);
+
   useEffect(() => {
     fetchSubscriptions();
     if (activeTab === "mini") {
       fetchMiniStats();
     }
     setCurrentPage(1); // Reset to first page when filters change
-  }, [subscribedFilter, typeFilter, packageFilter, statusFilter, activeTab, miniActivationFilter]);
+  }, [fetchSubscriptions, activeTab]);
 
   // Pagination logic
   const filteredSubscriptions = subscriptions.filter(
@@ -257,45 +294,6 @@ const SubscriptionsPage = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, discountSearch]);
-
-  const fetchSubscriptions = async () => {
-    setLoading(true);
-    try {
-      let params: any = {};
-      if (subscribedFilter !== "all") params.subscribed = subscribedFilter;
-      if (typeFilter !== "all") params.type = typeFilter;
-      if (packageFilter !== "all") params.packageID = packageFilter;
-      if (statusFilter !== "all") params.status = statusFilter;
-
-      if (activeTab === "mini") {
-        params.startDate = "2026-02-01";
-        params.isMini = "true";
-        if (miniActivationFilter !== "all") {
-          params.miniSubscriptionActivated = miniActivationFilter;
-        }
-      }
-
-      if (activeTab === "instapay") {
-        params.paymentMethod = "instapay";
-      }
-
-      if (activeTab === "paymob") {
-        params.paymentMethod = "paymob";
-      }
-
-
-
-      const query = new URLSearchParams(params).toString();
-      const res = await axios.get(
-        `/api/subscriptions${query ? `?${query}` : ""}`,
-      );
-      setSubscriptions(res.data.data || []);
-    } catch (error) {
-      console.error("Error fetching subscriptions:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchMiniStats = async () => {
     try {
@@ -1381,7 +1379,7 @@ const SubscriptionsPage = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="mb-1 block text-sm font-medium">
-                            Bride's Phone
+                            Bride&apos;s Phone
                           </label>
                           <input
                             type="text"
@@ -1394,7 +1392,7 @@ const SubscriptionsPage = () => {
                         </div>
                         <div>
                           <label className="mb-1 block text-sm font-medium">
-                            Bride's WhatsApp Number
+                            Bride&apos;s WhatsApp Number
                           </label>
                           <input
                             type="text"
