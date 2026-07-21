@@ -146,15 +146,15 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   useEffect(() => {
     if (packageItem) {
       // Handle potential legacy data where items might be strings instead of objects
-      const formattedItems = Array.isArray(packageItem.items) 
+      const formattedItems = Array.isArray(packageItem.items)
         ? packageItem.items.map(item => {
-            // Check if item is already in the correct format
-            if (typeof item === 'object' && item !== null && 'value' in item && 'included' in item) {
-              return item as PackageItem;
-            }
-            // Convert string items to the new format
-            return { value: String(item), included: true };
-          })
+          // Check if item is already in the correct format
+          if (typeof item === 'object' && item !== null && 'value' in item && 'included' in item) {
+            return item as PackageItem;
+          }
+          // Convert string items to the new format
+          return { value: String(item), included: true };
+        })
         : [];
 
       setFormData({
@@ -223,19 +223,19 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Log the form data to debug
       console.log("Submitting form data:", JSON.stringify(formData, null, 2));
       console.log("Cards in form data:", formData.cards);
       console.log("Images in form data:", formData.images);
-      
+
       if (packageItem) {
         // Update existing package
         const response = await axios.put(`/api/packages?packageID=${packageItem._id}`, formData);
         console.log("Update response:", response.data);
         console.log("Updated package data:", response.data.data);
-        
+
         if (response.status === 200) {
           setPackages((prevPackages) =>
             prevPackages.map((p) =>
@@ -262,7 +262,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         const response = await axios.post("/api/packages", formData);
         console.log("Create response:", response.data);
         console.log("Created package data:", response.data.data);
-        
+
         if (response.status === 201) {
           setPackages((prevPackages) => [response.data.data, ...prevPackages]);
 
@@ -281,7 +281,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
           });
         }
       }
-      
+
       onClose();
     } catch (error: any) {
       console.error("Error saving package:", error);
@@ -465,14 +465,14 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
       setNewCardPoints([]);
     }
   };
-  
+
   const addPointToNewCard = () => {
     if (newPointText.trim()) {
       setNewCardPoints(prev => [...prev, newPointText.trim()]);
       setNewPointText("");
     }
   };
-  
+
   const removePointFromNewCard = (index: number) => {
     setNewCardPoints(prev => prev.filter((_, i) => i !== index));
   };
@@ -504,14 +504,14 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
       setEditingCardPoints([]);
     }
   };
-  
+
   const addPointToEditingCard = () => {
     if (editingPointText.trim()) {
       setEditingCardPoints(prev => [...prev, editingPointText.trim()]);
       setEditingPointText("");
     }
   };
-  
+
   const removePointFromEditingCard = (index: number) => {
     setEditingCardPoints(prev => prev.filter((_, i) => i !== index));
   };
@@ -944,190 +944,11 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               </div>
             </div>
           </div>
-
-          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
-            <label className="block text-sm font-medium text-primary mb-1">
-              Package Variants
-            </label>
-            
-            <div className="space-y-2">
-              {(formData.variants || []).map((variant, index) => (
-                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
-                  <div className="flex-1">
-                    <span className="font-semibold">Duration:</span> {variant.duration} Months
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-semibold">Price:</span> {variant.price} LE
-                  </div>
-                  {variant.saving && (
-                    <div className="flex-1 text-green-600 font-medium">
-                      {variant.saving}
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeVariant(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <input
-                  type="number"
-                  placeholder="Months"
-                  value={newVariant.duration || ""}
-                  onChange={(e) => setNewVariant(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  placeholder="Saving (e.g. Save 20%)"
-                  value={newVariant.saving}
-                  onChange={(e) => setNewVariant(prev => ({ ...prev, saving: e.target.value }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Price"
-                  value={newVariant.price || ""}
-                  onChange={(e) => setNewVariant(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-                <button
-                  type="button"
-                  onClick={addVariant}
-                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
-            <label className="block text-sm font-medium text-primary mb-1">
-              Package Renewals
-            </label>
-            
-            <div className="space-y-2">
-              {(formData.renewals || []).map((renewal, index) => (
-                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
-                  <div className="flex-1">
-                    <span className="font-semibold">Duration:</span> {renewal.duration} Months
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-semibold">Price:</span> {renewal.price} LE
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeRenewal(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <input
-                  type="number"
-                  placeholder="Months"
-                  value={newRenewal.duration || ""}
-                  onChange={(e) => setNewRenewal(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Price"
-                  value={newRenewal.price || ""}
-                  onChange={(e) => setNewRenewal(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-                <button
-                  type="button"
-                  onClick={addRenewal}
-                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
-            <label className="block text-sm font-medium text-primary mb-1">
-              Sub-Subscription Slots
-            </label>
-            
-            <div className="space-y-2">
-              {(formData.subSubscriptionSlots || []).map((slot, index) => (
-                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
-                  <div className="flex-1">
-                    <span className="font-semibold">Role:</span> <span className="capitalize">{slot.role}</span>
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-semibold">Max Count:</span> {slot.maxCount}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeSubSlot(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <select
-                  value={newSubSlot.role}
-                  onChange={(e) => setNewSubSlot(prev => ({ ...prev, role: e.target.value as "groom" | "bridesmaids" }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight capitalize"
-                >
-                  <option value="groom">Groom</option>
-                  <option value="bridesmaids">Bridesmaids</option>
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Max Count"
-                  value={newSubSlot.maxCount || ""}
-                  onChange={(e) => setNewSubSlot(prev => ({ ...prev, maxCount: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                  min="1"
-                />
-                <button
-                  type="button"
-                  onClick={addSubSlot}
-                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div className="border border-primary/30 rounded-lg p-4 space-y-4">
             <label className="block text-sm font-medium text-primary mb-1">
               Comparison Features
             </label>
-            
+
             <div className="space-y-2">
               {(formData.comparisonFeatures || []).map((cf, index) => (
                 <div key={index} className="p-2 bg-creamey border border-primary/50 rounded text-sm space-y-2">
@@ -1250,6 +1071,186 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             </div>
           </div>
 
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Package Variants
+            </label>
+
+            <div className="space-y-2">
+              {(formData.variants || []).map((variant, index) => (
+                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div className="flex-1">
+                    <span className="font-semibold">Duration:</span> {variant.duration} Months
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold">Price:</span> {variant.price} LE
+                  </div>
+                  {variant.saving && (
+                    <div className="flex-1 text-green-600 font-medium">
+                      {variant.saving}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <input
+                  type="number"
+                  placeholder="Months"
+                  value={newVariant.duration || ""}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Saving (e.g. Save 20%)"
+                  value={newVariant.saving}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, saving: e.target.value }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={newVariant.price || ""}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+                <button
+                  type="button"
+                  onClick={addVariant}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Package Renewals
+            </label>
+
+            <div className="space-y-2">
+              {(formData.renewals || []).map((renewal, index) => (
+                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div className="flex-1">
+                    <span className="font-semibold">Duration:</span> {renewal.duration} Months
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold">Price:</span> {renewal.price} LE
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeRenewal(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <input
+                  type="number"
+                  placeholder="Months"
+                  value={newRenewal.duration || ""}
+                  onChange={(e) => setNewRenewal(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={newRenewal.price || ""}
+                  onChange={(e) => setNewRenewal(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+                <button
+                  type="button"
+                  onClick={addRenewal}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Sub-Subscription Slots
+            </label>
+
+            <div className="space-y-2">
+              {(formData.subSubscriptionSlots || []).map((slot, index) => (
+                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div className="flex-1">
+                    <span className="font-semibold">Role:</span> <span className="capitalize">{slot.role}</span>
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold">Max Count:</span> {slot.maxCount}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeSubSlot(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <select
+                  value={newSubSlot.role}
+                  onChange={(e) => setNewSubSlot(prev => ({ ...prev, role: e.target.value as "groom" | "bridesmaids" }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight capitalize"
+                >
+                  <option value="groom">Groom</option>
+                  <option value="bridesmaids">Bridesmaids</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Max Count"
+                  value={newSubSlot.maxCount || ""}
+                  onChange={(e) => setNewSubSlot(prev => ({ ...prev, maxCount: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                  min="1"
+                />
+                <button
+                  type="button"
+                  onClick={addSubSlot}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+
           <div>
             <label className="block text-sm font-medium text-primary mb-1">
               Items
@@ -1280,7 +1281,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                     onChange={() => {
                       setFormData(prev => ({
                         ...prev,
-                        items: prev.items.map((i, idx) => 
+                        items: prev.items.map((i, idx) =>
                           idx === index ? { ...i, included: !i.included } : i
                         )
                       }));
@@ -1415,41 +1416,41 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                         />
                       </div>
                       <div>
-                  <label className="block text-xs font-medium text-primary mb-1">
-                    Points
-                  </label>
-                  <div className="space-y-2">
-                    {editingCardPoints.map((point, pointIndex) => (
-                      <div key={pointIndex} className="flex items-center gap-2">
-                        <span className="flex-1">{point}</span>
-                        <button
-                          type="button"
-                          onClick={() => removePointFromEditingCard(pointIndex)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          ✕
-                        </button>
+                        <label className="block text-xs font-medium text-primary mb-1">
+                          Points
+                        </label>
+                        <div className="space-y-2">
+                          {editingCardPoints.map((point, pointIndex) => (
+                            <div key={pointIndex} className="flex items-center gap-2">
+                              <span className="flex-1">{point}</span>
+                              <button
+                                type="button"
+                                onClick={() => removePointFromEditingCard(pointIndex)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={editingPointText}
+                              onChange={(e) => setEditingPointText(e.target.value)}
+                              placeholder="Add a point"
+                              className="flex-1 px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPointToEditingCard())}
+                            />
+                            <button
+                              type="button"
+                              onClick={addPointToEditingCard}
+                              className="px-2 py-1 bg-primary text-white rounded-md text-xs"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={editingPointText}
-                        onChange={(e) => setEditingPointText(e.target.value)}
-                        placeholder="Add a point"
-                        className="flex-1 px-2 py-1 border border-primary/50 bg-creamey rounded focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPointToEditingCard())}
-                      />
-                      <button
-                        type="button"
-                        onClick={addPointToEditingCard}
-                        className="px-2 py-1 bg-primary text-white rounded-md text-xs"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                </div>
                       <div className="flex gap-2">
                         <button
                           type="button"
@@ -1507,7 +1508,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 </div>
               ))}
             </div>
-            
+
             <div className="p-3 border border-primary/50 rounded bg-creamey">
               <div className="space-y-2">
                 <div>
