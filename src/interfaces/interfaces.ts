@@ -38,6 +38,12 @@ export interface SubSubscriptionSlot {
   maxCount: number;
 }
 
+export interface ComparisonFeature {
+  feature: string;
+  fullValue: string;
+  miniValue: string;
+}
+
 export interface PackageItem {
   value: string;
   included: boolean;
@@ -65,7 +71,13 @@ export interface Ipackage {
   accessAllInspos: boolean;
   packagePartners: string[];
   accessAllPartners: boolean;
+  packageProducts?: string[];
   subSubscriptionSlots?: SubSubscriptionSlot[];
+  badgeLabel?: string;
+  calloutBadge?: string;
+  calloutTitle?: string;
+  calloutDescription?: string;
+  comparisonFeatures?: ComparisonFeature[];
 }
 // types/Video.ts
 export interface CommentUser {

@@ -1,5 +1,5 @@
 "use client";
-import { Inspo, Ipackage, PackageCard, PackageItem, Partner, Playlist, SupportCard, SubSubscriptionSlot } from "@/interfaces/interfaces";
+import { ComparisonFeature, Inspo, Ipackage, PackageCard, PackageItem, Partner, Playlist, Product, SupportCard, SubSubscriptionSlot } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -36,12 +36,19 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     accessAllInspos: false,
     packagePartners: [],
     accessAllPartners: false,
+    packageProducts: [],
     subSubscriptionSlots: [],
+    badgeLabel: "",
+    calloutBadge: "",
+    calloutTitle: "",
+    calloutDescription: "",
+    comparisonFeatures: [],
   });
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [inspos, setInspos] = useState<Inspo[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [newVariant, setNewVariant] = useState({
     price: 0,
@@ -58,6 +65,14 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     role: "groom",
     maxCount: 1,
   });
+
+  const [newComparisonFeature, setNewComparisonFeature] = useState<ComparisonFeature>({
+    feature: "",
+    fullValue: "",
+    miniValue: "",
+  });
+  const [editingComparisonIndex, setEditingComparisonIndex] = useState<number | null>(null);
+  const [editingComparisonFeature, setEditingComparisonFeature] = useState<ComparisonFeature | null>(null);
 
   const [newItem, setNewItem] = useState("");
   const [newNote, setNewNote] = useState("");
@@ -114,9 +129,18 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         console.error("Error fetching partners:", error);
       }
     };
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("/api/products?all=true");
+        setProducts(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
     fetchPlaylists();
     fetchInspos();
     fetchPartners();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -155,7 +179,13 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         accessAllInspos: packageItem.accessAllInspos || false,
         packagePartners: packageItem.packagePartners || [],
         accessAllPartners: packageItem.accessAllPartners || false,
+        packageProducts: packageItem.packageProducts || [],
         subSubscriptionSlots: packageItem.subSubscriptionSlots || [],
+        badgeLabel: packageItem.badgeLabel || "",
+        calloutBadge: packageItem.calloutBadge || "",
+        calloutTitle: packageItem.calloutTitle || "",
+        calloutDescription: packageItem.calloutDescription || "",
+        comparisonFeatures: packageItem.comparisonFeatures || [],
       });
     } else {
       setFormData({
@@ -180,7 +210,13 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         accessAllInspos: false,
         packagePartners: [],
         accessAllPartners: false,
+        packageProducts: [],
         subSubscriptionSlots: [],
+        badgeLabel: "",
+        calloutBadge: "",
+        calloutTitle: "",
+        calloutDescription: "",
+        comparisonFeatures: [],
       });
     }
   }, [packageItem, isOpen]);
@@ -373,6 +409,45 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
       ...prev,
       subSubscriptionSlots: (prev.subSubscriptionSlots || []).filter((_, i) => i !== index)
     }));
+  };
+
+  // Comparison Feature management functions
+  const addComparisonFeature = () => {
+    if (newComparisonFeature.feature.trim() && newComparisonFeature.fullValue.trim() && newComparisonFeature.miniValue.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        comparisonFeatures: [...(prev.comparisonFeatures || []), { ...newComparisonFeature }]
+      }));
+      setNewComparisonFeature({ feature: "", fullValue: "", miniValue: "" });
+    }
+  };
+
+  const removeComparisonFeature = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      comparisonFeatures: (prev.comparisonFeatures || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const startEditComparisonFeature = (index: number, feature: ComparisonFeature) => {
+    setEditingComparisonIndex(index);
+    setEditingComparisonFeature({ ...feature });
+  };
+
+  const saveEditComparisonFeature = (index: number) => {
+    if (editingComparisonFeature && editingComparisonFeature.feature.trim() && editingComparisonFeature.fullValue.trim() && editingComparisonFeature.miniValue.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        comparisonFeatures: (prev.comparisonFeatures || []).map((cf, i) => i === index ? editingComparisonFeature : cf)
+      }));
+      setEditingComparisonIndex(null);
+      setEditingComparisonFeature(null);
+    }
+  };
+
+  const cancelEditComparisonFeature = () => {
+    setEditingComparisonIndex(null);
+    setEditingComparisonFeature(null);
   };
 
   // Card management functions
@@ -816,6 +891,62 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
           <div className="border border-primary/30 rounded-lg p-4 space-y-4">
             <label className="block text-sm font-medium text-primary mb-1">
+              Badge & Callout Details
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">
+                  Badge Label
+                </label>
+                <input
+                  type="text"
+                  value={formData.badgeLabel || ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, badgeLabel: e.target.value }))}
+                  placeholder="e.g., Popular"
+                  className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">
+                  Callout Badge
+                </label>
+                <input
+                  type="text"
+                  value={formData.calloutBadge || ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, calloutBadge: e.target.value }))}
+                  placeholder="e.g., Limited Offer"
+                  className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">
+                  Callout Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.calloutTitle || ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, calloutTitle: e.target.value }))}
+                  placeholder="e.g., Special Package Bonus"
+                  className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">
+                  Callout Description
+                </label>
+                <textarea
+                  value={formData.calloutDescription || ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, calloutDescription: e.target.value }))}
+                  placeholder="Callout description..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
               Package Variants
             </label>
             
@@ -985,6 +1116,133 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                   type="button"
                   onClick={addSubSlot}
                   className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Comparison Features
+            </label>
+            
+            <div className="space-y-2">
+              {(formData.comparisonFeatures || []).map((cf, index) => (
+                <div key={index} className="p-2 bg-creamey border border-primary/50 rounded text-sm space-y-2">
+                  {editingComparisonIndex === index && editingComparisonFeature ? (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-xs font-medium text-primary mb-1">Feature *</label>
+                          <input
+                            type="text"
+                            value={editingComparisonFeature.feature}
+                            onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, feature: e.target.value } : prev)}
+                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-primary mb-1">Full Value *</label>
+                          <input
+                            type="text"
+                            value={editingComparisonFeature.fullValue}
+                            onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, fullValue: e.target.value } : prev)}
+                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-primary mb-1">Mini Value *</label>
+                          <input
+                            type="text"
+                            value={editingComparisonFeature.miniValue}
+                            onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, miniValue: e.target.value } : prev)}
+                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => saveEditComparisonFeature(index)}
+                          className="px-3 py-1 bg-green-600 text-white rounded text-xs"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditComparisonFeature}
+                          className="px-3 py-1 bg-gray-500 text-white rounded text-xs"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <span className="font-semibold">Feature:</span> {cf.feature}
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-semibold">Full:</span> {cf.fullValue}
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-semibold">Mini:</span> {cf.miniValue}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startEditComparisonFeature(index, cf)}
+                          className="text-blue-500 hover:text-blue-700 text-xs"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeComparisonFeature(index)}
+                          className="text-red-500 hover:text-red-700 text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <input
+                  type="text"
+                  placeholder="Feature (e.g. Guest Slots)"
+                  value={newComparisonFeature.feature}
+                  onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, feature: e.target.value }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Full Value (e.g. Unlimited)"
+                  value={newComparisonFeature.fullValue}
+                  onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, fullValue: e.target.value }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Mini Value (e.g. 5 Max)"
+                  value={newComparisonFeature.miniValue}
+                  onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, miniValue: e.target.value }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+                <button
+                  type="button"
+                  onClick={addComparisonFeature}
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary flex-shrink-0"
                 >
                   Add
                 </button>
@@ -1731,6 +1989,44 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 ))}
                 {partners.length === 0 && (
                   <p className="text-xs text-primary/40 col-span-2 text-center py-2">No partners found.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Products Selection */}
+          <div className="border border-primary/30 rounded-lg p-4 space-y-4">
+            <label className="block text-sm font-medium text-primary mb-1">
+              Package Products
+            </label>
+
+            <div className="space-y-2">
+              <p className="text-xs text-primary/60 mb-2">Select the products included in this package:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-primary/20 rounded bg-creamey/50">
+                {products.map((product) => (
+                  <div key={product._id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`product-${product._id}`}
+                      checked={(formData.packageProducts || []).includes(product._id!)}
+                      onChange={(e) => {
+                        const id = product._id!;
+                        setFormData(prev => ({
+                          ...prev,
+                          packageProducts: e.target.checked
+                            ? [...(prev.packageProducts || []), id]
+                            : (prev.packageProducts || []).filter(pId => pId !== id)
+                        }));
+                      }}
+                      className="rounded border-primary/50 text-primary focus:ring-primaryLight"
+                    />
+                    <label htmlFor={`product-${product._id}`} className="text-xs text-primary truncate">
+                      {product.title}
+                    </label>
+                  </div>
+                ))}
+                {products.length === 0 && (
+                  <p className="text-xs text-primary/40 col-span-2 text-center py-2">No products found.</p>
                 )}
               </div>
             </div>
