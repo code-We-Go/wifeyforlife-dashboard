@@ -400,11 +400,18 @@ export interface Partner {
 export interface WeddingPlanningVendor {
   _id: string;
   name: string;
-  price?: string;
-  link?: string;
+  fromPrice?: number;
+  toPrice?: number;
+  link?: string[];
   images?: string[];
+  coverImage?: string;
   package?: string;
   notes?: string;
-  subCategoryID: SubCategory;
+  subCategoryID: SubCategory[];
   active?: boolean;
+  request?: boolean;
+  requestStatus?: "Pending" | "Approved" | "Rejected" | "Archived";
+  visitedCount?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
