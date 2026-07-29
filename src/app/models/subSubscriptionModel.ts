@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ISubSubscription extends Document {
-  _id: string;
   parentSubscription: Types.ObjectId;
   role: "groom" | "bridesmaids";
   inviteeEmail: string;

@@ -72,6 +72,10 @@ const PackageSchema = new Schema(
       default: [],
     },
     accessAllPartners: { type: Boolean, default: false },
+    packageProducts: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "products" }],
+      default: [],
+    },
         subSubscriptionSlots: {
       type: [
         {
@@ -81,6 +85,21 @@ const PackageSchema = new Schema(
       ],
       default: [],
     },
+    comparisonFeatures: {
+      type: [
+        {
+          feature: { type: String, required: true },
+          fullValue: { type: String, required: true },
+          miniValue: { type: String, required: true },
+        },
+      ],
+      required: false,
+      default: [],
+    },
+    badgeLabel: { type: String, required: false },
+    calloutBadge: { type: String, required: false },
+    calloutTitle: { type: String, required: false },
+    calloutDescription: { type: String, required: false },
   },
   
   {
