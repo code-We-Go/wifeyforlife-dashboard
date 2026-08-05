@@ -17,17 +17,34 @@ const WeddingPlanningVendorsPage = () => {
   const [filterSubCategoryID, setFilterSubCategoryID] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"vendors" | "requests">("vendors");
+  const [savingRowId, setSavingRowId] = useState<string | null>(null);
+  const [savedRowId, setSavedRowId] = useState<string | null>(null);
+
+  const inlineUpdateVendor = async (id: string, updatedFields: Partial<WeddingPlanningVendor>) => {
+    setVendors((prevVendors) =>
+      prevVendors.map((v) => (v && v._id === id ? { ...v, ...updatedFields } : v))
+    );
+
+    setSavingRowId(id);
+    try {
+      await axios.put(`/api/wedding-planning-vendors?vendorID=${id}`, updatedFields);
+      setSavedRowId(id);
+      setTimeout(() => {
+        setSavedRowId((curr) => (curr === id ? null : curr));
+      }, 2000);
+    } catch (err) {
+      console.error("Error saving vendor inline:", err);
+      fetchVendors();
+    } finally {
+      setSavingRowId(null);
+    }
+  };
 
   const updateRequestStatus = async (id: string, status: "Approved" | "Rejected" | "Archived") => {
-    try {
-      await axios.put(`/api/wedding-planning-vendors?vendorID=${id}`, {
-        requestStatus: status,
-        active: status === "Approved"
-      });
-      fetchVendors();
-    } catch (err) {
-      console.error("Error updating request status:", err);
-    }
+    inlineUpdateVendor(id, {
+      requestStatus: status,
+      active: status === "Approved"
+    });
   };
 
   const handleApproveAll = async (mode: "all" | "pending") => {
@@ -341,39 +358,65 @@ const WeddingPlanningVendorsPage = () => {
         </div>
 
         {/* Vendors Table */}
-        <div className="w-[97%] overflow-x-auto">
-          <table className="w-full rounded border border-gray-300 text-left">
-            <thead className="bg-secondary text-creamey text-sm">
+        <div className=" overflow-x-auto">
+          <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
+            <span className="flex items-center gap-1.5 font-medium text-emerald-700">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Excel Mode: Double-click or edit any cell directly to update instantly.
+            </span>
+          </div>
+          <table className="w-full  rounded border border-gray-300 text-left border-collapse bg-white shadow-sm">
+            <thead className="bg-secondary text-creamey text-sm font-semibold">
               <tr>
-                <th className="border p-2">Image</th>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Category / Sub</th>
-                <th className="border p-2">Price</th>
-                <th className="border p-2">Package</th>
-                <th className="border p-2">{activeTab === "requests" ? "Request Status" : "Active"}</th>
-                <th className="border p-2">Actions</th>
+                <th className="border border-gray-300 p-3 w-20 text-center">Image</th>
+                <th className="border border-gray-300 p-3 min-w-[200px]">Name</th>
+                <th className="border border-gray-300 p-3 min-w-[180px]">Category / Sub</th>
+                <th className="border border-gray-300 p-3 w-40 min-w-[150px]">Price (EGP)</th>
+                <th className="border border-gray-300 p-3 min-w-[280px]">Package</th>
+                <th className="border border-gray-300 p-3 min-w-[200px]">Notes</th>
+                <th className="border border-gray-300 p-3 w-36">{activeTab === "requests" ? "Request Status" : "Active"}</th>
+                <th className="border border-gray-300 p-3 w-36">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white">
               {displayVendors.length > 0 ? (
                 displayVendors.map((vendor) => (
-                  <tr key={vendor._id} className="text-sm hover:bg-gray-50">
-                    <td className="border p-2">
+                  <tr key={vendor._id} className="text-sm hover:bg-blue-50/30 transition-colors">
+                    <td className="border border-gray-300 p-2.5 text-center align-middle">
                       {vendor.coverImage ? (
-                        <div className="relative h-12 w-12 overflow-hidden rounded border border-secondary">
+                        <div className="relative mx-auto h-14 w-14 overflow-hidden rounded border border-secondary">
                           <Image src={vendor.coverImage} alt={vendor.name} fill className="object-cover" />
                         </div>
                       ) : vendor.images && vendor.images.length > 0 ? (
-                        <div className="relative h-12 w-12 overflow-hidden rounded">
+                        <div className="relative mx-auto h-14 w-14 overflow-hidden rounded">
                           <Image src={vendor.images[0]} alt={vendor.name} fill className="object-cover" />
                         </div>
                       ) : (
                         <span className="text-gray-400 text-xs">No Image</span>
                       )}
                     </td>
-                    <td className="border p-2 font-medium">{vendor.name}</td>
-                    <td className="border p-2 text-xs">
-                      <div className="font-semibold text-secondary">
+                    <td className="border border-gray-300 p-2 align-middle">
+                      <input
+                        type="text"
+                        defaultValue={vendor.name}
+                        key={`name-${vendor._id}-${vendor.name}`}
+                        onBlur={(e) => {
+                          const val = e.target.value.trim();
+                          if (val !== vendor.name && val !== "") {
+                            inlineUpdateVendor(vendor._id, { name: val });
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                        className="w-full rounded px-3 py-2 text-sm font-medium border border-transparent hover:border-gray-300 focus:border-secondary focus:bg-white focus:ring-2 focus:ring-secondary/30 focus:outline-none transition-all"
+                        title="Click to edit Name instantly"
+                      />
+                    </td>
+                    <td className="border border-gray-300 p-3 text-xs align-middle">
+                      <div className="font-semibold text-secondary text-sm">
                         {Array.isArray(vendor.subCategoryID)
                           ? Array.from(
                               new Set(
@@ -384,7 +427,7 @@ const WeddingPlanningVendorsPage = () => {
                             ).join(", ") || "N/A"
                           : (vendor.subCategoryID as any)?.categoryID?.categoryName || "N/A"}
                       </div>
-                      <div className="text-gray-500">
+                      <div className="text-gray-500 mt-0.5">
                         {Array.isArray(vendor.subCategoryID)
                           ? vendor.subCategoryID
                               .map((sc) => sc?.subCategoryName)
@@ -393,63 +436,139 @@ const WeddingPlanningVendorsPage = () => {
                           : (vendor.subCategoryID as any)?.subCategoryName || "N/A"}
                       </div>
                     </td>
-                    <td className="border p-2 text-xs">
-                      {(() => {
-                        if (vendor.fromPrice !== undefined && vendor.toPrice !== undefined) {
-                          return `${vendor.fromPrice} - ${vendor.toPrice} EGP`;
-                        } else if (vendor.fromPrice !== undefined) {
-                          return `From ${vendor.fromPrice} EGP`;
-                        } else if (vendor.toPrice !== undefined) {
-                          return `Up to ${vendor.toPrice} EGP`;
-                        }
-                        return "N/A";
-                      })()}
-                    </td>
-                    <td className="border p-2 text-xs">
-                        <div className="max-w-[150px] truncate">
-                            {vendor.package || "N/A"}
+                    <td className="border border-gray-300 p-2 text-xs align-middle">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-400 text-[10px] uppercase font-semibold w-8">From:</span>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            defaultValue={vendor.fromPrice ?? ""}
+                            key={`fromPrice-${vendor._id}-${vendor.fromPrice}`}
+                            onBlur={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              if (val !== vendor.fromPrice) {
+                                inlineUpdateVendor(vendor._id, { fromPrice: val });
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                            }}
+                            className="w-20 rounded px-1.5 py-1 text-xs border border-gray-200 hover:border-gray-300 focus:border-secondary focus:bg-white focus:ring-1 focus:ring-secondary/30 focus:outline-none transition-all"
+                            title="From price in EGP"
+                          />
                         </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-400 text-[10px] uppercase font-semibold w-8">To:</span>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            defaultValue={vendor.toPrice ?? ""}
+                            key={`toPrice-${vendor._id}-${vendor.toPrice}`}
+                            onBlur={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              if (val !== vendor.toPrice) {
+                                inlineUpdateVendor(vendor._id, { toPrice: val });
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                            }}
+                            className="w-20 rounded px-1.5 py-1 text-xs border border-gray-200 hover:border-gray-300 focus:border-secondary focus:bg-white focus:ring-1 focus:ring-secondary/30 focus:outline-none transition-all"
+                            title="To price in EGP"
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="border border-gray-300 p-2 text-xs align-middle">
+                      <textarea
+                        placeholder="Package details..."
+                        defaultValue={vendor.package || ""}
+                        key={`package-${vendor._id}-${vendor.package}`}
+                        rows={3}
+                        onBlur={(e) => {
+                          const val = e.target.value;
+                          if (val !== (vendor.package || "")) {
+                            inlineUpdateVendor(vendor._id, { package: val });
+                          }
+                        }}
+                        className="w-full rounded px-2.5 py-1.5 text-xs border border-transparent hover:border-gray-300 focus:border-secondary focus:bg-white focus:ring-1 focus:ring-secondary/30 focus:outline-none transition-all resize-y whitespace-pre-wrap leading-relaxed"
+                        title="Package details (all text visible & editable)"
+                      />
+                    </td>
+                    <td className="border border-gray-300 p-2 text-xs align-middle">
+                      <textarea
+                        placeholder="Notes..."
+                        defaultValue={vendor.notes || ""}
+                        key={`notes-${vendor._id}-${vendor.notes}`}
+                        rows={2}
+                        onBlur={(e) => {
+                          const val = e.target.value;
+                          if (val !== (vendor.notes || "")) {
+                            inlineUpdateVendor(vendor._id, { notes: val });
+                          }
+                        }}
+                        className="w-full rounded px-2.5 py-1.5 text-xs border border-transparent hover:border-gray-300 focus:border-secondary focus:bg-white focus:ring-1 focus:ring-secondary/30 focus:outline-none transition-all resize-y whitespace-pre-wrap leading-relaxed"
+                        title="Click to edit Notes instantly"
+                      />
                     </td>
                     {activeTab === "requests" ? (
-                      <td className="border p-2">
-                        <span className={`rounded px-2 py-0.5 text-xs font-semibold ${
-                          vendor.requestStatus === "Approved" ? "bg-green-100 text-green-800" :
-                          vendor.requestStatus === "Rejected" ? "bg-red-100 text-red-800" :
-                          vendor.requestStatus === "Archived" ? "bg-gray-100 text-gray-800" :
-                          "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {vendor.requestStatus || "Pending"}
-                        </span>
+                      <td className="border border-gray-300 p-2.5 align-middle">
+                        <select
+                          value={vendor.requestStatus || "Pending"}
+                          onChange={(e) => {
+                            const st = e.target.value as "Pending" | "Approved" | "Rejected" | "Archived";
+                            inlineUpdateVendor(vendor._id, {
+                              requestStatus: st,
+                              active: st === "Approved",
+                            });
+                          }}
+                          className={`w-full rounded px-2.5 py-1.5 text-xs font-semibold cursor-pointer border focus:outline-none transition-all ${
+                            vendor.requestStatus === "Approved" ? "bg-green-100 text-green-800 border-green-300" :
+                            vendor.requestStatus === "Rejected" ? "bg-red-100 text-red-800 border-red-300" :
+                            vendor.requestStatus === "Archived" ? "bg-gray-100 text-gray-800 border-gray-300" :
+                            "bg-yellow-100 text-yellow-800 border-yellow-300"
+                          }`}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                          <option value="Archived">Archived</option>
+                        </select>
                       </td>
                     ) : (
-                      <td className="border p-2">
-                        <span className={`rounded px-2 py-1 text-xs ${vendor.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                          {vendor.active ? "Yes" : "No"}
-                        </span>
+                      <td className="border border-gray-300 p-2.5 align-middle">
+                        <select
+                          value={vendor.active ? "true" : "false"}
+                          onChange={(e) => {
+                            const isAct = e.target.value === "true";
+                            inlineUpdateVendor(vendor._id, { active: isAct });
+                          }}
+                          className={`w-full rounded px-2.5 py-1.5 text-xs font-semibold cursor-pointer border focus:outline-none transition-all ${
+                            vendor.active
+                              ? "bg-green-100 text-green-800 border-green-300"
+                              : "bg-red-100 text-red-800 border-red-300"
+                          }`}
+                        >
+                          <option value="true">Yes </option>
+                          <option value="false">No </option>
+                        </select>
                       </td>
                     )}
-                    <td className="space-x-2 border p-2 text-xs whitespace-nowrap">
-                      {activeTab === "requests" && (
-                        <>
-                          {vendor.requestStatus === "Pending" ? (
-                            <>
-                              <button onClick={() => updateRequestStatus(vendor._id, "Approved")} className="text-green-600 font-bold hover:underline mr-1">Approve</button>
-                              <button onClick={() => updateRequestStatus(vendor._id, "Rejected")} className="text-red-600 font-bold hover:underline mr-1">Reject</button>
-                              <button onClick={() => updateRequestStatus(vendor._id, "Archived")} className="text-gray-600 hover:underline mr-2">Archive</button>
-                            </>
-                          ) : (
-                            <span className="text-gray-400 italic mr-2 text-[10px]">Processed</span>
-                          )}
-                        </>
-                      )}
-                      <button onClick={() => openModal("edit", vendor)} className="text-blue-600 underline mr-1">Edit</button>
-                      <button onClick={() => openModal("delete", vendor)} className="text-red-600 underline">Delete</button>
+                    <td className="space-x-2 border border-gray-300 p-2.5 text-xs whitespace-nowrap align-middle">
+                      {savingRowId === vendor._id ? (
+                        <span className="text-blue-600 text-xs font-semibold animate-pulse mr-1">Saving...</span>
+                      ) : savedRowId === vendor._id ? (
+                        <span className="text-emerald-600 text-xs font-semibold mr-1">Saved ✓</span>
+                      ) : null}
+                      <button onClick={() => openModal("edit", vendor)} className="text-blue-600 underline mr-1 hover:text-blue-800 font-medium">Edit</button>
+                      <button onClick={() => openModal("delete", vendor)} className="text-red-600 underline hover:text-red-800 font-medium">Delete</button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="p-4 text-center text-gray-500">No vendors found.</td>
+                  <td colSpan={8} className="p-6 text-center text-gray-500">No vendors found.</td>
                 </tr>
               )}
             </tbody>
