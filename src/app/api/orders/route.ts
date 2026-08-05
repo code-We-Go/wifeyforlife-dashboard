@@ -32,7 +32,7 @@ function formatSubsAsOrder(subs: any[]) {
       const pkg = sub.packageID;
       const prodId = pkg._id?.toString() || pkg.toString();
       const attrName = sub.isGift
-        ? `Gift to: ${sub.giftRecipientEmail || "Gift"}`
+        ? `Gift to: ${sub.giftRecipientEmail || "Gift Recipient Email not provided"}`
         : `For: ${sub.email || "Self"}`;
 
       const existing = cart.find(
@@ -137,6 +137,7 @@ function formatSubsAsOrder(subs: any[]) {
     billingPostalZip: master.billingPostalZip || "",
     billingCity: master.billingCity || "",
     billingPhone: master.billingPhone || "",
+    billingEmail: master.billingEmail || master.email || "",
     instapayReciept: master.instapayReciept || "",
     giftCardName: sortedSubs.find(s => s.giftCardName)?.giftCardName || "",
     specialMessage: sortedSubs.find(s => s.specialMessage)?.specialMessage || "",

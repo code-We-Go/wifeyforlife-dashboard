@@ -340,6 +340,7 @@ export interface IOrder {
   billingPostalZip?: string;
   billingCity?: string;
   billingPhone?: string;
+  billingEmail?: string;
   instapayReciept?: string;
   createdAt?: Date;
   updatedAt?: Date;

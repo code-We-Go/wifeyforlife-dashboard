@@ -231,11 +231,16 @@ const SubscriptionsPage = () => {
   const filteredSubscriptions = subscriptions.filter(
     (s) =>
       (s.email?.toLowerCase().includes(search.toLowerCase()) ||
+        s.billingEmail?.toLowerCase().includes(search.toLowerCase()) ||
         s.paymentID?.toLowerCase().includes(search.toLowerCase()) ||
         (s.firstName &&
           s.firstName.toLowerCase().includes(search.toLowerCase())) ||
         (s.lastName &&
           s.lastName.toLowerCase().includes(search.toLowerCase())) ||
+        (s.billingFirstName &&
+          s.billingFirstName.toLowerCase().includes(search.toLowerCase())) ||
+        (s.billingLastName &&
+          s.billingLastName.toLowerCase().includes(search.toLowerCase())) ||
         (s.giftSenderEmail &&
           s.giftSenderEmail.toLowerCase().includes(search.toLowerCase()))) &&
       (discountSearch === "" ||
@@ -410,13 +415,13 @@ const SubscriptionsPage = () => {
   const exportToExcel = () => {
     const dataToExport = filteredSubscriptions.map((sub) => ({
       "Payment ID": sub.paymentID,
-      Email: sub.email,
+      Email: sub.billingEmail || sub.email || "",
       Package: sub.packageID?.name || "",
       Subscribed: sub.subscribed ? "Yes" : "No",
       "Expiry Date": sub.expiryDate,
       "Created At": sub.createdAt,
-      "First Name": sub.firstName || "",
-      "Last Name": sub.lastName || "",
+      "First Name": sub.billingFirstName || sub.firstName || "",
+      "Last Name": sub.billingLastName || sub.lastName || "",
       Phone: sub.phone || "",
       "WhatsApp Number": sub.whatsAppNumber || "",
       "Is Gift": sub.isGift ? "Yes" : "No",
@@ -1044,9 +1049,9 @@ const SubscriptionsPage = () => {
                     onClick={() => openModal("view", sub)}
                   >
                     <td className="border p-2">{startIndex + idx + 1}</td>
-                    <td className="border p-2">{sub.email || "-"}</td>
+                    <td className="border p-2">{sub.billingEmail || sub.email || "-"}</td>
                     <td className="border p-2">
-                      {`${sub.firstName || ""} ${sub.lastName || ""}`.trim() ||
+                      {`${sub.billingFirstName || sub.firstName || ""} ${sub.billingLastName || sub.lastName || ""}`.trim() ||
                         "-"}
                     </td>
                     <td className="border p-2">{sub.paymentID}</td>
