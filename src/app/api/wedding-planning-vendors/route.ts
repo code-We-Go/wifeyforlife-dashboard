@@ -77,3 +77,27 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
+export async function PATCH(req: Request) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const mode = searchParams.get("mode") || "all";
+
+        let filter: any = {};
+        // if (mode === "pending") {
+        //     filter = { request: true, requestStatus: "Pending" };
+        // }
+
+        const result = await weddingPlanningVendorsModel.updateMany(
+            filter,
+            { $set: { active: true, requestStatus: "Approved" } }
+        );
+
+        return NextResponse.json({
+            message: `Successfully approved and activated ${result.modifiedCount} vendors.`,
+            modifiedCount: result.modifiedCount
+        }, { status: 200 });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}

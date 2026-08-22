@@ -32,20 +32,27 @@ const weddingPlanningVendorsSchema = new mongoose.Schema({
   name: { type: String, required: true },
   fromPrice: { type: Number, required: false },
   toPrice: { type: Number, required: false },
-  link: { type: String, required: false },
+  link: { type: [String], required: false },
   images: { type: [String], required: false },
+  coverImage: { type: String, required: false },
   package: { type: String, required: false },
   notes: { type: String, required: false },
-  coverImage: { type: String, required: false },
-  subCategoryID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "subCategories",
-    // path: path.join(__dirname, "categoriesModel"),
-  },
-  active: { type: Boolean, default: true },
 
+  subCategoryID: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "subCategories",
+    },
+  ],
+  active: { type: Boolean, default: false },
   visitedCount: { type: Number, default: 0 },
-});
+  request: { type: Boolean, default: false },
+  requestStatus: { type: String, enum: ["Pending", "Approved", "Rejected", "Archived"], default: "Approved" },
+
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}
+);
 // console.log("Registering subCategoriesMode");
 const weddingPlanningVendorsModel =
   mongoose.models.weddingPlanningVendors ||

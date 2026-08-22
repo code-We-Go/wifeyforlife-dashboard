@@ -199,7 +199,7 @@ const OrderComponent = ({
         </div>
         <div className="flex items-center justify-center gap-2">
           <p>
-            {order.firstName} {order.lastName}
+            {`${order.billingFirstName || order.firstName || ""} ${order.billingLastName || order.lastName || ""}`.trim() || "-"}
           </p>
         </div>
         <div className="flex items-center justify-center gap-2">
@@ -308,10 +308,10 @@ const OrderComponent = ({
               )}
 
               <p>
-                <strong>Email:</strong> {order.email}
+                <strong>Email:</strong> {order.billingEmail || order.email || "N/A"}
               </p>
               <p>
-                <strong>Customer:</strong> {order.firstName} {order.lastName}
+                <strong>Customer:</strong> {`${order.billingFirstName || order.firstName || ""} ${order.billingLastName || order.lastName || ""}`.trim() || "-"}
               </p>
               <p>
                 <strong>Cart:</strong>

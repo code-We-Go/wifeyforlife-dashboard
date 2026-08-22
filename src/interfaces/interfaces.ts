@@ -340,6 +340,7 @@ export interface IOrder {
   billingPostalZip?: string;
   billingCity?: string;
   billingPhone?: string;
+  billingEmail?: string;
   instapayReciept?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -412,15 +413,18 @@ export interface Partner {
 export interface WeddingPlanningVendor {
   _id: string;
   name: string;
-  price?: string;
   fromPrice?: number;
   toPrice?: number;
-  link?: string;
+  link?: string[];
   images?: string[];
   coverImage?: string;
   package?: string;
   notes?: string;
-  subCategoryID: SubCategory;
+  subCategoryID: SubCategory[];
   active?: boolean;
+  request?: boolean;
+  requestStatus?: "Pending" | "Approved" | "Rejected" | "Archived";
   visitedCount?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
