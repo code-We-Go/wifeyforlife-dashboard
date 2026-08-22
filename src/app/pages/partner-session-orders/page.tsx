@@ -6,6 +6,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 type OrderStatus = "pending" | "paid" | "cancelled";
 
+interface PartnerSessionVariant {
+  title: string;
+  description: string;
+  price: number;
+  duration: number;
+}
+
 interface PartnerSession {
   _id: string;
   title: string;
@@ -15,12 +22,15 @@ interface PartnerSession {
   price: number;
   subscriptionDiscountPercentage?: number;
   profitPercentage: number;
+  variants?: PartnerSessionVariant[];
 }
 
 interface PartnerSessionOrder {
   _id?: string;
   sessionId: string;
   sessionTitle: string;
+  variantTitle?: string;
+  variantDuration?: number;
   partnerName: string;
   partnerEmail: string;
   whatsappNumber: string;
@@ -42,6 +52,8 @@ interface PartnerSessionOrder {
 const emptyOrder: PartnerSessionOrder = {
   sessionId: "",
   sessionTitle: "",
+  variantTitle: "",
+  variantDuration: 0,
   partnerName: "",
   partnerEmail: "",
   whatsappNumber: "",
@@ -117,22 +129,68 @@ export default function PartnerSessionOrdersPage() {
   const onSelectSession = (sessionId: string) => {
     const s = sessions.find((x) => x._id === sessionId);
     if (!s) return;
+    const firstVariant = s.variants && s.variants.length > 0 ? s.variants[0] : null;
+    const priceToUse = firstVariant ? firstVariant.price : s.price;
     const discountAmount =
-      Math.round((s.subscriptionDiscountPercentage || 0) * s.price) / 100;
-    const final = Math.round(s.price - discountAmount);
+      Math.round((s.subscriptionDiscountPercentage || 0) * priceToUse) / 100;
+    const final = Math.max(0, Math.round(priceToUse - discountAmount));
     const profitPct = s.profitPercentage || 0;
     const ourProfit = Math.round((final * profitPct) / 100);
     setForm((f) => ({
       ...f,
       sessionId: s._id,
       sessionTitle: s.title,
+      variantTitle: firstVariant ? firstVariant.title : "",
+      variantDuration: firstVariant ? firstVariant.duration : undefined,
       partnerName: s.partnerName,
       partnerEmail: s.partnerEmail,
       whatsappNumber: s.whatsappNumber,
-      basePrice: s.price,
+      basePrice: priceToUse,
       finalPrice: final,
       subscriptionDiscountAmount: discountAmount,
       profitPercentage: profitPct,
+      ourProfitAmount: ourProfit,
+    }));
+  };
+
+  const onSelectVariant = (variantTitle: string) => {
+    const s = sessions.find((x) => x._id === form.sessionId);
+    if (!s) return;
+
+    if (!variantTitle) {
+      // If no variant selected, fall back to base session price
+      const discountAmount =
+        Math.round((s.subscriptionDiscountPercentage || 0) * s.price) / 100;
+      const final = Math.max(0, Math.round(s.price - discountAmount));
+      const profitPct = s.profitPercentage || form.profitPercentage || 0;
+      const ourProfit = Math.round((final * profitPct) / 100);
+      setForm((f) => ({
+        ...f,
+        variantTitle: "",
+        variantDuration: undefined,
+        basePrice: s.price,
+        finalPrice: final,
+        subscriptionDiscountAmount: discountAmount,
+        ourProfitAmount: ourProfit,
+      }));
+      return;
+    }
+
+    const variant = s.variants?.find((v) => v.title === variantTitle);
+    if (!variant) return;
+
+    const discountAmount =
+      Math.round((s.subscriptionDiscountPercentage || 0) * variant.price) / 100;
+    const final = Math.max(0, Math.round(variant.price - discountAmount));
+    const profitPct = s.profitPercentage || form.profitPercentage || 0;
+    const ourProfit = Math.round((final * profitPct) / 100);
+    setForm((f) => ({
+      ...f,
+      variantTitle: variant.title,
+      variantDuration: variant.duration,
+      basePrice: variant.price,
+      finalPrice: final,
+      subscriptionDiscountAmount: discountAmount,
       ourProfitAmount: ourProfit,
     }));
   };
@@ -171,7 +229,7 @@ export default function PartnerSessionOrdersPage() {
     if (!id) return;
     try {
       await axios.delete(`/api/partner-session-orders?id=${id}`);
-      setOrders((prev) => prev.filter((o) => o._id !== id));
+      setOrders((prev) => prev.filter((s) => s._id !== id));
     } catch (e) {
       console.error("Delete failed", e);
     }
@@ -238,6 +296,7 @@ export default function PartnerSessionOrdersPage() {
           sessions={sessions}
           editing={editing}
           onSelectSession={onSelectSession}
+          onSelectVariant={onSelectVariant}
           recomputeProfit={recomputeProfit}
           handleCreate={handleCreate}
           handleUpdate={handleUpdate}
@@ -267,8 +326,15 @@ export default function PartnerSessionOrdersPage() {
                 </thead>
                 <tbody>
                   {orders.map((o) => (
-                    <tr key={o._id} className="border-b">
-                      <td className="px-3 py-2">{o.sessionTitle}</td>
+                    <tr key={o._id} className="border-b hover:bg-gray-50">
+                      <td className="px-3 py-2">
+                        <div className="font-medium text-gray-900">{o.sessionTitle}</div>
+                        {o.variantTitle && (
+                          <div className="text-xs text-gray-500">
+                            {o.variantTitle} {o.variantDuration ? `(${o.variantDuration} min)` : ""}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-3 py-2">{o.partnerName}</td>
                       <td className="px-3 py-2">
                         {o.clientFirstName} {o.clientLastName}

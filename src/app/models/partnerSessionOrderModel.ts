@@ -3,6 +3,8 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IPartnerSessionOrder extends Document {
   sessionId: Types.ObjectId;
   sessionTitle: string;
+  variantTitle?: string;
+  variantDuration?: number;
   partnerName: string;
   partnerEmail: string;
   whatsappNumber: string;
@@ -28,6 +30,8 @@ const PartnerSessionOrderSchema = new Schema<IPartnerSessionOrder>(
       required: true,
     },
     sessionTitle: { type: String, required: true },
+    variantTitle: { type: String },
+    variantDuration: { type: Number },
     partnerName: { type: String, required: true },
     partnerEmail: { type: String, required: true },
     whatsappNumber: { type: String, required: true },

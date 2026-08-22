@@ -1,5 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface IPartnerSessionVariant {
+  title: string;
+  description: string;
+  price: number;
+  duration: number;
+}
+
 export interface IPartnerSession extends Document {
   title: string;
   description: string;
@@ -13,7 +20,19 @@ export interface IPartnerSession extends Document {
   profitPercentage: number;
   imageUrl: string;
   isActive: boolean;
+  variants?: IPartnerSessionVariant[];
+  meetingLink?: string;
 }
+
+const PartnerSessionVariantSchema = new Schema<IPartnerSessionVariant>(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: false, default: "" },
+    price: { type: Number, required: true, min: 0 },
+    duration: { type: Number, required: true, min: 0 },
+  },
+  { _id: false }
+);
 
 const PartnerSessionSchema = new Schema<IPartnerSession>(
   {
@@ -38,6 +57,8 @@ const PartnerSessionSchema = new Schema<IPartnerSession>(
     profitPercentage: { type: Number, required: true, min: 0, max: 100 },
     imageUrl: { type: String, required: true },
     isActive: { type: Boolean, default: true },
+    variants: { type: [PartnerSessionVariantSchema], default: [] },
+    meetingLink: { type: String, required: false, default: "" },
   },
   { timestamps: true }
 );

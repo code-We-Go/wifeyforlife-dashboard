@@ -4,6 +4,13 @@ import React from "react";
 
 type OrderStatus = "pending" | "paid" | "cancelled";
 
+interface PartnerSessionVariant {
+  title: string;
+  description: string;
+  price: number;
+  duration: number;
+}
+
 interface PartnerSession {
   _id: string;
   title: string;
@@ -13,12 +20,15 @@ interface PartnerSession {
   price: number;
   subscriptionDiscountPercentage?: number;
   profitPercentage: number;
+  variants?: PartnerSessionVariant[];
 }
 
 interface PartnerSessionOrder {
   _id?: string;
   sessionId: string;
   sessionTitle: string;
+  variantTitle?: string;
+  variantDuration?: number;
   partnerName: string;
   partnerEmail: string;
   whatsappNumber: string;
@@ -45,6 +55,7 @@ interface PartnerSessionOrderModalProps {
   sessions: PartnerSession[];
   editing: PartnerSessionOrder | null;
   onSelectSession: (sessionId: string) => void;
+  onSelectVariant: (variantTitle: string) => void;
   recomputeProfit: (finalPrice: number, profitPercentage: number) => number;
   handleCreate: () => Promise<void>;
   handleUpdate: () => Promise<void>;
@@ -58,11 +69,14 @@ const PartnerSessionOrderModal: React.FC<PartnerSessionOrderModalProps> = ({
   sessions,
   editing,
   onSelectSession,
+  onSelectVariant,
   recomputeProfit,
   handleCreate,
   handleUpdate,
 }) => {
   if (!isOpen) return null;
+
+  const selectedSession = sessions.find((s) => s._id === form.sessionId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +111,7 @@ const PartnerSessionOrderModal: React.FC<PartnerSessionOrderModalProps> = ({
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
+              <div className={selectedSession?.variants && selectedSession.variants.length > 0 ? "md:col-span-1" : "md:col-span-2"}>
                 <label className="mb-1 block text-sm font-medium">
                   Session
                 </label>
@@ -109,11 +123,31 @@ const PartnerSessionOrderModal: React.FC<PartnerSessionOrderModalProps> = ({
                   <option value="">Select a session</option>
                   {sessions.map((s) => (
                     <option key={s._id} value={s._id}>
-                      {s.title} — {s.partnerName}
+                      {s.title} — {s.partnerName} {s.variants && s.variants.length > 0 ? `(${s.variants.length} variants)` : ""}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {selectedSession?.variants && selectedSession.variants.length > 0 && (
+                <div className="md:col-span-1">
+                  <label className="mb-1 block text-sm font-medium">
+                    Session Variant
+                  </label>
+                  <select
+                    className="w-full rounded border p-2"
+                    value={form.variantTitle || ""}
+                    onChange={(e) => onSelectVariant(e.target.value)}
+                  >
+                    <option value="">Select a variant</option>
+                    {selectedSession.variants.map((v, idx) => (
+                      <option key={idx} value={v.title}>
+                        {v.title} ({v.duration} min) — {v.price} EGP
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   Client First Name

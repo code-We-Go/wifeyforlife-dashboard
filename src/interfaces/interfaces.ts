@@ -413,10 +413,14 @@ export interface WeddingPlanningVendor {
   _id: string;
   name: string;
   price?: string;
+  fromPrice?: number;
+  toPrice?: number;
   link?: string;
   images?: string[];
+  coverImage?: string;
   package?: string;
   notes?: string;
   subCategoryID: SubCategory;
   active?: boolean;
+  visitedCount?: number;
 }

@@ -11,8 +11,10 @@ interface Props {
 }
 
 const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
+  const [fromPrice, setFromPrice] = useState<number | "">(vendor?.fromPrice ?? "");
+  const [toPrice, setToPrice] = useState<number | "">(vendor?.toPrice ?? "");
+  const [coverImage, setCoverImage] = useState<string>(vendor?.coverImage || "");
   const [name, setName] = useState(vendor?.name || "");
-  const [price, setPrice] = useState(vendor?.price || "");
   const [link, setLink] = useState(vendor?.link || "");
   const [images, setImages] = useState<string[]>(vendor?.images || []);
   const [packageName, setPackageName] = useState(vendor?.package || "");
@@ -57,7 +59,9 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
     setLoading(true);
     const data = {
       name,
-      price,
+      fromPrice: fromPrice === "" ? null : Number(fromPrice),
+      toPrice: toPrice === "" ? null : Number(toPrice),
+      coverImage,
       link,
       images,
       package: packageName,
@@ -130,7 +134,7 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded border px-3 py-2"
+                  className="w-full rounded border px-3 py-2 text-sm"
                 />
               </div>
               <div>
@@ -139,28 +143,41 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
                   type="text"
                   value={link}
                   onChange={(e) => setLink(e.target.value)}
-                  className="w-full rounded border px-3 py-2"
+                  className="w-full rounded border px-3 py-2 text-sm"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1 block text-sm font-medium">Price</label>
+                <label className="mb-1 block text-sm font-medium">From Price (EGP)</label>
                 <input
-                  type="text"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="w-full rounded border px-3 py-2"
-                  placeholder="e.g. 500 EGP"
+                  type="number"
+                  value={fromPrice}
+                  onChange={(e) => setFromPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full rounded border px-3 py-2 text-sm"
+                  placeholder="e.g. 500"
                 />
               </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">To Price (EGP)</label>
+                <input
+                  type="number"
+                  value={toPrice}
+                  onChange={(e) => setToPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full rounded border px-3 py-2 text-sm"
+                  placeholder="e.g. 1500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">Category</label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full rounded border px-3 py-2"
+                  className="w-full rounded border px-3 py-2 text-sm"
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -168,15 +185,12 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
                   ))}
                 </select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">Subcategory</label>
                 <select
                   value={subCategoryID}
                   onChange={(e) => setSubCategoryID(e.target.value)}
-                  className="w-full rounded border px-3 py-2"
+                  className="w-full rounded border px-3 py-2 text-sm"
                   disabled={!selectedCategory}
                 >
                   <option value="">Select Subcategory</option>
@@ -185,16 +199,61 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
                   ))}
                 </select>
               </div>
-              <div className="flex items-end pb-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="vendorActive"
-                    checked={active}
-                    onChange={(e) => setActive(e.target.checked)}
-                  />
-                  <label htmlFor="vendorActive" className="text-sm font-medium">Active</label>
-                </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="vendorActive"
+                checked={active}
+                onChange={(e) => setActive(e.target.checked)}
+              />
+              <label htmlFor="vendorActive" className="text-sm font-medium">Active</label>
+            </div>
+
+            {/* Cover Image (Cloudinary) */}
+            <div>
+              <label className="mb-2 block text-sm font-medium">Cover Image</label>
+              <div className="flex items-center gap-4">
+                {coverImage ? (
+                  <div className="relative h-20 w-20 group rounded overflow-hidden border">
+                    <CldImage
+                      width="200"
+                      height="200"
+                      src={coverImage}
+                      alt="Cover Image"
+                      className="object-cover w-full h-full"
+                    />
+                    <button
+                      onClick={() => setCoverImage("")}
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-bold transition-opacity"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-20 w-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors">
+                    <CldUploadWidget
+                      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "unsigned_preset"}
+                      onSuccess={(result: any) => {
+                        if (result.info && result.info.secure_url) {
+                          setCoverImage(result.info.secure_url);
+                        }
+                      }}
+                    >
+                      {({ open }) => (
+                        <button
+                          type="button"
+                          onClick={() => open()}
+                          className="h-full w-full flex items-center justify-center text-gray-400 text-2xl"
+                          title="Upload Cover Image"
+                        >
+                          +
+                        </button>
+                      )}
+                    </CldUploadWidget>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -205,7 +264,7 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
                 value={packageName}
                 onChange={(e) => setPackageName(e.target.value)}
                 className="w-full rounded border px-3 py-2 text-sm"
-                rows={4}
+                rows={3}
                 placeholder="Enter package details..."
               />
             </div>
@@ -217,14 +276,14 @@ const VendorModal = ({ type, vendor, closeModal, refreshData }: Props) => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full rounded border px-3 py-2 text-sm"
-                rows={3}
+                rows={2}
                 placeholder="Enter additional notes..."
               />
             </div>
 
             {/* Cloudinary Images */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Images (Cloudinary)</label>
+              <label className="mb-2 block text-sm font-medium">Gallery Images (Cloudinary)</label>
               <div className="mb-4 flex flex-wrap gap-2">
                 {images.map((img, index) => (
                   <div key={index} className="relative h-20 w-20 group rounded overflow-hidden border">
