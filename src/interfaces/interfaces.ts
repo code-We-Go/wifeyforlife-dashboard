@@ -56,6 +56,7 @@ export interface Ipackage {
   mobMainImage?: string;
   mobImages?: string[];
   price: number;
+  discountedFrom?: number;
   duration: number;
   saving?: string;
   variants?: PackageVariant[];

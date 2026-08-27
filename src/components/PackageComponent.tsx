@@ -151,6 +151,11 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
               onClick={() => setDetailsModal(true)}
               className="flex flex-col items-end hover:opacity-80 transition-opacity"
             >
+              {packageItem.discountedFrom !== undefined && packageItem.discountedFrom > 0 && (
+                <span className={`${thirdFont.className} text-xs xl:text-sm line-through text-creamey/60`}>
+                  {`${packageItem.discountedFrom} LE`}
+                </span>
+              )}
               <p className={`${thirdFont.className} text-xl xl:text-2xl`}>
                 {`${packageItem.price} LE`}
               </p>

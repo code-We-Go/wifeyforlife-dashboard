@@ -21,6 +21,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     mobMainImage: "",
     mobImages: [],
     price: 0,
+    discountedFrom: undefined,
     duration: 0,
     saving: "",
     variants: [],
@@ -164,6 +165,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         mobMainImage: packageItem.mobMainImage || "",
         mobImages: packageItem.mobImages || [],
         price: packageItem.price,
+        discountedFrom: packageItem.discountedFrom,
         duration: packageItem.duration || 0,
         saving: packageItem.saving || "",
         variants: packageItem.variants || [],
@@ -195,6 +197,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         mobMainImage: "",
         mobImages: [],
         price: 0,
+        discountedFrom: undefined,
         duration: 0,
         saving: "",
         variants: [],
@@ -831,7 +834,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1">
                 Default Price (LE) *
@@ -844,6 +847,27 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 min="0"
                 step="0.01"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1">
+                Discounted From (LE)
+              </label>
+              <input
+                type="number"
+                value={formData.discountedFrom !== undefined && formData.discountedFrom !== null ? formData.discountedFrom : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData(prev => ({
+                    ...prev,
+                    discountedFrom: val === "" ? undefined : parseFloat(val) || 0
+                  }));
+                }}
+                placeholder="e.g., 2000"
+                className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                min="0"
+                step="0.01"
               />
             </div>
 
