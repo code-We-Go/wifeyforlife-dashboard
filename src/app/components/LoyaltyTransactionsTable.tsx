@@ -49,7 +49,7 @@ const LoyaltyTransactionsTable: React.FC<Props> = ({ userId }) => {
               {new Date(tx.timestamp).toLocaleString()}
             </td>
             <td className="border px-4 py-2">
-              {tx.bonusID?.bonusPoints ?? "-"}
+              {tx.amount ?? "-"}
             </td>
           </tr>
         ))}

@@ -85,10 +85,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Either amount or bonusID should be provided
-    if (!amount && !bonusID) {
+    // Amount is required (bonusID is optional)
+    if (!amount) {
       return NextResponse.json(
-        { error: "Either amount or bonusID is required", code: "MISSING_AMOUNT_OR_BONUS" },
+        { error: "Amount is required", code: "MISSING_AMOUNT" },
         { status: 400 }
       );
     }

@@ -59,8 +59,8 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ isOpen, onC
     if (transaction) {
       setEmail(transaction.email);
       setType(transaction.type);
-      setAmount(transaction.amount?.toString() || transaction.bonusID?.bonusPoints?.toString() || "");
-      setReason(transaction.reason || transaction.bonusID?.bonusName || transaction.bonusID?.title || "");
+      setAmount(transaction.amount?.toString() || "");
+      setReason(transaction.reason || "");
       setBonusID(transaction.bonusID?._id || "");
     }
   }, [transaction]);
@@ -391,12 +391,7 @@ const LoyaltyTransactionsPage = () => {
   };
 
   const getPointsDisplay = (transaction: LoyaltyTransaction) => {
-    if (transaction.amount) {
-      return transaction.amount;
-    } else if (transaction.bonusID?.bonusPoints) {
-      return transaction.bonusID.bonusPoints;
-    }
-    return 0;
+    return transaction.amount || 0;
   };
 
   return (
@@ -506,7 +501,7 @@ const LoyaltyTransactionsPage = () => {
                           {getPointsDisplay(transaction)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {transaction.reason || transaction.bonusID?.bonusName || transaction.bonusID?.title || "-"}
+                          {transaction.reason || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatDate(transaction.timestamp)}

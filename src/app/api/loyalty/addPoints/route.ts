@@ -34,9 +34,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!points && !bonusID) {
+    if (!points) {
       return NextResponse.json(
-        { error: "Either points amount or bonusID is required", code: "MISSING_POINTS_OR_BONUS" },
+        { error: "Points amount is required", code: "MISSING_POINTS" },
         { status: 400 }
       );
     }

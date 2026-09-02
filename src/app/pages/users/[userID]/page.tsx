@@ -569,9 +569,9 @@ export default function AccountPage() {
                                 {tx.reason || "-"}
                               </td>
                               <td className="whitespace-nowrap px-4 py-2">
-                                {tx.bonusID && tx.bonusID?.bonusPoints
-                                  ? `+${tx.bonusID.bonusPoints}`
-                                  : `${tx.type === "earn" ? `+${tx.amount}` : "-"}`}
+                                {tx.type === "earn"
+                                  ? `+${tx.amount || 0}`
+                                  : `-${tx.amount || 0}`}
                               </td>
                             </tr>
                           ))}

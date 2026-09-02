@@ -18,9 +18,10 @@ export async function POST(req: NextRequest) {
   console.log("Transactions" + transactions.length);
   for (const tx of transactions) {
     if (tx.type === "earn") {
-      if (tx.reason === "purchase") {
+      if (tx.amount) {
         lifeTimePoints += tx.amount;
       } else if (tx.bonusID && tx.bonusID.bonusPoints) {
+        // Legacy fallback for old records that only have bonusID
         lifeTimePoints += tx.bonusID.bonusPoints;
       }
     } else if (tx.type === "spend") {
