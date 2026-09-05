@@ -66,6 +66,7 @@ type SendAndTrackResult = {
     ticketId: string;
     error: string;
   }>;
+  ticketIds: string[];
 };
 
 const EXPO_SEND_URL = "https://exp.host/--/api/v2/push/send";
@@ -199,19 +200,20 @@ const sendAndTrackExpoPush = async (
     delivered,
     failed,
     failures,
+    ticketIds,
   };
 };
 
 // ─── GET: Fetch notification history for dashboard ───────────────────────────
 export async function GET() {
   try {
+    await ConnectDB();
     const notifications = await NotificationModel.find()
       .sort({ createdAt: -1 })
       .lean();
 
     const mapped = notifications.map((n) => {
       const total = n.recipients?.length ?? 0;
-      const seenCount = n.recipients?.filter((r: { seen: boolean }) => r.seen).length ?? 0;
       return {
         _id: n._id,
         title: n.title,
@@ -219,9 +221,8 @@ export async function GET() {
         link: n.link,
         targetType: n.targetType,
         totalRecipients: total,
-        seenCount,
-        unseenCount: total - seenCount,
         deliveryStats: n.deliveryStats,
+        ticketCount: n.ticketIds?.length ?? 0,
         createdAt: n.createdAt,
       };
     });
@@ -238,6 +239,7 @@ export async function GET() {
 // ─── POST: Send push + persist notification ──────────────────────────────────
 export async function POST(req: Request) {
   try {
+    await ConnectDB();
     const data = await req.json();
     const { userIds, title, message, link } = data as {
       userIds?: unknown;
@@ -299,6 +301,7 @@ export async function POST(req: Request) {
         delivered: result.delivered,
         failed: result.failed,
       },
+      ticketIds: result.ticketIds,
     });
 
     return successResponse({

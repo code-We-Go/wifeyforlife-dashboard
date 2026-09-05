@@ -65,6 +65,10 @@ const NotificationsPage = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [lastResult, setLastResult] = useState<any | null>(null);
 
+  // User selection filters
+  const [userSearch, setUserSearch] = useState("");
+  const [packageFilter, setPackageFilter] = useState<string>("all");
+
   // History state
   const [notifications, setNotifications] = useState<NotificationSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -74,6 +78,7 @@ const NotificationsPage = () => {
     useState<NotificationDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
 
   // Delete confirmation state
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -106,7 +111,7 @@ const NotificationsPage = () => {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const res = await axios.get("/api/users?all=true");
+      const res = await axios.get("/api/users?all=true&hasPushToken=true");
       setUsers(res.data.data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -116,6 +121,47 @@ const NotificationsPage = () => {
     }
   };
 
+  // ─── Derived package list from loaded users ──────────────────────────────
+  const availablePackages = React.useMemo(() => {
+    const pkgMap = new Map<string, string>();
+    users.forEach((u) => {
+      const subs = (u as any).subscriptions ?? [];
+      subs.forEach((sub: any) => {
+        const pkg = sub.packageID;
+        if (pkg && pkg._id && pkg.name) {
+          pkgMap.set(String(pkg._id), pkg.name);
+        }
+      });
+    });
+    return Array.from(pkgMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [users]);
+
+  // ─── Filtered users based on search + package filter ────────────────────
+  const filteredUsers = React.useMemo(() => {
+    return users.filter((u) => {
+      const q = userSearch.toLowerCase();
+      const matchSearch =
+        !q ||
+        (u.username || "").toLowerCase().includes(q) ||
+        (u.email || "").toLowerCase().includes(q) ||
+        ((u.firstName || "") + " " + (u.lastName || "")).toLowerCase().includes(q);
+
+      if (!matchSearch) return false;
+
+      if (packageFilter === "all") return true;
+
+      const subs = (u as any).subscriptions ?? [];
+      return subs.some(
+        (sub: any) =>
+          sub.packageID && String(sub.packageID._id) === packageFilter,
+      );
+    });
+  }, [users, userSearch, packageFilter]);
+
+  const displayedUsers = React.useMemo(() => {
+    return filteredUsers.slice(0, 80);
+  }, [filteredUsers]);
+
   // ─── Handlers ────────────────────────────────────────────────────────────
   const handleUserToggle = (userId: string) => {
     setSelectedUserIds((prev) =>
@@ -123,6 +169,20 @@ const NotificationsPage = () => {
         ? prev.filter((id) => id !== userId)
         : [...prev, userId],
     );
+  };
+
+  const handleSelectAll = () => {
+    const filteredIds = filteredUsers.map((u) => u._id as string);
+    setSelectedUserIds((prev) => {
+      const existing = new Set(prev);
+      filteredIds.forEach((id) => existing.add(id));
+      return Array.from(existing);
+    });
+  };
+
+  const handleSelectNone = () => {
+    const filteredIds = new Set(filteredUsers.map((u) => u._id as string));
+    setSelectedUserIds((prev) => prev.filter((id) => !filteredIds.has(id)));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,6 +252,36 @@ const NotificationsPage = () => {
     }
   };
 
+  const handleRefreshDelivery = async (id: string) => {
+    setRefreshLoading(true);
+    try {
+      const res = await axios.patch(`/api/notifications/${id}`);
+      const updatedStats = res.data.data.deliveryStats;
+      toast.success(
+        `Updated: ${updatedStats.delivered} delivered, ${updatedStats.failed} failed`
+      );
+
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n._id === id ? { ...n, deliveryStats: updatedStats } : n
+        )
+      );
+
+      if (detailNotification && detailNotification._id === id) {
+        setDetailNotification((prev) =>
+          prev ? { ...prev, deliveryStats: updatedStats } : null
+        );
+      }
+    } catch (error: any) {
+      console.error("Error refreshing delivery status:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to refresh delivery status"
+      );
+    } finally {
+      setRefreshLoading(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleteLoading(true);
@@ -219,10 +309,7 @@ const NotificationsPage = () => {
     });
   };
 
-  const getSeenPercentage = (seen: number, total: number) => {
-    if (total === 0) return 0;
-    return Math.round((seen / total) * 100);
-  };
+
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
@@ -270,44 +357,166 @@ const NotificationsPage = () => {
               </div>
             </div>
 
-            {/* User Selection List */}
+            {/* User Selection Panel */}
             {targetType === "specific" && (
-              <div className="max-h-60 overflow-y-auto rounded-lg border border-gray-200 p-4">
-                {usersLoading ? (
-                  <div className="py-4 text-center text-gray-500">
-                    Loading users...
+              <div className="rounded-xl border border-gray-200 bg-gray-50/50">
+                {/* Header bar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Select Users (with active mobile tokens)
+                    {selectedUserIds.length > 0 && (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white">
+                        {selectedUserIds.length}
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSelectAll}
+                      className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                    >
+                      Select All ({filteredUsers.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSelectNone}
+                      className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                    >
+                      Clear
+                    </button>
                   </div>
-                ) : users.length === 0 ? (
-                  <div className="py-4 text-center text-gray-500">
-                    No users found.
+                </div>
+
+                {/* Filters row */}
+                <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-4 py-3">
+                  {/* Search */}
+                  <div className="relative flex-1 min-w-[180px]">
+                    <svg
+                      className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"
+                      />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search by name or email…"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    {users.map((user) => (
-                      <label
-                        key={user._id as string}
-                        className="flex cursor-pointer items-center gap-3 rounded p-2 hover:bg-gray-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedUserIds.includes(
-                            user._id as string,
-                          )}
-                          onChange={() =>
-                            handleUserToggle(user._id as string)
-                          }
-                          className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent"
-                        />
-                        <span className="text-sm font-medium">
-                          {user.username}{" "}
-                          <span className="text-xs text-gray-500">
-                            ({user.email})
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+
+                  {/* Package filter */}
+                  {availablePackages.length > 0 && (
+                    <select
+                      value={packageFilter}
+                      onChange={(e) => setPackageFilter(e.target.value)}
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="all">All users</option>
+                      {availablePackages.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* User list */}
+                <div className="max-h-64 overflow-y-auto p-2">
+                  {usersLoading ? (
+                    <div className="flex items-center justify-center py-8 text-gray-500">
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent"></div>
+                      Loading users…
+                    </div>
+                  ) : filteredUsers.length === 0 ? (
+                    <div className="py-8 text-center text-sm text-gray-400">
+                      {userSearch || packageFilter !== "all"
+                        ? "No users match your filters."
+                        : "No users found."}
+                    </div>
+                  ) : (
+                    <div className="space-y-0.5">
+                      {displayedUsers.map((user) => {
+                        const id = user._id as string;
+                        const isChecked = selectedUserIds.includes(id);
+                        const subs = (user as any).subscriptions ?? [];
+                        const pkgNames: string[] = Array.from(
+                          new Set(
+                            subs
+                              .filter((s: any) => s.packageID?.name)
+                              .map((s: any) => s.packageID.name as string),
+                          ),
+                        );
+                        return (
+                          <label
+                            key={id}
+                            className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${isChecked
+                              ? "bg-accent/10"
+                              : "hover:bg-white"
+                              }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => handleUserToggle(id)}
+                              className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="truncate text-sm font-medium text-gray-800">
+                                {user.firstName || user.lastName
+                                  ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+                                  : user.username}
+                              </p>
+                              <p className="truncate text-xs text-gray-500">
+                                {user.email}
+                              </p>
+                            </div>
+                            {pkgNames.length > 0 && (
+                              <div className="flex flex-wrap justify-end gap-1 shrink-0">
+                                {pkgNames.slice(0, 2).map((name) => (
+                                  <span
+                                    key={name}
+                                    className="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700"
+                                  >
+                                    {name}
+                                  </span>
+                                ))}
+                                {pkgNames.length > 2 && (
+                                  <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                                    +{pkgNames.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </label>
+                        );
+                      })}
+                      {filteredUsers.length > displayedUsers.length && (
+                        <p className="py-2 text-center text-xs text-gray-400">
+                          Showing first {displayedUsers.length} of {filteredUsers.length} matching users. Type to search specifically.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer summary */}
+                <div className="border-t border-gray-200 px-4 py-2 text-xs text-gray-400">
+                  Showing {displayedUsers.length} of {filteredUsers.length} matching users ({users.length} total with active mobile tokens)
+                  {selectedUserIds.length > 0
+                    ? ` · ${selectedUserIds.length} selected`
+                    : ""}
+                </div>
               </div>
             )}
 
@@ -515,7 +724,6 @@ const NotificationsPage = () => {
                     <th className="px-4 py-3">Message</th>
                     <th className="px-4 py-3 text-center">Target</th>
                     <th className="px-4 py-3 text-center">Recipients</th>
-                    <th className="px-4 py-3 text-center">Seen</th>
                     <th className="px-4 py-3 text-center">Delivery</th>
                     <th className="px-4 py-3">Sent</th>
                     <th className="px-4 py-3 text-center">Actions</th>
@@ -523,10 +731,6 @@ const NotificationsPage = () => {
                 </thead>
                 <tbody>
                   {notifications.map((n) => {
-                    const seenPct = getSeenPercentage(
-                      n.seenCount,
-                      n.totalRecipients,
-                    );
                     return (
                       <tr
                         key={n._id}
@@ -540,11 +744,10 @@ const NotificationsPage = () => {
                         </td>
                         <td className="px-4 py-4 text-center">
                           <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              n.targetType === "all"
-                                ? "bg-blue-50 text-blue-700"
-                                : "bg-purple-50 text-purple-700"
-                            }`}
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${n.targetType === "all"
+                              ? "bg-blue-50 text-blue-700"
+                              : "bg-purple-50 text-purple-700"
+                              }`}
                           >
                             {n.targetType === "all"
                               ? "All Users"
@@ -555,25 +758,20 @@ const NotificationsPage = () => {
                           {n.totalRecipients}
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-xs font-medium text-gray-600">
-                              {n.seenCount}/{n.totalRecipients}
-                            </span>
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-200">
-                              <div
-                                className="h-full rounded-full bg-accent transition-all duration-500"
-                                style={{ width: `${seenPct}%` }}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
                           <div className="flex items-center justify-center gap-2">
-                            <span className="text-xs font-medium text-green-600">
+                            <span className="text-xs font-medium text-green-600" title="Delivered">
                               ✓{n.deliveryStats.delivered}
                             </span>
+                            {n.deliveryStats.requested - n.deliveryStats.delivered - n.deliveryStats.failed > 0 && (
+                              <span
+                                className="text-xs font-medium text-amber-600"
+                                title="In-flight / queued with Apple & Google push servers"
+                              >
+                                ⏳{n.deliveryStats.requested - n.deliveryStats.delivered - n.deliveryStats.failed}
+                              </span>
+                            )}
                             {n.deliveryStats.failed > 0 && (
-                              <span className="text-xs font-medium text-red-500">
+                              <span className="text-xs font-medium text-red-500" title="Failed">
                                 ✗{n.deliveryStats.failed}
                               </span>
                             )}
@@ -607,6 +805,27 @@ const NotificationsPage = () => {
                                   strokeLinejoin="round"
                                   strokeWidth={2}
                                   d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                              </svg>
+                            </button>
+                            {/* Refresh receipts */}
+                            <button
+                              onClick={() => handleRefreshDelivery(n._id)}
+                              disabled={refreshLoading}
+                              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-600 disabled:opacity-50"
+                              title="Refresh delivery receipts from Expo"
+                            >
+                              <svg
+                                className={`h-4 w-4 ${refreshLoading ? "animate-spin" : ""}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                                 />
                               </svg>
                             </button>
@@ -711,30 +930,49 @@ const NotificationsPage = () => {
                         : "Specific"}
                     </span>
                   </div>
-                  <div className="rounded-lg bg-green-50 px-3 py-1.5">
+                  <div className="rounded-lg bg-green-50 px-3 py-1.5" title="Confirmed delivery receipt from Expo">
                     <span className="text-xs text-gray-500">Delivered: </span>
                     <span className="text-xs font-semibold text-green-700">
                       {detailNotification.deliveryStats.delivered}
                     </span>
                   </div>
-                  <div className="rounded-lg bg-accent/10 px-3 py-1.5">
-                    <span className="text-xs text-gray-500">Seen: </span>
-                    <span className="text-xs font-semibold text-accent">
-                      {
-                        detailNotification.recipients.filter((r) => r.seen)
-                          .length
-                      }
-                      /{detailNotification.recipients.length}
-                    </span>
-                  </div>
+                  {detailNotification.deliveryStats.requested -
+                    detailNotification.deliveryStats.delivered -
+                    detailNotification.deliveryStats.failed >
+                    0 && (
+                      <div
+                        className="rounded-lg bg-amber-50 px-3 py-1.5"
+                        title="Dispatched to Expo and queued with Apple (APNs) & Google (FCM)"
+                      >
+                        <span className="text-xs text-gray-500">In-Flight / Queued: </span>
+                        <span className="text-xs font-semibold text-amber-600">
+                          {detailNotification.deliveryStats.requested -
+                            detailNotification.deliveryStats.delivered -
+                            detailNotification.deliveryStats.failed}
+                        </span>
+                      </div>
+                    )}
                   {detailNotification.deliveryStats.failed > 0 && (
-                    <div className="rounded-lg bg-red-50 px-3 py-1.5">
+                    <div className="rounded-lg bg-red-50 px-3 py-1.5" title="Invalid or unregistered device tokens">
                       <span className="text-xs text-gray-500">Failed: </span>
                       <span className="text-xs font-semibold text-red-600">
                         {detailNotification.deliveryStats.failed}
                       </span>
                     </div>
                   )}
+                  {detailNotification.recipients.length >
+                    detailNotification.deliveryStats.requested && (
+                      <div
+                        className="rounded-lg bg-gray-100 px-3 py-1.5"
+                        title="Multiple user accounts sharing the same physical device token"
+                      >
+                        <span className="text-xs text-gray-500">Shared Devices: </span>
+                        <span className="text-xs font-semibold text-gray-600">
+                          {detailNotification.recipients.length -
+                            detailNotification.deliveryStats.requested}
+                        </span>
+                      </div>
+                    )}
                 </div>
               )}
             </div>
@@ -774,48 +1012,6 @@ const NotificationsPage = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {r.seen ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
-                            <svg
-                              className="h-3 w-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2.5}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            Seen
-                            {r.seenAt && (
-                              <span className="text-[10px] text-gray-400">
-                                {formatDate(r.seenAt)}
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
-                            <svg
-                              className="h-3 w-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            Not seen
-                          </span>
-                        )}
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -831,15 +1027,41 @@ const NotificationsPage = () => {
                     ? formatDate(detailNotification.createdAt)
                     : "—"}
                 </p>
-                <button
-                  onClick={() => {
-                    setShowDetailModal(false);
-                    setDetailNotification(null);
-                  }}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-                >
-                  Close
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (detailNotification) {
+                        handleRefreshDelivery(detailNotification._id);
+                      }
+                    }}
+                    disabled={refreshLoading || !detailNotification}
+                    className="flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-2 text-sm font-semibold text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                  >
+                    <svg
+                      className={`h-4 w-4 ${refreshLoading ? "animate-spin" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    {refreshLoading ? "Refreshing..." : "Refresh Delivery Status"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      setDetailNotification(null);
+                    }}
+                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>

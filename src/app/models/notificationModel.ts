@@ -17,6 +17,7 @@ export interface INotification extends Document {
     delivered: number;
     failed: number;
   };
+  ticketIds?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,6 +68,10 @@ const NotificationSchema = new Schema<INotification>(
       requested: { type: Number, default: 0 },
       delivered: { type: Number, default: 0 },
       failed: { type: Number, default: 0 },
+    },
+    ticketIds: {
+      type: [String],
+      default: [],
     },
   },
   {

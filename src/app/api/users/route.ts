@@ -3,12 +3,7 @@ import UserModel from "@/app/models/userModel";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import subscriptionsModel from "@/app/models/subscriptionsModel";
-
-const loadDB = async () => {
-  await ConnectDB();
-};
-
-loadDB();
+import packageModel from "@/app/models/packageModel";
 
 // Helper function for consistent error responses
 const errorResponse = (message: string, status: number = 500) => {
@@ -19,14 +14,20 @@ const errorResponse = (message: string, status: number = 500) => {
 const successResponse = (data: any, status: number = 200) => {
   return NextResponse.json({ data }, { status });
 };
-console.log(subscriptionsModel);
+
+// Ensure models are registered in Mongoose
+const _registeredModels = [subscriptionsModel, packageModel];
+
 export async function GET(req: Request) {
   try {
+    await ConnectDB();
+
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const search = decodeURIComponent(searchParams.get("search") || "");
     const all = searchParams.get("all") === "true";
+    const hasPushToken = searchParams.get("hasPushToken") === "true";
 
     if (userId) {
       const user = await UserModel.findById(userId)
@@ -38,15 +39,14 @@ export async function GET(req: Request) {
           },
           options: { strictPopulate: false },
         })
-        .select("-password");
+        .select("-password")
+        .lean();
       if (!user) return errorResponse("User not found", 404);
       return successResponse(user);
     }
-    const limit = all ? 0 : 10;
-    const skip = all ? 0 : (page - 1) * limit;
 
     // Create search query
-    const searchQuery = search
+    const searchQuery: Record<string, unknown> = search
       ? {
           $or: [
             { username: { $regex: search, $options: "i" } },
@@ -54,6 +54,40 @@ export async function GET(req: Request) {
           ],
         }
       : {};
+
+    if (hasPushToken) {
+      searchQuery.pushToken = { $exists: true, $nin: [null, ""] };
+    }
+
+    // For selection dialogs (e.g. notifications), optimize query
+    if (all) {
+      const users = await UserModel.find(searchQuery)
+        .populate({
+          path: "subscriptions",
+          select: "packageID subscribed status",
+          populate: {
+            path: "packageID",
+            model: "packages",
+            select: "name _id",
+          },
+          options: { strictPopulate: false },
+        })
+        .select("_id username email firstName lastName subscriptions pushToken")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return successResponse({
+        users,
+        pagination: {
+          total: users.length,
+          currentPage: 1,
+          totalPages: 1,
+        },
+      });
+    }
+
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
     // Get total count
     const totalUsers = await UserModel.countDocuments(searchQuery);
@@ -71,25 +105,26 @@ export async function GET(req: Request) {
       .select("-password")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
-    console.log("ya rab " + users[1]?.subscriptions?.[0]?.subscribed);
     return successResponse({
       users,
       pagination: {
         total: totalUsers,
         currentPage: page,
-        totalPages: all ? 1 : Math.ceil(totalUsers / limit),
+        totalPages: Math.ceil(totalUsers / limit),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching users:", error);
-    return errorResponse("Failed to fetch users");
+    return errorResponse(error?.message || "Failed to fetch users");
   }
 }
 
 export async function POST(req: Request) {
   try {
+    await ConnectDB();
     const data = await req.json();
 
     // Validate required fields
@@ -127,6 +162,7 @@ export async function POST(req: Request) {
 
 export async function PUT(request: Request) {
   try {
+    await ConnectDB();
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
@@ -173,6 +209,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    await ConnectDB();
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
