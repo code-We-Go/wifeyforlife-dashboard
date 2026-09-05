@@ -12,10 +12,12 @@ export async function GET(request: Request) {
   const status = searchParams.get("status");
   const clientEmail = searchParams.get("clientEmail");
   const sessionId = searchParams.get("sessionId");
+  const paymentMethod = searchParams.get("paymentMethod");
 
   await loadDB();
   const query: any = {};
   if (status) query.status = status;
+  if (paymentMethod) query.paymentMethod = paymentMethod;
   if (clientEmail) query.clientEmail = { $regex: clientEmail, $options: "i" };
   if (sessionId) query.sessionId = sessionId;
 

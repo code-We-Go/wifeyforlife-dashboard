@@ -19,7 +19,11 @@ export interface IPartnerSessionOrder extends Document {
   profitPercentage: number;
   ourProfitAmount: number;
   paymentID?: string;
-  status: "pending" | "paid" | "failed" | "cancelled";
+  paymentMethod?: "card" | "instapay";
+  instapayReceipt?: string;
+  link?: string;
+  meetingLink?: string;
+  status: "pending" | "paid" | "failed" | "cancelled" | "instapay_review";
 }
 
 const PartnerSessionOrderSchema = new Schema<IPartnerSessionOrder>(
@@ -46,9 +50,17 @@ const PartnerSessionOrderSchema = new Schema<IPartnerSessionOrder>(
     profitPercentage: { type: Number, required: true, min: 0, max: 100 },
     ourProfitAmount: { type: Number, required: true },
     paymentID: { type: String },
+    paymentMethod: {
+      type: String,
+      enum: ["card", "instapay"],
+      default: "card",
+    },
+    instapayReceipt: { type: String },
+    link: { type: String },
+    meetingLink: { type: String },
     status: {
       type: String,
-      enum: ["pending", "paid", "failed", "cancelled"],
+      enum: ["pending", "paid", "failed", "cancelled", "instapay_review"],
       default: "pending",
     },
   },
