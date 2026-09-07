@@ -27,6 +27,8 @@ interface Blog {
   metaDescription?: string;
   publishedAt?: string;
   viewCount: number;
+  mobileViewCount?: number;
+  webViewCount?: number;
   featured: boolean;
   createdAt: string;
   updatedAt: string;
@@ -244,7 +246,17 @@ const BlogsPage = () => {
                         )}
                       </td>
                       <td className="border p-3 text-center">
-                        {blog.viewCount}
+                        <div className="font-semibold text-gray-800">
+                          {blog.viewCount ?? 0}
+                        </div>
+                        <div className="mt-1 flex items-center justify-center gap-1.5 text-xs text-gray-500">
+                          <span title="Web views" className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700">
+                            🌐 {blog.webViewCount ?? 0}
+                          </span>
+                          <span title="Mobile views" className="rounded bg-purple-50 px-1.5 py-0.5 text-purple-700">
+                            📱 {blog.mobileViewCount ?? 0}
+                          </span>
+                        </div>
                       </td>
                       <td className="border p-3">
                         {new Date(blog.createdAt).toLocaleDateString()}

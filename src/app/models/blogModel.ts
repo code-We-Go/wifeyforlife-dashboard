@@ -16,6 +16,8 @@ export interface IBlog extends Document {
   metaDescription?: string;
   publishedAt?: Date;
   viewCount: number;
+  mobileViewCount: number;
+  webViewCount: number;
   featured: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -60,7 +62,7 @@ const BlogSchema = new Schema<IBlog>(
           if (!v) return true; // Allow empty values
           // Validate TikTok URL format
           return /^https:\/\/(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/.test(v) ||
-                 /^https:\/\/vm\.tiktok\.com\/[\w]+/.test(v);
+            /^https:\/\/vm\.tiktok\.com\/[\w]+/.test(v);
         },
         message: "Please enter a valid TikTok video URL",
       },
@@ -107,6 +109,16 @@ const BlogSchema = new Schema<IBlog>(
       required: false,
     },
     viewCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    mobileViewCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    webViewCount: {
       type: Number,
       default: 0,
       min: 0,

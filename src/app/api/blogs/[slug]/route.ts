@@ -50,7 +50,8 @@ export async function PATCH(
 ) {
   try {
     const { slug } = params;
-    const { action } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { action, source } = body;
 
     if (!slug) {
       return NextResponse.json(
@@ -59,13 +60,36 @@ export async function PATCH(
       );
     }
 
-    if (action === "increment_view") {
+    if (
+      action === "increment_view" ||
+      action === "increment_mobile_view" ||
+      action === "increment_web_view"
+    ) {
+      const userAgent = req.headers.get("user-agent") || "";
+      const platformHeader = (req.headers.get("x-platform") || "").toLowerCase();
+
+      const isMobile =
+        source === "mobile" ||
+        action === "increment_mobile_view" ||
+        platformHeader === "mobile" ||
+        platformHeader === "ios" ||
+        platformHeader === "android" ||
+        (!source &&
+          action === "increment_view" &&
+          /mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(userAgent));
+
+      const incField = isMobile ? "mobileViewCount" : "webViewCount";
+
       const blog = await BlogModel.findOneAndUpdate(
         { slug },
-        { $inc: { viewCount: 1 } },
+        {
+          $inc: {
+            viewCount: 1,
+            [incField]: 1,
+          },
+        },
         { new: true }
-      )
-      
+      );
 
       if (!blog) {
         return NextResponse.json(

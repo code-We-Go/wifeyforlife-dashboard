@@ -29,6 +29,8 @@ interface Blog {
   metaDescription?: string;
   publishedAt?: string;
   viewCount: number;
+  mobileViewCount?: number;
+  webViewCount?: number;
   featured: boolean;
   createdAt: string;
   updatedAt: string;
@@ -332,8 +334,19 @@ const BlogModal: React.FC<BlogModalProps> = ({
                   {blog.status}
                 </span>
               </div>
-              <div>
-                <strong>Views:</strong> {blog.viewCount}
+              <div className="rounded-md border border-gray-200 bg-gray-50/80 p-2.5">
+                <div className="flex items-center justify-between">
+                  <strong className="text-gray-700">Views:</strong>
+                  <span className="text-base font-bold text-gray-900">{blog.viewCount ?? 0}</span>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800">
+                    🌐 Web: {blog.webViewCount ?? 0}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800">
+                    📱 Mobile: {blog.mobileViewCount ?? 0}
+                  </span>
+                </div>
               </div>
               <div>
                 <strong>Reading Time:</strong> {blog.readingTime} min
@@ -437,6 +450,21 @@ const BlogModal: React.FC<BlogModalProps> = ({
               ×
             </button>
           </div>
+
+          {type === "edit" && blog && (
+            <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+              <span className="font-semibold text-gray-700">Views:</span>
+              <span className="text-gray-600">
+                Total: <strong className="text-gray-900">{blog.viewCount ?? 0}</strong>
+              </span>
+              <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800">
+                🌐 Web: {blog.webViewCount ?? 0}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800">
+                📱 Mobile: {blog.mobileViewCount ?? 0}
+              </span>
+            </div>
+          )}
 
           {errors.general && (
             <div className="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">

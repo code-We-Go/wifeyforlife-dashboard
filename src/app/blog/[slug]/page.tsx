@@ -29,6 +29,8 @@ interface Blog {
   metaDescription?: string;
   publishedAt?: string;
   viewCount: number;
+  mobileViewCount?: number;
+  webViewCount?: number;
   featured: boolean;
   createdAt: string;
   readingTime: number;
@@ -58,7 +60,7 @@ const BlogDetailPage = () => {
       setBlog(response.data.data);
 
       // Increment view count
-      await axios.patch(`/api/blogs/${slug}`, { action: "increment_view" });
+      await axios.patch(`/api/blogs/${slug}`, { action: "increment_view", source: "web" });
 
       // Fetch related blogs (same categories or tags)
       if (response.data.data.categories.length > 0 || response.data.data.tags.length > 0) {
