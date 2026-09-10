@@ -326,7 +326,7 @@ export interface IOrder {
   redeemedLoyaltyPoints?: number;
   total?: number;
   currency?: string;
-  status?: "pending" | "confirmed" | "shipped" | "failed" | "delivered" | "cancelled";
+  status?: "order_created" | "picked_up" | "in_progress" | "out_for_delivery" | "delivered" | "cancelled" | "returned" | "exception" | "investigation" | "awaiting_action" | "on_hold" | "pending" | "confirmed" | "shipped" | "failed";
   payment?: "pending" | "failed" | "confirmed";
   specialMessage?: string;
   giftCardName?: string;

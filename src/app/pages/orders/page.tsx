@@ -149,11 +149,20 @@ const OrdersPage = () => {
             className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="">All Statuses</option>
+            <option value="order_created">Order Created</option>
+            <option value="picked_up">Picked Up</option>
+            <option value="in_progress">In Progress</option>
+            <option value="out_for_delivery">Out For Delivery</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="returned">Returned</option>
+            <option value="exception">Exception</option>
+            <option value="investigation">Investigation</option>
+            <option value="awaiting_action">Awaiting Action</option>
+            <option value="on_hold">On Hold</option>
             <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
             <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
             <option value="failed">Failed</option>
           </select>
         </div>

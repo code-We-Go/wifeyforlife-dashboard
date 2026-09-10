@@ -226,7 +226,7 @@ const OrderComponent = ({
             </>
           )}
           <span className="text-xs text-gray-400">({status || "undefined"})</span>
-          {status !== "confirmed" && status !== "delivered" && status !== "shipped" && handleApproveInstapay && (
+          {!["confirmed", "order_created", "picked_up", "in_progress", "out_for_delivery", "delivered"].includes(status || "") && handleApproveInstapay && (
             <button
               disabled={approvingId === (order.paymentID || order._id)}
               onClick={(e) => {
@@ -354,25 +354,44 @@ const OrderComponent = ({
                 value={status}
                 onChange={(e) => {
                   const newStatus = e.target.value as
-                    | "failed"
+                    | "order_created"
+                    | "picked_up"
+                    | "in_progress"
+                    | "out_for_delivery"
+                    | "delivered"
+                    | "cancelled"
+                    | "returned"
+                    | "exception"
+                    | "investigation"
+                    | "awaiting_action"
+                    | "on_hold"
                     | "pending"
                     | "confirmed"
                     | "shipped"
-                    | "delivered"
-                    | "cancelled";
+                    | "failed";
                   setStatus(newStatus);
                   updateOrder("status", newStatus);
                 }}
               >
                 {[
+                  "order_created",
+                  "picked_up",
+                  "in_progress",
+                  "out_for_delivery",
+                  "delivered",
+                  "cancelled",
+                  "returned",
+                  "exception",
+                  "investigation",
+                  "awaiting_action",
+                  "on_hold",
                   "pending",
                   "confirmed",
                   "shipped",
-                  "delivered",
-                  "cancelled",
+                  "failed",
                 ].map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </option>
                 ))}
               </select>
@@ -413,7 +432,7 @@ const OrderComponent = ({
                   </option>
                 ))}
               </select>
-              {status !== "confirmed" && status !== "delivered" && status !== "shipped" && handleApproveInstapay && (
+              {!["confirmed", "order_created", "picked_up", "in_progress", "out_for_delivery", "delivered"].includes(status || "") && handleApproveInstapay && (
                 <button
                   disabled={approvingId === (order.paymentID || order._id)}
                   onClick={(e) => {

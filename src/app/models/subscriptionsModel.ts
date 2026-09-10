@@ -19,7 +19,7 @@ export interface ISubscription extends Document {
     expiryDate: Date;
   }[];
   miniSubscriptionActivated?: boolean;
-  status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned";
+  status?: "order_created" | "picked_up" | "in_progress" | "out_for_delivery" | "delivered" | "cancelled" | "returned" | "exception" | "investigation" | "awaiting_action" | "on_hold" | "pending" | "confirmed" | "shipped";
   billingWhatsAppNumber?: string;
   billingEmail?: string;
   // Because of timestamps: true
@@ -112,14 +112,14 @@ const SubscriptionSchema = new Schema(
     status: {
       type: String,
       enum: [
-        "pending",
-        "confirmed",
-        "shipped",
-        "delivered",
-        "cancelled",
-        "returned",
+        // New Bosta-aligned statuses
+        "order_created", "picked_up", "in_progress", "out_for_delivery",
+        "delivered", "cancelled", "returned",
+        "exception", "investigation", "awaiting_action", "on_hold",
+        // Legacy values
+        "pending", "confirmed", "shipped",
       ],
-      default: "pending",
+      default: "order_created",
     },
   },
   { timestamps: true },

@@ -861,7 +861,7 @@ const SubscriptionsPage = () => {
               }`}
           >
             Instapay Requests
-            {subscriptions.filter(s => s.paymentMethod === "instapay" && s.status !== "confirmed").length > 0 && activeTab !== "instapay" && (
+            {subscriptions.filter(s => s.paymentMethod === "instapay" && !["confirmed", "order_created", "picked_up", "in_progress", "out_for_delivery", "delivered"].includes(s.status || "")).length > 0 && activeTab !== "instapay" && (
               <span className="absolute top-1 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
             )}
           </button>
@@ -1129,7 +1129,7 @@ const SubscriptionsPage = () => {
                       </button>
                       {/* Debug info: showing status */}
                       <span className="text-xs text-gray-400">({sub.status || "undefined"})</span>
-                      {sub.paymentMethod === "instapay" && sub.status !== "confirmed" && sub.status !== "delivered" && sub.status !== "shipped" && (
+                      {sub.paymentMethod === "instapay" && !["confirmed", "order_created", "picked_up", "in_progress", "out_for_delivery", "delivered"].includes(sub.status || "") && (
                         <button
                           disabled={approvingId === sub.paymentID}
                           onClick={() => handleApproveInstapay(sub.paymentID)}
