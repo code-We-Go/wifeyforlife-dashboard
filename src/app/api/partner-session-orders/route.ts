@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ConnectDB } from "@/config/db";
 import PartnerSessionOrderModel from "@/app/models/partnerSessionOrderModel";
+import PartnerSessionModel from "@/app/models/partnerSessionModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -68,6 +69,27 @@ export async function PUT(request: Request) {
     if (!updated) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
+
+    // Synchronize PartnerSession.bookings if status changed
+    if (updateData.status && updated.sessionId) {
+      try {
+        if (updateData.status === "failed" || updateData.status === "cancelled") {
+          // Remove from bookings array so the spot is released immediately
+          await PartnerSessionModel.findByIdAndUpdate(updated.sessionId, {
+            $pull: { bookings: { orderId: String(_id) } },
+          });
+        } else {
+          // Update status in bookings array (e.g. paid)
+          await PartnerSessionModel.updateOne(
+            { _id: updated.sessionId, "bookings.orderId": String(_id) },
+            { $set: { "bookings.$.status": updateData.status } }
+          );
+        }
+      } catch (syncErr) {
+        console.error("Failed to sync booking status to PartnerSession:", syncErr);
+      }
+    }
+
     return NextResponse.json({ data: updated }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
@@ -95,6 +117,18 @@ export async function DELETE(request: Request) {
     if (!deleted) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
+
+    // Automatically remove booking record from the session to free up capacity
+    if (deleted.sessionId) {
+      try {
+        await PartnerSessionModel.findByIdAndUpdate(deleted.sessionId, {
+          $pull: { bookings: { orderId: String(id) } },
+        });
+      } catch (syncErr) {
+        console.error("Failed to remove booking from PartnerSession on order delete:", syncErr);
+      }
+    }
+
     return NextResponse.json({ message: "Order deleted successfully" }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
@@ -103,4 +137,3 @@ export async function DELETE(request: Request) {
     );
   }
 }
-

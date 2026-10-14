@@ -23,6 +23,7 @@ export interface IPartnerSessionOrder extends Document {
   instapayReceipt?: string;
   link?: string;
   meetingLink?: string;
+  sessionType?: "one-to-one" | "webinar";
   status: "pending" | "paid" | "failed" | "cancelled" | "instapay_review";
 }
 
@@ -68,6 +69,10 @@ const PartnerSessionOrderSchema = new Schema<IPartnerSessionOrder>(
 );
 
 PartnerSessionOrderSchema.index({ clientEmail: 1, status: 1 });
+
+if (process.env.NODE_ENV !== "production" && mongoose.models.PartnerSessionOrder) {
+  delete (mongoose.models as any).PartnerSessionOrder;
+}
 
 const PartnerSessionOrderModel =
   mongoose.models.PartnerSessionOrder ||
