@@ -172,7 +172,7 @@ const NotificationsPage = () => {
   };
 
   const handleSelectAll = () => {
-    const filteredIds = filteredUsers.map((u) => u._id as string);
+    const filteredIds = filteredUsers.map((u) => String(u._id));
     setSelectedUserIds((prev) => {
       const existing = new Set(prev);
       filteredIds.forEach((id) => existing.add(id));
@@ -181,7 +181,7 @@ const NotificationsPage = () => {
   };
 
   const handleSelectNone = () => {
-    const filteredIds = new Set(filteredUsers.map((u) => u._id as string));
+    const filteredIds = new Set(filteredUsers.map((u) => String(u._id)));
     setSelectedUserIds((prev) => prev.filter((id) => !filteredIds.has(id)));
   };
 
@@ -447,7 +447,7 @@ const NotificationsPage = () => {
                   ) : (
                     <div className="space-y-0.5">
                       {displayedUsers.map((user) => {
-                        const id = user._id as string;
+                        const id = String(user._id);
                         const isChecked = selectedUserIds.includes(id);
                         const subs = (user as any).subscriptions ?? [];
                         const pkgNames: string[] = Array.from(
