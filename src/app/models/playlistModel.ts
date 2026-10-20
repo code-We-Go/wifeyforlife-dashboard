@@ -9,8 +9,13 @@ const PlaylistSchema = new Schema({
   isPublic:{type:Boolean,default:false},
   folders: [
     {
-      name: { type: String, required: true },   // display label, e.g. "Behind the Scenes"
-      slug: { type: String, required: true },   // URL-safe key, e.g. "behind-the-scenes"
+      name: { type: String, required: true },
+      slug: { type: String, required: true },
+      translations: {
+        ar: {
+          name: { type: String, required: false },
+        },
+      },
     }
   ],
   videos: [{
@@ -22,6 +27,13 @@ const PlaylistSchema = new Schema({
   thumbnailUrl: { type: String, required: true },
   featured: { type: Boolean, default: false },
   order: { type: Number, default: 0 },
+  translations: {
+    ar: {
+      title: { type: String, required: false },
+      description: { type: [String], required: false },
+      category: { type: String, required: false },
+    },
+  },
 }, {
   timestamps: true // This will automatically add createdAt and updatedAt fields
 });

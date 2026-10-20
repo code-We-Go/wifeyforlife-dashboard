@@ -39,7 +39,10 @@ const ProductModal = ({
       setSelectedSubCategory(
         product.subCategoryID?._id || "",
       );
-      setProduct(product);
+      setProduct({
+        ...product,
+        productDetails: Array.isArray(product.productDetails) ? product.productDetails : [],
+      });
     }
   }, [isDetailsModalOpen, product]);
 
@@ -128,6 +131,23 @@ const ProductModal = ({
       );
       setProduct((prev) => ({ ...prev, [field]: value }));
     }
+  };
+
+  const updateArabicField = (field: string, value: any) => {
+    const updated = {
+      ...productState,
+      translations: {
+        ...productState.translations,
+        ar: {
+          ...productState.translations?.ar,
+          [field]: value,
+        },
+      },
+    };
+    setProduct(updated);
+    setProducts((prev) =>
+      prev.map((p) => (p._id === product._id ? updated : p))
+    );
   };
   // Update Product Function
   const updateProduct = async () => {
@@ -239,25 +259,58 @@ const ProductModal = ({
               />
             </div>
 
-            {/* Title */}
-            <div>
-              <label className="block font-semibold">Title:</label>
-              <input
-                type="text"
-                value={productState.title}
-                onChange={(e) => updateFeild("title", e.target.value)}
-                className="w-full border p-2"
-              />
+            {/* Title Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold">Title (English):</label>
+                <input
+                  type="text"
+                  value={productState.title}
+                  onChange={(e) => updateFeild("title", e.target.value)}
+                  className="w-full border p-2 rounded"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold flex items-center justify-between">
+                  <span>Arabic Title:</span>
+                  <span className="text-xs text-primary font-normal">عنوان المنتج بالعربية</span>
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={productState.translations?.ar?.title || ""}
+                  onChange={(e) => updateArabicField("title", e.target.value)}
+                  className="w-full border border-amber-200 bg-amber-50/30 p-2 rounded text-right"
+                  placeholder="عنوان المنتج باللغة العربية"
+                />
+              </div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block font-semibold">Description:</label>
-              <textarea
-                value={productState.description}
-                onChange={(e) => updateFeild("description", e.target.value)}
-                className="w-full border p-2"
-              />
+            {/* Description Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold">Description (English):</label>
+                <textarea
+                  value={productState.description}
+                  onChange={(e) => updateFeild("description", e.target.value)}
+                  className="w-full border p-2 rounded"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block font-semibold flex items-center justify-between">
+                  <span>Arabic Description:</span>
+                  <span className="text-xs text-primary font-normal">وصف المنتج بالعربية</span>
+                </label>
+                <textarea
+                  dir="rtl"
+                  value={productState.translations?.ar?.description || ""}
+                  onChange={(e) => updateArabicField("description", e.target.value)}
+                  className="w-full border border-amber-200 bg-amber-50/30 p-2 rounded text-right"
+                  rows={3}
+                  placeholder="وصف المنتج باللغة العربية"
+                />
+              </div>
             </div>
             <div className="flex gap-10">
               <div className="w-1/2">
@@ -422,27 +475,79 @@ const ProductModal = ({
             </div>
 
             {/* Product Details */}
-            <div>
-              <label className="block font-semibold">Product Details:</label>
-              {productState.productDetails.map((detail, index) => (
+            <div className="p-4 border border-gray-200 bg-gray-50/50 rounded-lg">
+              <label className="block font-semibold mb-2">Product Details (English):</label>
+              {(!productState.productDetails || productState.productDetails.length === 0) ? (
+                <p className="text-sm text-gray-400 italic mb-2">No product details added yet.</p>
+              ) : (
+                (productState.productDetails || []).map((detail, index) => (
+                  <div key={index} className="mb-2 flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={detail}
+                      onChange={(e) => {
+                        const newDetails = [...(productState.productDetails || [])];
+                        newDetails[index] = e.target.value;
+                        updateFeild("productDetails", newDetails);
+                      }}
+                      className="w-full border p-2 rounded bg-white text-sm"
+                      placeholder="e.g. 100% Cotton Canvas"
+                    />
+                    <span
+                      className="cursor-pointer text-red-500 font-bold px-1"
+                      onClick={() => {
+                        const newDetails = (productState.productDetails || []).filter(
+                          (_, i) => i !== index,
+                        );
+                        updateFeild("productDetails", newDetails);
+                      }}
+                    >
+                      &#10006;
+                    </span>
+                  </div>
+                ))
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  updateFeild("productDetails", [
+                    ...(productState.productDetails || []),
+                    "",
+                  ])
+                }
+                className="px-4 py-2 text-accent underline text-sm font-medium"
+              >
+                + Add Detail (English)
+              </button>
+            </div>
+
+            {/* Arabic Product Details */}
+            <div className="mt-4 p-4 border border-amber-200 bg-amber-50/20 rounded-lg">
+              <label className="block font-semibold mb-2 flex items-center justify-between">
+                <span>Arabic Product Details:</span>
+                <span className="text-xs text-primary font-normal">تفاصيل المنتج بالعربية</span>
+              </label>
+              {(productState.translations?.ar?.productDetails || []).map((detail, index) => (
                 <div key={index} className="mb-2 flex items-center gap-2">
                   <input
                     type="text"
+                    dir="rtl"
                     value={detail}
                     onChange={(e) => {
-                      const newDetails = [...productState.productDetails];
+                      const newDetails = [...(productState.translations?.ar?.productDetails || [])];
                       newDetails[index] = e.target.value;
-                      updateFeild("productDetails", newDetails);
+                      updateArabicField("productDetails", newDetails);
                     }}
-                    className="w-full border p-2"
+                    className="w-full border border-amber-200 bg-white p-2 text-right rounded"
+                    placeholder="تفصيل باللغة العربية"
                   />
                   <span
-                    className="cursor-pointer text-red-500"
+                    className="cursor-pointer text-red-500 font-bold px-1"
                     onClick={() => {
-                      const newDetails = productState.productDetails.filter(
+                      const newDetails = (productState.translations?.ar?.productDetails || []).filter(
                         (_, i) => i !== index,
                       );
-                      updateFeild("productDetails", newDetails);
+                      updateArabicField("productDetails", newDetails);
                     }}
                   >
                     &#10006;
@@ -450,15 +555,16 @@ const ProductModal = ({
                 </div>
               ))}
               <button
+                type="button"
                 onClick={() =>
-                  updateFeild("productDetails", [
-                    ...productState.productDetails,
+                  updateArabicField("productDetails", [
+                    ...(productState.translations?.ar?.productDetails || []),
                     "",
                   ])
                 }
-                className="px-4 py-2 text-accent underline"
+                className="px-4 py-2 text-accent underline text-sm"
               >
-                Add More
+                + Add Arabic Detail / إضافة تفصيل بالعربية
               </button>
             </div>
 

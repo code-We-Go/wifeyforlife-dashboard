@@ -44,6 +44,18 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     calloutTitle: "",
     calloutDescription: "",
     comparisonFeatures: [],
+    translations: {
+      ar: {
+        name: "",
+        partOf: "",
+        saving: "",
+        badgeLabel: "",
+        calloutBadge: "",
+        calloutTitle: "",
+        calloutDescription: "",
+        notes: [],
+      },
+    },
   });
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -188,6 +200,18 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         calloutTitle: packageItem.calloutTitle || "",
         calloutDescription: packageItem.calloutDescription || "",
         comparisonFeatures: packageItem.comparisonFeatures || [],
+        translations: packageItem.translations || {
+          ar: {
+            name: "",
+            partOf: "",
+            saving: "",
+            badgeLabel: "",
+            calloutBadge: "",
+            calloutTitle: "",
+            calloutDescription: "",
+            notes: [],
+          },
+        },
       });
     } else {
       setFormData({
@@ -220,9 +244,34 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         calloutTitle: "",
         calloutDescription: "",
         comparisonFeatures: [],
+        translations: {
+          ar: {
+            name: "",
+            partOf: "",
+            saving: "",
+            badgeLabel: "",
+            calloutBadge: "",
+            calloutTitle: "",
+            calloutDescription: "",
+            notes: [],
+          },
+        },
       });
     }
   }, [packageItem, isOpen]);
+
+  const updateArabicPackageField = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      translations: {
+        ...prev.translations,
+        ar: {
+          ...prev.translations?.ar,
+          [field]: value,
+        },
+      },
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -684,17 +733,33 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1">
-              Package Name *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1">
+                Package Name (English) *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1 flex items-center justify-between">
+                <span>Arabic Package Name</span>
+                <span className="text-xs text-primary font-normal">اسم الباقة بالعربية</span>
+              </label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.translations?.ar?.name || ""}
+                onChange={(e) => updateArabicPackageField("name", e.target.value)}
+                placeholder="اسم الباقة باللغة العربية"
+                className="w-full px-3 py-2 border border-amber-300 bg-amber-50/40 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+              />
+            </div>
           </div>
 
           <div>
@@ -887,7 +952,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
             <div>
               <label className="block text-sm font-medium text-primary mb-1">
-                Saving Text
+                Saving Text (English)
               </label>
               <input
                 type="text"
@@ -895,6 +960,20 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 onChange={(e) => setFormData(prev => ({ ...prev, saving: e.target.value }))}
                 placeholder="e.g., Save 20%"
                 className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1 flex items-center justify-between">
+                <span>Saving Text (Arabic)</span>
+                <span className="text-xs text-primary font-normal">نص التوفير بالعربية</span>
+              </label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.translations?.ar?.saving || ""}
+                onChange={(e) => updateArabicPackageField("saving", e.target.value)}
+                placeholder="مثال: وفر 20%"
+                className="w-full px-3 py-2 border border-amber-300 bg-amber-50/40 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
               />
             </div>
 
@@ -915,12 +994,12 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
           <div className="border border-primary/30 rounded-lg p-4 space-y-4">
             <label className="block text-sm font-medium text-primary mb-1">
-              Badge & Callout Details
+              Badge & Callout Details (English & Arabic)
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-primary mb-1">
-                  Badge Label
+                  Badge Label (English)
                 </label>
                 <input
                   type="text"
@@ -931,8 +1010,22 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 />
               </div>
               <div>
+                <label className="block text-xs font-medium text-primary mb-1 flex items-center justify-between">
+                  <span>Badge Label (Arabic)</span>
+                  <span className="text-[10px] text-primary">شارة الباقة</span>
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={formData.translations?.ar?.badgeLabel || ""}
+                  onChange={(e) => updateArabicPackageField("badgeLabel", e.target.value)}
+                  placeholder="مثال: الأكثر طلباً"
+                  className="w-full px-3 py-2 border border-amber-300 bg-amber-50/40 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm text-right"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-primary mb-1">
-                  Callout Badge
+                  Callout Badge (English)
                 </label>
                 <input
                   type="text"
@@ -943,8 +1036,22 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 />
               </div>
               <div>
+                <label className="block text-xs font-medium text-primary mb-1 flex items-center justify-between">
+                  <span>Callout Badge (Arabic)</span>
+                  <span className="text-[10px] text-primary">شارة التمييز</span>
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={formData.translations?.ar?.calloutBadge || ""}
+                  onChange={(e) => updateArabicPackageField("calloutBadge", e.target.value)}
+                  placeholder="مثال: عرض محدود"
+                  className="w-full px-3 py-2 border border-amber-300 bg-amber-50/40 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm text-right"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-primary mb-1">
-                  Callout Title
+                  Callout Title (English)
                 </label>
                 <input
                   type="text"
@@ -955,8 +1062,22 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 />
               </div>
               <div>
+                <label className="block text-xs font-medium text-primary mb-1 flex items-center justify-between">
+                  <span>Callout Title (Arabic)</span>
+                  <span className="text-[10px] text-primary">عنوان التمييز</span>
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={formData.translations?.ar?.calloutTitle || ""}
+                  onChange={(e) => updateArabicPackageField("calloutTitle", e.target.value)}
+                  placeholder="عنوان التمييز بالعربية"
+                  className="w-full px-3 py-2 border border-amber-300 bg-amber-50/40 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm text-right"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-primary mb-1">
-                  Callout Description
+                  Callout Description (English)
                 </label>
                 <textarea
                   value={formData.calloutDescription || ""}
@@ -964,6 +1085,20 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                   placeholder="Callout description..."
                   rows={2}
                   className="w-full px-3 py-2 border border-primary/50 bg-creamey rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1 flex items-center justify-between">
+                  <span>Callout Description (Arabic)</span>
+                  <span className="text-[10px] text-primary">وصف التمييز</span>
+                </label>
+                <textarea
+                  dir="rtl"
+                  value={formData.translations?.ar?.calloutDescription || ""}
+                  onChange={(e) => updateArabicPackageField("calloutDescription", e.target.value)}
+                  placeholder="وصف التمييز بالعربية..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-amber-300 bg-amber-50/40 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm text-right"
                 />
               </div>
             </div>

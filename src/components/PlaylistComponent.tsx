@@ -169,6 +169,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
   // ── Form state ─────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState(() => ({
     title: playlist.title,
+    titleAr: playlist.translations?.ar?.title || "",
+    descriptionAr: Array.isArray(playlist.translations?.ar?.description) ? playlist.translations.ar.description : (playlist.translations?.ar?.description ? [playlist.translations.ar.description] : []),
     description: Array.isArray(playlist.description)
       ? playlist.description
       : playlist.description
@@ -192,6 +194,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
 
   // Folder input state
   const [folderName, setFolderName] = useState("");
+  const [folderNameAr, setFolderNameAr] = useState("");
 
   useEffect(() => {
     if (!isEditing) return;
@@ -244,9 +247,19 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
     if (formData.folders.some((f) => f.slug === slug)) return;
     setFormData((prev) => ({
       ...prev,
-      folders: [...prev.folders, { name, slug }],
+      folders: [
+        ...prev.folders,
+        {
+          name,
+          slug,
+          translations: folderNameAr.trim()
+            ? { ar: { name: folderNameAr.trim() } }
+            : undefined,
+        },
+      ],
     }));
     setFolderName("");
+    setFolderNameAr("");
   };
 
   const removeFolder = async (slug: string) => {
@@ -322,6 +335,18 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
     try {
       const payload = {
         ...formData,
+        translations: {
+          ar: {
+            title: formData.titleAr,
+            description: formData.descriptionAr.filter(Boolean),
+            category:
+              formData.category === "Gehaz Bestie Experience"
+                ? "تجربة جهاز البيستي"
+                : formData.category === "Wedding Planning Experience"
+                  ? "تجربة تخطيط الفرح"
+                  : formData.category,
+          },
+        },
         videos: formData.videos.map((v) => v.videoId),
       };
       const response = await axios.put(
@@ -371,8 +396,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
         .includes(videoSearch.toLowerCase());
       const matchesHint = playlistHintSearch
         ? video.playlistHint
-            ?.toLowerCase()
-            .includes(playlistHintSearch.toLowerCase())
+          ?.toLowerCase()
+          .includes(playlistHintSearch.toLowerCase())
         : true;
       return matchesTitle && matchesHint;
     });
@@ -397,6 +422,19 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-secondary">
+                Arabic Title (العنوان بالعربية)
+              </label>
+              <input
+                type="text"
+                name="titleAr"
+                value={formData.titleAr}
+                onChange={handleInputChange}
+                dir="rtl"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -465,6 +503,51 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                 Add Point
               </button>
             </div>
+            {/* Arabic Description points */}
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-secondary">
+                Arabic Description Points (نقاط الوصف بالعربية)
+              </label>
+              {formData.descriptionAr.map((point, idx) => (
+                <div key={idx} className="mb-1 flex items-center gap-2">
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={point}
+                    onChange={(e) => {
+                      const newDesc = [...formData.descriptionAr];
+                      newDesc[idx] = e.target.value;
+                      setFormData((prev) => ({ ...prev, descriptionAr: newDesc }));
+                    }}
+                    className="flex-1 rounded border px-2 py-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        descriptionAr: prev.descriptionAr.filter((_, i) => i !== idx),
+                      }))
+                    }
+                    className="text-xs text-red-500"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    descriptionAr: [...prev.descriptionAr, ""],
+                  }))
+                }
+                className="mt-2 rounded bg-primary px-2 py-1 text-sm text-white"
+              >
+                Add Arabic Point
+              </button>
+            </div>
 
             {/* Thumbnail */}
             <div className="md:col-span-2">
@@ -497,6 +580,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
               </div>
             </div>
 
+
+
             {/* Checkboxes */}
             <div className="flex items-center md:col-span-2">
               <input
@@ -528,12 +613,23 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
               </label>
 
               {/* Add row */}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
-                  placeholder="Folder name, e.g. Week 1"
+                  placeholder="Folder name (English), e.g. Week 1"
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addFolder())
+                  }
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <input
+                  type="text"
+                  placeholder="اسم المجلد بالعربي (مثلاً: الأسبوع الأول)"
+                  value={folderNameAr}
+                  onChange={(e) => setFolderNameAr(e.target.value)}
+                  dir="rtl"
                   onKeyDown={(e) =>
                     e.key === "Enter" && (e.preventDefault(), addFolder())
                   }
@@ -547,7 +643,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                 <button
                   type="button"
                   onClick={addFolder}
-                  className="rounded-md bg-primary px-3 py-2 text-sm text-white hover:bg-primary/90"
+                  className="rounded-md bg-primary px-3 py-2 text-sm text-white hover:bg-primary/90 whitespace-nowrap"
                 >
                   Add Folder
                 </button>
@@ -561,7 +657,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                       key={folder.slug}
                       className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
                     >
-                      <span className="font-medium">{folder.name}</span>
+                      <span className="font-medium">{folder.name}{folder.translations?.ar?.name ? ` (${folder.translations.ar.name})` : ""}</span>
                       <span className="text-xs text-gray-400">
                         #{folder.slug}
                       </span>
@@ -629,11 +725,10 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                       filteredAvailableVideos.map((video) => (
                         <div
                           key={video._id}
-                          className={`flex cursor-pointer items-center space-x-2 rounded p-2 ${
-                            isVideoSelected(video._id || "")
+                          className={`flex cursor-pointer items-center space-x-2 rounded p-2 ${isVideoSelected(video._id || "")
                               ? "border border-primary bg-primary/10"
                               : "bg-gray-50 hover:bg-gray-100"
-                          }`}
+                            }`}
                           onClick={() => toggleVideo(video._id || "")}
                         >
                           <input
@@ -757,9 +852,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
               <div>
                 <span className="font-medium text-creamey/90 block">Status:</span>
                 <span
-                  className={`block ${
-                    playlist.isPublic ? "text-green-400" : "text-yellow-400"
-                  }`}
+                  className={`block ${playlist.isPublic ? "text-green-400" : "text-yellow-400"
+                    }`}
                 >
                   {playlist.isPublic ? "Public" : "Private"}
                 </span>
@@ -773,9 +867,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                   <div>
                     <span className="font-medium text-creamey/90 block">Featured:</span>
                     <span
-                      className={`block ${
-                        playlist.featured ? "text-green-400" : "text-yellow-400"
-                      }`}
+                      className={`block ${playlist.featured ? "text-green-400" : "text-yellow-400"
+                        }`}
                     >
                       {playlist.featured ? "Yes" : "No"}
                     </span>

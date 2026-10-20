@@ -36,6 +36,12 @@ const VideoSchema = new Schema<Video>(
       type: [{ type: String, enum: ["groom", "bridesmaids"] }],
       index: true,
     },
+    translations: {
+      ar: {
+        title: { type: String, required: false },
+        description: { type: String, required: false },
+      },
+    },
   },
   {
     timestamps: true, // This will automatically add createdAt and updatedAt fields

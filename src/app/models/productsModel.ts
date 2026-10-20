@@ -25,6 +25,11 @@ const attributeSchema = new Schema<attribute>({
   name: { type: String, required: true }, // e.g., "Color" or "Size"
   stock: { type: Number, required: true, min: 0 },
   price: { type: Number, required: false, min: 0 }, // e.g., "Color" or "Size"
+  translations: {
+    ar: {
+      name: { type: String, required: false },
+    },
+  },
 });
 
 // Define the Variant schema
@@ -58,6 +63,12 @@ const VariantSchema = new Schema<Variant>({
     type: [mediaSchema],
     required: false,
     default: [],
+  },
+  translations: {
+    ar: {
+      name: { type: String, required: false },
+      attributeName: { type: String, required: false },
+    },
   },
 });
 
@@ -98,6 +109,16 @@ const ProductSchema = new Schema({
   },
   featured: { type: Boolean, default: false },
   ratings: { type: Number, default: 0, min: 0 },
+  translations: {
+    ar: {
+      title: { type: String, required: false },
+      description: { type: String, required: false },
+      productDimensions: { type: [String], required: false },
+      productDetails: { type: [String], required: false },
+      productCare: { type: [String], required: false },
+      season: { type: String, required: false },
+    },
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

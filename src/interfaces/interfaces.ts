@@ -13,6 +13,11 @@ export interface PackageVariant {
   price: number;
   duration: number;
   saving?: string;
+  translations?: {
+    ar?: {
+      saving?: string;
+    };
+  };
 }
 
 export interface PackageRenewal {
@@ -23,6 +28,11 @@ export interface PackageRenewal {
 export interface PackageCard {
   image: string;
   points: string[];
+  translations?: {
+    ar?: {
+      points?: string[];
+    };
+  };
 }
 
 export interface SupportCard {
@@ -31,6 +41,12 @@ export interface SupportCard {
   description: string[];
   imagePath: string;
   enable?: boolean;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string[];
+    };
+  };
 }
 
 export interface SubSubscriptionSlot {
@@ -42,11 +58,23 @@ export interface ComparisonFeature {
   feature: string;
   fullValue: string;
   miniValue: string;
+  translations?: {
+    ar?: {
+      feature?: string;
+      fullValue?: string;
+      miniValue?: string;
+    };
+  };
 }
 
 export interface PackageItem {
   value: string;
   included: boolean;
+  translations?: {
+    ar?: {
+      value?: string;
+    };
+  };
 }
 
 export interface Ipackage {
@@ -79,6 +107,23 @@ export interface Ipackage {
   calloutTitle?: string;
   calloutDescription?: string;
   comparisonFeatures?: ComparisonFeature[];
+  partOf?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  translations?: {
+    ar?: {
+      name?: string;
+      partOf?: string;
+      saving?: string;
+      notes?: string[];
+      badgeLabel?: string;
+      calloutBadge?: string;
+      calloutTitle?: string;
+      calloutDescription?: string;
+      heroTitle?: string;
+      heroSubtitle?: string;
+    };
+  };
 }
 // types/Video.ts
 export interface CommentUser {
@@ -128,6 +173,12 @@ export interface Video {
   playlistHint?: string;
   playlistFolder?: string; // slug of the folder this video belongs to within its playlist
   tags?: string[];
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string;
+    };
+  };
 }
 
 // types/Playlist.ts
@@ -137,6 +188,11 @@ export interface PlaylistFolder {
   _id?: string;
   name: string;   // e.g. "Behind the Scenes"
   slug: string;   // e.g. "behind-the-scenes"
+  translations?: {
+    ar?: {
+      name?: string;
+    };
+  };
 }
 
 export interface SubPlaylist {
@@ -173,6 +229,13 @@ export interface Playlist {
   featured?: boolean;
   createdAt: Date;
   updatedAt: Date;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string[];
+      category?: string;
+    };
+  };
 }
 
 export interface Variant {
@@ -182,6 +245,12 @@ export interface Variant {
   attributes: attribute[]; // e.g., [{ name: "Color", value: "Black" }, { name: "Capacity", value: "2L" }]
   images: media[];
   mobImages?: media[];
+  translations?: {
+    ar?: {
+      name?: string;
+      attributeName?: string;
+    };
+  };
 }
 
 
@@ -192,6 +261,11 @@ export type attribute = {
   name: string;
   stock: number;
   price?: number;
+  translations?: {
+    ar?: {
+      name?: string;
+    };
+  };
 };
 export type media = {
   url: string;
@@ -213,6 +287,12 @@ export interface Category {
   __v?: number;
   active?: boolean;
   type?: "wedding-planning" | "product";
+  translations?: {
+    ar?: {
+      categoryName?: string;
+      description?: string;
+    };
+  };
 }
 export interface Collection {
   _id: string;
@@ -231,6 +311,12 @@ export interface SubCategory {
   createdAt?: string;
   updatedAt?: string;
   active?: boolean;
+  translations?: {
+    ar?: {
+      subCategoryName?: string;
+      description?: string;
+    };
+  };
 }
 
 export interface Product {
@@ -249,6 +335,16 @@ export interface Product {
   featured: boolean;
   ratings: number;
   order?: number;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string;
+      productDimensions?: string[];
+      productDetails?: string[];
+      productCare?: string[];
+      season?: string;
+    };
+  };
 }
 
 export type AddProductType = Omit<Product, "_id">;

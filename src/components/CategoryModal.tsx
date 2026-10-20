@@ -28,6 +28,36 @@ const CategoryModal = ({
   const [description, setDescription] = useState(
     category?.description || subCategory?.description || "",
   );
+  const [arName, setArName] = useState(
+    category?.translations?.ar?.categoryName ||
+      subCategory?.translations?.ar?.subCategoryName ||
+      "",
+  );
+  const [arDescription, setArDescription] = useState(
+    category?.translations?.ar?.description ||
+      subCategory?.translations?.ar?.description ||
+      "",
+  );
+
+  useEffect(() => {
+    setName(category?.categoryName || subCategory?.subCategoryName || "");
+    setDescription(category?.description || subCategory?.description || "");
+    setArName(
+      category?.translations?.ar?.categoryName ||
+        subCategory?.translations?.ar?.subCategoryName ||
+        "",
+    );
+    setArDescription(
+      category?.translations?.ar?.description ||
+        subCategory?.translations?.ar?.description ||
+        "",
+    );
+    setCategoryID(subCategory?.categoryID?._id || "");
+    setImage(category?.image || category?.imageURL || subCategory?.image || "");
+    setHomePage(category?.HomePage || subCategory?.HomePage || false);
+    setActive(category?.active !== false && subCategory?.active !== false);
+    setCatType(category?.type || "product");
+  }, [category, subCategory, type]);
   const [categoryID, setCategoryID] = useState(
     subCategory?.categoryID._id || "",
   );
@@ -56,6 +86,12 @@ const CategoryModal = ({
           HomePage: homePage,
           active: active,
           type: catType,
+          translations: {
+            ar: {
+              categoryName: arName || undefined,
+              description: arDescription || undefined,
+            },
+          },
         });
       } else if (type === "editSub") {
         await axios.put(
@@ -67,6 +103,12 @@ const CategoryModal = ({
             image: image,
             HomePage: homePage,
             active: active,
+            translations: {
+              ar: {
+                subCategoryName: arName || undefined,
+                description: arDescription || undefined,
+              },
+            },
           },
         );
       }
@@ -90,6 +132,12 @@ const CategoryModal = ({
           HomePage: homePage,
           active: active,
           type: catType,
+          translations: {
+            ar: {
+              categoryName: arName || undefined,
+              description: arDescription || undefined,
+            },
+          },
         });
       } else if (type === "addSub") {
         const categoryObjectId = new mongoose.Types.ObjectId(categoryID);
@@ -100,6 +148,12 @@ const CategoryModal = ({
           image: image,
           HomePage: homePage,
           active: active,
+          translations: {
+            ar: {
+              subCategoryName: arName || undefined,
+              description: arDescription || undefined,
+            },
+          },
         });
       }
       refreshData();
@@ -166,19 +220,59 @@ const CategoryModal = ({
         type === "editSub" ||
         type === "addSub" ? (
           <>
-            <label className="mb-2 block">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mb-4 w-full rounded border px-3 py-2"
-            />
-            <label className="mb-2 block">Description</label>
-              <textarea
-                className="mb-4 w-full rounded border px-3 py-2"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">English Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded border px-3 py-2 text-sm"
+                  placeholder="Name in English"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700 flex items-center justify-between">
+                  <span>Arabic Name</span>
+                  <span className="text-xs text-primary font-normal">الاسم بالعربية</span>
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={arName}
+                  onChange={(e) => setArName(e.target.value)}
+                  className="w-full rounded border border-amber-200 bg-amber-50/30 px-3 py-2 text-sm text-right"
+                  placeholder="الاسم باللغة العربية"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">English Description</label>
+                <textarea
+                  className="w-full rounded border px-3 py-2 text-sm"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description in English"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700 flex items-center justify-between">
+                  <span>Arabic Description</span>
+                  <span className="text-xs text-primary font-normal">الوصف بالعربية</span>
+                </label>
+                <textarea
+                  dir="rtl"
+                  className="w-full rounded border border-amber-200 bg-amber-50/30 px-3 py-2 text-sm text-right"
+                  rows={3}
+                  value={arDescription}
+                  onChange={(e) => setArDescription(e.target.value)}
+                  placeholder="الوصف باللغة العربية"
+                />
+              </div>
+            </div>
               {(type === "add" || type === "edit") && (
                 <>
                   <label className="mb-2 block">Type</label>

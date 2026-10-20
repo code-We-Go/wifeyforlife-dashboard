@@ -20,7 +20,9 @@ const toSlug = (name: string) =>
 
 const EMPTY_FORM = {
   title: "",
+  titleAr: "",
   description: "",
+  descriptionAr: "",
   thumbnailUrl: "",
   category: "",
   isPublic: true,
@@ -42,6 +44,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
 
   // Folder input state
   const [folderName, setFolderName] = useState("");
+  const [folderNameAr, setFolderNameAr] = useState("");
 
   useEffect(() => {
     if (isModalOpen) fetchAvailableVideos();
@@ -80,9 +83,19 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
     if (formData.folders.some((f) => f.slug === slug)) return; // no duplicates
     setFormData((prev) => ({
       ...prev,
-      folders: [...prev.folders, { name, slug }],
+      folders: [
+        ...prev.folders,
+        {
+          name,
+          slug,
+          translations: folderNameAr.trim()
+            ? { ar: { name: folderNameAr.trim() } }
+            : undefined,
+        },
+      ],
     }));
     setFolderName("");
+    setFolderNameAr("");
   };
 
   const removeFolder = (slug: string) => {
@@ -134,6 +147,19 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
     try {
       const payload = {
         ...formData,
+        description: formData.description ? [formData.description] : [],
+        translations: {
+          ar: {
+            title: formData.titleAr,
+            description: formData.descriptionAr ? [formData.descriptionAr] : [],
+            category:
+            formData.category === "Gehaz Bestie Experience"
+              ? "تجربة جهاز البيستي"
+              : formData.category === "Wedding Planning Experience"
+              ? "تجربة تخطيط الفرح"
+              : formData.category,
+          },
+        },
         videos: formData.videos.map((v) => v.videoId),
       };
       const response = await axios.post("/api/playlists", payload);
@@ -183,6 +209,19 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
             </div>
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
+                Arabic Title (العنوان بالعربية)
+              </label>
+              <input
+                type="text"
+                name="titleAr"
+                value={formData.titleAr}
+                onChange={handleInputChange}
+                dir="rtl"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Category
               </label>
               <select
@@ -210,6 +249,19 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
               name="description"
               value={formData.description}
               onChange={handleInputChange}
+              rows={3}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Arabic Description (الوصف بالعربية)
+            </label>
+            <textarea
+              name="descriptionAr"
+              value={formData.descriptionAr}
+              onChange={handleInputChange}
+              dir="rtl"
               rows={3}
               className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -272,12 +324,21 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
             </label>
 
             {/* Add row */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
-                placeholder="Folder name, e.g. Week 1"
+                placeholder="Folder name (English), e.g. Week 1"
                 value={folderName}
                 onChange={(e) => setFolderName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addFolder())}
+                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <input
+                type="text"
+                placeholder="اسم المجلد بالعربي (مثلاً: الأسبوع الأول)"
+                value={folderNameAr}
+                onChange={(e) => setFolderNameAr(e.target.value)}
+                dir="rtl"
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addFolder())}
                 className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -289,7 +350,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
               <button
                 type="button"
                 onClick={addFolder}
-                className="rounded-md bg-primary px-3 py-2 text-sm text-white hover:bg-primary/90"
+                className="rounded-md bg-primary px-3 py-2 text-sm text-white hover:bg-primary/90 whitespace-nowrap"
               >
                 Add Folder
               </button>
@@ -303,7 +364,7 @@ const AddPlaylistModal: React.FC<AddPlaylistModalProps> = ({
                     key={folder.slug}
                     className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
                   >
-                    <span className="font-medium">{folder.name}</span>
+                    <span className="font-medium">{folder.name}{folder.translations?.ar?.name ? ` (${folder.translations.ar.name})` : ""}</span>
                     <span className="text-xs text-gray-400">#{folder.slug}</span>
                     <button
                       type="button"

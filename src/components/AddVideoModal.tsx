@@ -21,7 +21,9 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     title: "",
+    titleAr: "",
     description: "",
+    descriptionAr: "",
     url: "",
     thumbnailUrl: "",
     tags: [] as string[],
@@ -62,12 +64,23 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post("/api/videos", formData);
+      const payload = {
+        ...formData,
+        translations: {
+          ar: {
+            title: formData.titleAr,
+            description: formData.descriptionAr,
+          },
+        },
+      };
+      const response = await axios.post("/api/videos", payload);
       setVideos((prev) => [response.data.data, ...prev]);
       setModalOpen(false);
       setFormData({
         title: "",
+        titleAr: "",
         description: "",
+        descriptionAr: "",
         url: "",
         thumbnailUrl: "",
 
@@ -117,6 +130,19 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Arabic Title (العنوان بالعربية)
+            </label>
+            <input
+              type="text"
+              name="titleAr"
+              value={formData.titleAr}
+              onChange={handleInputChange}
+              dir="rtl"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
           </div>
 
           <div>
@@ -127,6 +153,19 @@ const AddVideoModal: React.FC<AddVideoModalProps> = ({
               name="description"
               value={formData.description}
               onChange={handleInputChange}
+              rows={3}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Arabic Description (الوصف بالعربية)
+            </label>
+            <textarea
+              name="descriptionAr"
+              value={formData.descriptionAr}
+              onChange={handleInputChange}
+              dir="rtl"
               rows={3}
               className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />

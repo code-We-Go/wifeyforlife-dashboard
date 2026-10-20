@@ -21,7 +21,9 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     title: video.title,
+    titleAr: video.translations?.ar?.title || "",
     description: video.description || "",
+    descriptionAr: video.translations?.ar?.description || "",
     url: video.url,
     thumbnailUrl: video.thumbnailUrl,
     isPublic: video.isPublic || false,
@@ -51,9 +53,18 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
 
   const handleSave = async () => {
     try {
+      const payload = {
+        ...formData,
+        translations: {
+          ar: {
+            title: formData.titleAr,
+            description: formData.descriptionAr,
+          },
+        },
+      };
       const response = await axios.put(
         `/api/videos?videoID=${video._id}`,
-        formData,
+        payload,
       );
       setVideos((prev) =>
         prev.map((v) => (v._id === video._id ? response.data.data : v)),
@@ -167,6 +178,19 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
                 className="w-full rounded-2xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
+            <div className="w-full">
+              <label className="mb-2 block tracking-wide text-sm font-medium text-primary/80">
+                Arabic Title (العنوان بالعربية)
+              </label>
+              <input
+                type="text"
+                name="titleAr"
+                value={formData.titleAr}
+                onChange={handleInputChange}
+                dir="rtl"
+                className="w-full rounded-2xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
 
             {/* <div>
             <label className="block text-sm font-medium text-primary/80 mb-2">
@@ -183,6 +207,19 @@ const VideoComponent: React.FC<VideoComponentProps> = ({
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
+                rows={3}
+                className="w-full rounded-2xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-primary/80">
+                Arabic Description (الوصف بالعربية)
+              </label>
+              <textarea
+                name="descriptionAr"
+                value={formData.descriptionAr}
+                onChange={handleInputChange}
+                dir="rtl"
                 rows={3}
                 className="w-full rounded-2xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />

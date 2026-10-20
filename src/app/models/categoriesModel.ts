@@ -19,6 +19,12 @@ const categoriesSchema = new mongoose.Schema({
     default: "product",
   },
   active: { type: Boolean, default: true },
+  translations: {
+    ar: {
+      categoryName: { type: String, required: false },
+      description: { type: String, required: false },
+    },
+  },
 });
 console.log('Registering CategoryModel');
 const categoriesModel =
