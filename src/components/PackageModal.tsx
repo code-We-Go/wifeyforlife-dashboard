@@ -18,6 +18,9 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     name: "",
     imgUrl: "",
     images: [],
+    arabicImgUrl: "",
+    arabicImages: [],
+    enableArabicEdition: false,
     mobMainImage: "",
     mobImages: [],
     price: 0,
@@ -174,6 +177,9 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         name: packageItem.name,
         imgUrl: packageItem.imgUrl,
         images: packageItem.images || [],
+        arabicImgUrl: packageItem.arabicImgUrl || packageItem.translations?.ar?.imgUrl || "",
+        arabicImages: packageItem.arabicImages || packageItem.translations?.ar?.images || [],
+        enableArabicEdition: packageItem.enableArabicEdition ?? (packageItem.slug === "GehazBestiePlanner" || packageItem.name?.toLowerCase().includes("gehaz")),
         mobMainImage: packageItem.mobMainImage || "",
         mobImages: packageItem.mobImages || [],
         price: packageItem.price,
@@ -218,6 +224,9 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         name: "",
         imgUrl: "",
         images: [],
+        arabicImgUrl: "",
+        arabicImages: [],
+        enableArabicEdition: false,
         mobMainImage: "",
         mobImages: [],
         price: 0,
@@ -282,9 +291,23 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
       console.log("Cards in form data:", formData.cards);
       console.log("Images in form data:", formData.images);
 
+      const dataToSubmit = {
+        ...formData,
+        translations: {
+          ...formData.translations,
+          ar: {
+            ...formData.translations?.ar,
+            imgUrl: formData.arabicImgUrl || formData.translations?.ar?.imgUrl,
+            images: (formData.arabicImages && formData.arabicImages.length > 0)
+              ? formData.arabicImages
+              : formData.translations?.ar?.images,
+          }
+        }
+      };
+
       if (packageItem) {
         // Update existing package
-        const response = await axios.put(`/api/packages?packageID=${packageItem._id}`, formData);
+        const response = await axios.put(`/api/packages?packageID=${packageItem._id}`, dataToSubmit);
         console.log("Update response:", response.data);
         console.log("Updated package data:", response.data.data);
 
@@ -311,7 +334,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
         }
       } else {
         // Create new package
-        const response = await axios.post("/api/packages", formData);
+        const response = await axios.post("/api/packages", dataToSubmit);
         console.log("Create response:", response.data);
         console.log("Created package data:", response.data.data);
 
@@ -608,6 +631,22 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     }));
   };
 
+  const addArabicImage = (url: string) => {
+    if (url.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        arabicImages: [...(prev.arabicImages || []), url.trim()]
+      }));
+    }
+  };
+
+  const removeArabicImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      arabicImages: (prev.arabicImages || []).filter((_, i) => i !== index)
+    }));
+  };
+
   // Support card handlers
   const addSupportCard = () => {
     if (newSupportCard.title.trim() && newSupportCard.imagePath.trim()) {
@@ -897,6 +936,111 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               }}
               className="mt-2 bg-primary w-fit rounded-md px-2 text-white"
             />
+          </div>
+
+          {/* Arabic Edition Controls & Photos */}
+          <div className="p-4 border-2 border-primary/30 bg-primary/5 rounded-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-base font-bold text-primary">
+                  Arabic Edition (النسخة العربية)
+                </label>
+                <p className="text-xs text-primary/70">
+                  Allow customers to choose the Arabic planner edition on the package page with Arabic photos.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.enableArabicEdition ?? false}
+                  onChange={(e) => setFormData(prev => ({ ...prev, enableArabicEdition: e.target.checked }))}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
+
+            {formData.enableArabicEdition && (
+              <div className="space-y-4 pt-3 border-t border-primary/20">
+                {/* Arabic Main Cover */}
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-1">
+                    Arabic Main Cover Image (الغلاف العربي الرئيسي)
+                  </label>
+                  {formData.arabicImgUrl && (
+                    <div className="relative w-32 h-32 mb-2 rounded border border-primary/50 overflow-hidden">
+                      <img
+                        src={formData.arabicImgUrl}
+                        alt="Arabic Package Main"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, arabicImgUrl: "" }))}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                        title="Remove Arabic Main Image"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                  <UploadButton
+                    endpoint="mediaUploader"
+                    onClientUploadComplete={(res) => {
+                      if (res && res.length > 0) {
+                        setFormData(prev => ({ ...prev, arabicImgUrl: res[0].url }));
+                      }
+                    }}
+                    onUploadError={(error: Error) => {
+                      console.error("Upload error:", error);
+                      alert(`ERROR! ${error.message}`);
+                    }}
+                    className="mt-2 bg-primary w-fit rounded-md px-2 text-white"
+                  />
+                </div>
+
+                {/* Arabic Additional Images */}
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-1">
+                    Arabic Additional Images (صور البلانر باللغة العربية)
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(formData.arabicImages || []).map((image, index) => (
+                      <div key={index} className="relative w-24 h-24 border border-primary/50 rounded overflow-hidden">
+                        <img
+                          src={image}
+                          alt={`Arabic Package Image ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeArabicImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                          title="Remove Image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <UploadButton
+                    endpoint="mediaUploader"
+                    onClientUploadComplete={(res) => {
+                      if (res && res.length > 0) {
+                        res.forEach(file => {
+                          addArabicImage(file.url);
+                        });
+                      }
+                    }}
+                    onUploadError={(error: Error) => {
+                      console.error("Upload error:", error);
+                      alert(`ERROR! ${error.message}`);
+                    }}
+                    className="mt-2 bg-primary w-fit rounded-md px-2 text-white"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

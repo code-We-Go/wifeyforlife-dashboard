@@ -116,10 +116,15 @@ const CartItemSmall = ({
             >
               {item.productName}
             </h3>
+            {(item.edition || item.editionName) && (
+              <span className="inline-block mt-1 rounded-full bg-pink-100 px-2.5 py-0.5 text-[11px] font-bold text-pink-700 border border-pink-300">
+                📖 {item.editionName || (item.edition === "ar" ? "النسخة العربية" : "English Edition")}
+              </span>
+            )}
           </div>
           <div className="flex w-full  justify-between text-xs  font-semibold">
             {/* <h3 className=''> Variant : {item.variant.name}</h3> */}
-            <h3 className="">{item.attributes.name}</h3>
+            <h3 className="">{item.attributes?.name}</h3>
           </div>
 
           <div className="mt-0.5 flex justify-between   text-xs font-semibold ">

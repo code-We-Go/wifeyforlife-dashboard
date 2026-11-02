@@ -21,6 +21,22 @@ const OrderComponent = ({
 }) => {
   const [status, setStatus] = useState(order.status);
   const [payment, setPayment] = useState(order.payment);
+
+  const selectedEdition = order.edition || order.cart?.find((i: any) => i.edition)?.edition;
+  const selectedEditionName = order.editionName || order.cart?.find((i: any) => i.editionName)?.editionName;
+  const isGehaz = order.cart?.some((i: any) => 
+    i.productName?.toLowerCase().includes("gehaz") ||
+    i.productName?.toLowerCase().includes("full wifey") ||
+    i.productName?.toLowerCase().includes("mini experience") ||
+    i.productName?.includes("تجربة") ||
+    i.productName?.includes("جهاز")
+  );
+  const editionDisplay = selectedEditionName || (
+    selectedEdition === "ar" ? "النسخة العربية (Arabic Edition)" :
+    selectedEdition === "en" ? "English Edition" :
+    (isGehaz ? "English Edition" : null)
+  );
+
   const updateOrder = async (field: keyof IOrder, value: string) => {
     if (!order) return;
 
@@ -147,17 +163,38 @@ const OrderComponent = ({
   return (
     <div className="relative min-h-6 w-[97%] rounded-2xl border border-secondary bg-backgroundColor/25 bg-secondary px-4 py-8 text-sm text-creamey">
       <div className="flex w-full justify-between border-b border-white pb-1 text-sm">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h1>Payment ID:</h1>
-          <p>{order.paymentID || order._id}</p>
+          <p
+            onClick={() => setDetailsModal(true)}
+            className="cursor-pointer font-bold underline hover:text-white"
+          >
+            {order.paymentID || order._id}
+          </p>
+          {editionDisplay && (
+            <span
+              onClick={() => setDetailsModal(true)}
+              className="ml-2 cursor-pointer rounded-full bg-white px-3 py-1 text-xs font-extrabold text-secondary shadow-md hover:bg-creamey"
+            >
+              📖 {editionDisplay}
+            </span>
+          )}
         </div>
 
-        {/* Clickable Icon to Open Modal */}
-        <div className="relative">
-          <IoMenuSharp
-            onClick={() => setOptionsModal(true)}
-            className="cursor-pointer"
-          />
+        {/* Clickable Actions */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setDetailsModal(true)}
+            className="rounded-lg bg-white/15 px-3 py-1 text-xs font-bold text-creamey hover:bg-white/25 transition-colors border border-white/20"
+          >
+            Order Details
+          </button>
+          <div className="relative">
+            <IoMenuSharp
+              onClick={() => setOptionsModal(true)}
+              className="cursor-pointer text-lg"
+            />
 
           {/* Options Modal */}
           {optionsModalIsOpen && (
@@ -185,6 +222,7 @@ const OrderComponent = ({
               </p>
             </div>
           )}
+          </div>
         </div>
       </div>
 
@@ -295,6 +333,19 @@ const OrderComponent = ({
               </span>
             </div>
             <h2 className="mb-4 text-lg font-bold">ORDER DETAILS</h2>
+
+            {editionDisplay && (
+              <div className="mb-4 rounded-xl border-2 border-primary bg-primary/10 p-3.5 text-primary">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-sm font-bold flex items-center gap-1.5">
+                    <span className="text-base">📖</span> Planner Edition / لغة البلانر:
+                  </span>
+                  <span className="font-extrabold text-sm bg-white px-3 py-1 rounded-lg border border-primary/30 text-secondary shadow-sm">
+                    {editionDisplay}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Order Info */}
             <div className="space-y-2  text-left">

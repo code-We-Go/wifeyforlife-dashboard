@@ -63,6 +63,8 @@ interface Subscription {
   instapayReciept?: string;
   cart?: ICartItem[];
   pickupFromBazar?: boolean;
+  edition?: "ar" | "en";
+  editionName?: string;
 }
 
 interface SubSubscription {
@@ -176,6 +178,8 @@ const SubscriptionsPage = () => {
     status: "pending",
     cart: [] as ICartItem[],
     pickupFromBazar: false,
+    edition: "" as "ar" | "en" | "",
+    editionName: "",
   });
 
   const [activeSections, setActiveSections] = useState({
@@ -417,6 +421,7 @@ const SubscriptionsPage = () => {
       "Payment ID": sub.paymentID,
       Email: sub.billingEmail || sub.email || "",
       Package: sub.packageID?.name || "",
+      "Planner Edition": sub.editionName || (sub.edition === "ar" ? "النسخة العربية (Arabic Edition)" : sub.edition === "en" ? "English Edition" : ""),
       Subscribed: sub.subscribed ? "Yes" : "No",
       "Expiry Date": sub.expiryDate,
       "Created At": sub.createdAt,
@@ -554,6 +559,8 @@ const SubscriptionsPage = () => {
         status: subscription.status || "pending",
         cart: subscription.cart || [],
         pickupFromBazar: subscription.pickupFromBazar || false,
+        edition: (subscription.edition as "ar" | "en") || "",
+        editionName: subscription.editionName || "",
       });
 
     } else if (type === "add") {
@@ -607,6 +614,8 @@ const SubscriptionsPage = () => {
         status: "pending",
         cart: [],
         pickupFromBazar: false,
+        edition: "",
+        editionName: "",
       });
 
     }
@@ -1056,7 +1065,14 @@ const SubscriptionsPage = () => {
                     </td>
                     <td className="border p-2">{sub.paymentID}</td>
                     <td className="border p-2">
-                      {sub.packageID ? sub.packageID.name : "-"}
+                      <div className="flex flex-col gap-1 items-start">
+                        <span>{sub.packageID ? sub.packageID.name : "-"}</span>
+                        {(sub.edition || sub.editionName) && (
+                          <span className="inline-block rounded-full bg-pink-50 px-2 py-0.5 text-[11px] font-bold text-pink-700 border border-pink-200">
+                            📖 {sub.editionName || (sub.edition === "ar" ? "النسخة العربية" : "English Edition")}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {/* <td className="p-2 border">{sub.total ? `${sub.currency || ""} ${sub.total.toFixed(2)}` : "-"}</td> */}
                     {activeTab !== "paymob" && activeTab !== "instapay" && (
@@ -1494,6 +1510,27 @@ const SubscriptionsPage = () => {
                               {pkg.name}
                             </option>
                           ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Planner Edition / لغة البلانر
+                        </label>
+                        <select
+                          value={form.edition || ""}
+                          onChange={(e) => {
+                            const ed = e.target.value as "ar" | "en" | "";
+                            setForm((f) => ({
+                              ...f,
+                              edition: ed,
+                              editionName: ed === "ar" ? "النسخة العربية" : ed === "en" ? "English Edition" : "",
+                            }));
+                          }}
+                          className="w-full rounded border p-2 text-sm"
+                        >
+                          <option value="">Default (None specified)</option>
+                          <option value="ar">النسخة العربية (Arabic Edition)</option>
+                          <option value="en">English Edition</option>
                         </select>
                       </div>
                       <div>
@@ -2640,6 +2677,25 @@ const SubscriptionsPage = () => {
                           className="w-full rounded border p-2 text-sm bg-gray-50 text-gray-700"
                         />
                       </div>
+                      {(selectedSubscription.edition || selectedSubscription.editionName) && (
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-pink-700">
+                            Planner Edition / لغة البلانر
+                          </label>
+                          <input
+                            type="text"
+                            readOnly
+                            disabled
+                            value={
+                              selectedSubscription.editionName ||
+                              (selectedSubscription.edition === "ar"
+                                ? "النسخة العربية (Arabic Edition)"
+                                : "English Edition")
+                            }
+                            className="w-full rounded border border-pink-300 p-2 text-sm bg-pink-50 font-bold text-pink-800"
+                          />
+                        </div>
+                      )}
                       <div>
                         <label className="mb-1 block text-sm font-medium">Paid</label>
                         <input

@@ -22,6 +22,8 @@ export interface ISubscription extends Document {
   status?: "order_created" | "picked_up" | "in_progress" | "out_for_delivery" | "delivered" | "cancelled" | "returned" | "exception" | "investigation" | "awaiting_action" | "on_hold" | "pending" | "confirmed" | "shipped";
   billingWhatsAppNumber?: string;
   billingEmail?: string;
+  edition?: "ar" | "en";
+  editionName?: string;
   // Because of timestamps: true
 }
 
@@ -101,6 +103,8 @@ const SubscriptionSchema = new Schema(
     subTotal: { type: Number, required: false },
         paymentMethod: { type: String, required: false, enum: ["instapay", "cash", "card"] },
     instapayReciept: { type: String, required: false },
+    edition: { type: String, enum: ["ar", "en"], required: false },
+    editionName: { type: String, required: false },
     cost: { type: Number, required: false },
     shipping: { type: Number, required: false },
     currency: { type: String, required: false },

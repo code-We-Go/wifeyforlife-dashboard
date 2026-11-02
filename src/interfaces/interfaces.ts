@@ -78,9 +78,13 @@ export interface PackageItem {
 }
 
 export interface Ipackage {
+  slug?: string;
   name: string;
   imgUrl: string; // Main image (keeping for backward compatibility)
   images: string[]; // Array of image URLs
+  arabicImgUrl?: string;
+  arabicImages?: string[];
+  enableArabicEdition?: boolean;
   mobMainImage?: string;
   mobImages?: string[];
   price: number;
@@ -122,6 +126,8 @@ export interface Ipackage {
       calloutDescription?: string;
       heroTitle?: string;
       heroSubtitle?: string;
+      imgUrl?: string;
+      images?: string[];
     };
   };
 }
@@ -373,6 +379,8 @@ export interface CartItem {
   imageUrl: string;
   collections?: string[];
   originalPrice?: number;
+  edition?: "ar" | "en";
+  editionName?: string;
 }
 
 export type FeaturedProduct = Omit<CartItem, "id" | "quantity">;
@@ -439,6 +447,8 @@ export interface IOrder {
   billingPhone?: string;
   billingEmail?: string;
   instapayReciept?: string;
+  edition?: "ar" | "en";
+  editionName?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

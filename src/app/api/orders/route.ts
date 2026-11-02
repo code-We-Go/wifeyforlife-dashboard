@@ -53,7 +53,7 @@ function formatSubsAsOrder(subs: any[]) {
           price: price,
           originalPrice: pkg.price || 0,
           quantity: 1,
-          imageUrl: pkg.imgUrl || (pkg.images && pkg.images[0]) || "",
+          imageUrl: (sub.edition === "ar" && (pkg.arabicImgUrl || (pkg.arabicImages && pkg.arabicImages[0]))) || pkg.imgUrl || (pkg.images && pkg.images[0]) || "",
           attributes: {
             name: attrName,
             stock: 1,
@@ -64,6 +64,8 @@ function formatSubsAsOrder(subs: any[]) {
             attributes: [],
             images: [],
           },
+          edition: sub.edition,
+          editionName: sub.editionName,
         });
       }
     }
@@ -89,6 +91,8 @@ function formatSubsAsOrder(subs: any[]) {
             imageUrl: item.imageUrl || "",
             attributes: item.attributes || { name: "", stock: 0 },
             variant: item.variant || { name: "", attributeName: "", attributes: [], images: [] },
+            edition: item.edition || sub.edition,
+            editionName: item.editionName || sub.editionName,
           });
         }
       });
@@ -142,6 +146,8 @@ function formatSubsAsOrder(subs: any[]) {
     giftCardName: sortedSubs.find(s => s.giftCardName)?.giftCardName || "",
     specialMessage: sortedSubs.find(s => s.specialMessage)?.specialMessage || "",
     isSubscriptionOrder: true,
+    edition: master.edition || sortedSubs.find(s => s.edition)?.edition,
+    editionName: master.editionName || sortedSubs.find(s => s.editionName)?.editionName,
     createdAt: master.createdAt,
     updatedAt: master.updatedAt,
   };
