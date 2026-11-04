@@ -15,8 +15,18 @@ const InspoSchema = new Schema(
             favoriteCount: { type: Number, default: 0, min: 0 },
           },
         ],
+        translations: {
+          ar: {
+            title: { type: String, required: false },
+          },
+        },
       },
     ],
+    translations: {
+      ar: {
+        title: { type: String, required: false },
+      },
+    },
   },
   { timestamps: true },
 );

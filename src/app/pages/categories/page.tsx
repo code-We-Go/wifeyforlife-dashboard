@@ -85,26 +85,24 @@ const CategoriesPage = () => {
   return (
     <DefaultLayout>
       <div className="flex h-auto min-h-screen w-full flex-col items-center justify-start gap-4 overflow-hidden bg-backgroundColor px-1 py-2 md:px-2 md:py-4">
-        
+
         {/* Header and Add Buttons */}
         <div className="flex w-[97%] flex-col gap-4 md:flex-row md:items-center md:justify-between text-primary">
           <div className="flex gap-4">
             <button
-              className={`rounded-2xl border-[1px] px-6 py-2 text-sm transition-all ${
-                activeTab === "categories"
+              className={`rounded-2xl border-[1px] px-6 py-2 text-sm transition-all ${activeTab === "categories"
                   ? "bg-secondary text-creamey"
                   : "bg-white text-secondary border-secondary"
-              }`}
+                }`}
               onClick={() => setActiveTab("categories")}
             >
               CATEGORIES
             </button>
             <button
-              className={`rounded-2xl border-[1px] px-6 py-2 text-sm transition-all ${
-                activeTab === "subcategories"
+              className={`rounded-2xl border-[1px] px-6 py-2 text-sm transition-all ${activeTab === "subcategories"
                   ? "bg-secondary text-creamey"
                   : "bg-white text-secondary border-secondary"
-              }`}
+                }`}
               onClick={() => setActiveTab("subcategories")}
             >
               SUBCATEGORIES
@@ -230,7 +228,16 @@ const CategoriesPage = () => {
                             </span>
                           )}
                         </td>
-                        <td className="border p-2">{category.categoryName}</td>
+                        <td className="border p-2">
+                          <div className="font-semibold">{category.categoryName}</div>
+                          {category.translations?.ar?.categoryName ? (
+                            <div className="text-xs text-primary font-medium" dir="rtl">
+                              {category.translations.ar.categoryName}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-gray-400 italic">No Arabic name</span>
+                          )}
+                        </td>
                         <td className="border p-2">
                           <span className={`rounded px-2 py-1 text-xs ${category.type === "wedding-planning" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
                             {category.type || "product"}
@@ -349,14 +356,21 @@ const CategoriesPage = () => {
                           )}
                         </td>
                         <td className="border p-2">
-                          {subCategory.subCategoryName}
+                          <div className="font-semibold">{subCategory.subCategoryName}</div>
+                          {subCategory.translations?.ar?.subCategoryName ? (
+                            <div className="text-xs text-primary font-medium" dir="rtl">
+                              {subCategory.translations.ar.subCategoryName}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-gray-400 italic">No Arabic name</span>
+                          )}
                         </td>
                         <td className="border p-2">{subCategory.description}</td>
                         <td className="border p-2">
                           {subCategory?.categoryID?._id
                             ? allCategories.find(
-                                (cat) => cat._id === subCategory.categoryID._id,
-                              )?.categoryName || subCategory?.categoryID?.categoryName || "N/A"
+                              (cat) => cat._id === subCategory.categoryID._id,
+                            )?.categoryName || subCategory?.categoryID?.categoryName || "N/A"
                             : "Category Deleted"}
                         </td>
                         <td className="space-x-2 border p-2">

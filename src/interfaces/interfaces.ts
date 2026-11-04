@@ -491,6 +491,11 @@ export interface InspoSection {
     downloadCount: number;
     favoriteCount?: number;
   }[];
+  translations?: {
+    ar?: {
+      title?: string;
+    };
+  };
 }
 
 export interface Inspo {
@@ -498,6 +503,11 @@ export interface Inspo {
   title: string;
   viewCount?: number;
   sections: InspoSection[];
+  translations?: {
+    ar?: {
+      title?: string;
+    };
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }

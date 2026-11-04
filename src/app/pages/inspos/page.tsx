@@ -29,6 +29,7 @@ const InsposPage = () => {
   // Modal States
   const [showAddInspoModal, setShowAddInspoModal] = useState(false);
   const [newInspoTitle, setNewInspoTitle] = useState("");
+  const [newInspoArTitle, setNewInspoArTitle] = useState("");
 
   const [showAddSectionModal, setShowAddSectionModal] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
@@ -55,11 +56,17 @@ const InsposPage = () => {
     try {
       const res = await axios.post("/api/inspos", {
         title: newInspoTitle,
+        translations: {
+          ar: {
+            title: newInspoArTitle || undefined,
+          },
+        },
         sections: [],
       });
       if (res.status === 201) {
         setInspos([res.data.data, ...inspos]);
         setNewInspoTitle("");
+        setNewInspoArTitle("");
         setShowAddInspoModal(false);
         Swal.fire({
           icon: "success",
@@ -240,22 +247,40 @@ const InsposPage = () => {
   };
 
   const handleEditInspoTitle = async (inspo: Inspo) => {
-    const { value: newTitle } = await Swal.fire({
+    const { value: formValues } = await Swal.fire({
       title: "Edit Board Title",
-      input: "text",
-      inputValue: inspo.title,
+      html: `
+        <div style="text-align: left; margin-bottom: 8px;">
+          <label style="font-size: 12px; font-weight: 600;">English Title</label>
+          <input id="swal-inspo-en" class="swal2-input" placeholder="English Title" value="${inspo.title || ''}" style="margin: 4px 0 12px; width: 100%;">
+        </div>
+        <div style="text-align: right; margin-bottom: 8px;">
+          <label style="font-size: 12px; font-weight: 600;">العنوان بالعربية</label>
+          <input id="swal-inspo-ar" class="swal2-input" dir="rtl" placeholder="العنوان بالعربية" value="${inspo.translations?.ar?.title || ''}" style="margin: 4px 0; width: 100%;">
+        </div>
+      `,
+      focusConfirm: false,
       showCancelButton: true,
-      inputValidator: (value) => {
-        if (!value) {
-          return "You need to write something!";
+      preConfirm: () => {
+        const en = (document.getElementById('swal-inspo-en') as HTMLInputElement)?.value;
+        const ar = (document.getElementById('swal-inspo-ar') as HTMLInputElement)?.value;
+        if (!en) {
+          Swal.showValidationMessage('English title is required');
+          return false;
         }
-      },
+        return { en, ar };
+      }
     });
 
-    if (newTitle && newTitle !== inspo.title) {
+    if (formValues) {
       try {
         const res = await axios.put(`/api/inspos?id=${inspo._id}`, {
-          title: newTitle,
+          title: formValues.en,
+          translations: {
+            ar: {
+              title: formValues.ar || undefined,
+            },
+          },
         });
         if (res.status === 200) {
           updateInspoState(res.data.data);
@@ -407,9 +432,16 @@ const InsposPage = () => {
                           </div>
                         </div>
                         <div className="mb-1 flex items-center justify-between">
-                          <h5 className="text-lg font-bold text-black dark:text-white">
-                            {inspo.title}
-                          </h5>
+                          <div>
+                            <h5 className="text-lg font-bold text-black dark:text-white">
+                              {inspo.title}
+                            </h5>
+                            {inspo.translations?.ar?.title && (
+                              <p className="text-xs font-semibold text-primary" dir="rtl">
+                                {inspo.translations.ar.title}
+                              </p>
+                            )}
+                          </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -465,9 +497,16 @@ const InsposPage = () => {
                       &larr; Back
                     </button>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-xl font-semibold text-black dark:text-white">
-                        {selectedInspo.title}
-                      </h4>
+                      <div>
+                        <h4 className="text-xl font-semibold text-black dark:text-white">
+                          {selectedInspo.title}
+                        </h4>
+                        {selectedInspo.translations?.ar?.title && (
+                          <p className="text-xs font-semibold text-primary" dir="rtl">
+                            {selectedInspo.translations.ar.title}
+                          </p>
+                        )}
+                      </div>
                       <button
                         onClick={() => handleEditInspoTitle(selectedInspo)}
                         className="text-gray-500 hover:text-primary"
@@ -1125,13 +1164,27 @@ const InsposPage = () => {
             <h3 className="mb-4 text-lg font-bold text-black dark:text-white">
               Create New Board
             </h3>
-            <input
-              type="text"
-              placeholder="Board Title"
-              value={newInspoTitle}
-              onChange={(e) => setNewInspoTitle(e.target.value)}
-              className="mb-4 w-full rounded border border-stroke p-2 dark:border-strokedark dark:bg-meta-4"
-            />
+            <div className="mb-3">
+              <label className="mb-1 block text-xs font-semibold text-gray-700">English Title</label>
+              <input
+                type="text"
+                placeholder="Board Title (English)"
+                value={newInspoTitle}
+                onChange={(e) => setNewInspoTitle(e.target.value)}
+                className="w-full rounded border border-stroke p-2 dark:border-strokedark dark:bg-meta-4 text-sm"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="mb-1 block text-xs font-semibold text-gray-700 text-right">العنوان بالعربية</label>
+              <input
+                type="text"
+                dir="rtl"
+                placeholder="العنوان باللغة العربية"
+                value={newInspoArTitle}
+                onChange={(e) => setNewInspoArTitle(e.target.value)}
+                className="w-full rounded border border-stroke p-2 dark:border-strokedark dark:bg-meta-4 text-sm text-right"
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowAddInspoModal(false)}
