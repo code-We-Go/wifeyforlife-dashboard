@@ -224,6 +224,13 @@ export async function POST(request: Request) {
     // Convert empty strings to null for ObjectId fields
     if (body.appliedDiscount === "") body.appliedDiscount = null;
     if (body.packageID === "") body.packageID = null;
+    if (!body.edition) delete body.edition;
+    if (!body.paymentMethod) delete body.paymentMethod;
+    if (Array.isArray(body.allowedPlaylists)) {
+      body.allowedPlaylists = body.allowedPlaylists.filter(
+        (item: any) => item?.playlistID && item?.expiryDate,
+      );
+    }
 
     if (body.appliedDiscount && typeof body.appliedDiscount === "string") {
       // Try to find by code
@@ -326,6 +333,21 @@ export async function PUT(request: Request) {
     if (body.appliedDiscount === "") body.appliedDiscount = null;
     if (body.packageID === "") body.packageID = null;
 
+    const unsetFields: Record<string, 1> = {};
+    if (body.edition === "" || body.edition === null) {
+      delete body.edition;
+      unsetFields.edition = 1;
+    }
+    if (body.paymentMethod === "" || body.paymentMethod === null) {
+      delete body.paymentMethod;
+      unsetFields.paymentMethod = 1;
+    }
+    if (Array.isArray(body.allowedPlaylists)) {
+      body.allowedPlaylists = body.allowedPlaylists.filter(
+        (item: any) => item?.playlistID && item?.expiryDate,
+      );
+    }
+
     if (body.appliedDiscount && typeof body.appliedDiscount === "string") {
       // Try to find by code
       const discount = await DiscountModel.findOne({
@@ -360,11 +382,22 @@ export async function PUT(request: Request) {
       );
     }
     console.log(JSON.stringify(body));
-    const updated = await subscriptionsModel.findByIdAndUpdate(
+    const updateDoc =
+      Object.keys(unsetFields).length > 0
+        ? { $set: body, $unset: unsetFields }
+        : body;
+    let updated = await subscriptionsModel.findByIdAndUpdate(
       subscriptionID,
-      body,
+      updateDoc,
       { new: true, runValidators: true },
     );
+    if (!updated) {
+      updated = await subscriptionPaymentModel.findByIdAndUpdate(
+        subscriptionID,
+        updateDoc,
+        { new: true, runValidators: true },
+      );
+    }
     if (!updated) {
       return NextResponse.json(
         { error: "Subscription not found" },
@@ -373,6 +406,7 @@ export async function PUT(request: Request) {
     }
     return NextResponse.json({ data: updated }, { status: 200 });
   } catch (error: any) {
+    console.error("Error updating subscription:", error);
     if (error.name === "ValidationError") {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

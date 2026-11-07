@@ -701,10 +701,12 @@ const SubscriptionsPage = () => {
       // Prepare payload to ensure only IDs are sent for allowedPlaylists
       const payload = {
         ...form,
-        allowedPlaylists: form.allowedPlaylists.map((item: any) => ({
-          playlistID: item.playlistID._id || item.playlistID,
-          expiryDate: item.expiryDate,
-        })),
+        allowedPlaylists: form.allowedPlaylists
+          .filter((item: any) => item?.playlistID && item?.expiryDate)
+          .map((item: any) => ({
+            playlistID: item.playlistID?._id || item.playlistID,
+            expiryDate: item.expiryDate,
+          })),
       };
 
       if (modalType === "add") {
@@ -717,8 +719,9 @@ const SubscriptionsPage = () => {
       }
       closeModal();
       fetchSubscriptions();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving subscription:", error);
+      alert(error.response?.data?.error || "Failed to save subscription");
     }
   };
 
@@ -1660,7 +1663,7 @@ const SubscriptionsPage = () => {
                             >
                               <option value="">Select playlist...</option>
                               {allPlaylists
-                                .filter(p => !form.allowedPlaylists.some((ap: any) => (ap.playlistID._id || ap.playlistID) === p._id))
+                                .filter(p => !form.allowedPlaylists.some((ap: any) => (ap.playlistID?._id || ap.playlistID) === p._id))
                                 .map(p => (
                                   <option key={p._id} value={p._id}>{p.title}</option>
                                 ))
