@@ -142,7 +142,6 @@ const menuGroups = [
       },
       {
         icon: <PiBooks />,
-
         label: "Blogs",
         route: "/pages/blogs",
       },

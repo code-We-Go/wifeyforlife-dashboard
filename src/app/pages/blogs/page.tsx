@@ -1,6 +1,6 @@
 "use client";
 import { thirdFont } from "@/app/lib/fonts";
-import BlogModal from "@/components/BlogModal";
+import BlogBlocksModal from "@/components/BlogBlocksModal";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -8,18 +8,19 @@ import React, { useEffect, useState } from "react";
 interface Blog {
   _id: string;
   title: string;
+  titleAR?: string;
   slug: string;
   content: string;
+  blocks?: any[];
+  v2?: {
+    titleAR?: string;
+    excerptAR?: string;
+    blocks?: any[];
+  };
   excerpt: string;
+  excerptAR?: string;
   featuredImage?: string;
-  // author: {
-  //   _id: string;
-  //   username: string;
-  //   firstName?: string;
-  //   lastName?: string;
-  //   email: string;
-  //   imageURL?: string;
-  // };
+  tikTokVideoUrl?: string;
   status: "draft" | "published" | "archived";
   tags: string[];
   categories: string[];
@@ -59,9 +60,9 @@ const BlogsPage = () => {
       });
 
       const response = await axios.get(`/api/blogs?${params}`);
-      setBlogs(response.data.data);
-      setTotalPages(response.data.totalPages);
-      setTotalBlogs(response.data.total);
+      setBlogs(response.data.data || []);
+      setTotalPages(response.data.totalPages || 1);
+      setTotalBlogs(response.data.total || 0);
     } catch (error) {
       console.error("Error fetching blogs:", error);
     } finally {
@@ -100,11 +101,13 @@ const BlogsPage = () => {
   };
 
   const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   };
 
   const stripHtml = (html: string) => {
+    if (!html) return "";
     return html.replace(/<[^>]*>/g, "");
   };
 
@@ -122,7 +125,7 @@ const BlogsPage = () => {
             className="rounded-2xl border-[1px] bg-secondary px-4 py-2 text-sm text-creamey hover:bg-opacity-90"
             onClick={() => openModal("add")}
           >
-            ADD NEW BLOG
+            + ADD NEW BLOG
           </button>
         </div>
 
@@ -131,7 +134,7 @@ const BlogsPage = () => {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search blogs..."
+              placeholder="Search blogs (English or Arabic)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary"
@@ -190,7 +193,8 @@ const BlogsPage = () => {
                 <thead className="bg-secondary text-sm text-creamey">
                   <tr>
                     <th className="border p-3">#</th>
-                    <th className="border p-3">Title</th>
+                    <th className="border p-3">Title (EN / AR)</th>
+                    <th className="border p-3">Blocks</th>
                     <th className="border p-3">Status</th>
                     <th className="border p-3">Featured</th>
                     <th className="border p-3">Views</th>
@@ -199,90 +203,108 @@ const BlogsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {blogs.map((blog, index) => (
-                    <tr key={blog._id} className="text-sm hover:bg-gray-50">
-                      <td className="border p-3">
-                        {(page - 1) * 10 + index + 1}
-                      </td>
-                      <td className="border p-3">
-                        <div>
-                          <div className="font-semibold text-gray-900">
-                            {truncateText(blog.title, 150)}
+                  {blogs.map((blog, index) => {
+                    const blockCount = Array.isArray(blog.v2?.blocks)
+                      ? blog.v2!.blocks!.length
+                      : Array.isArray(blog.blocks)
+                        ? blog.blocks.length
+                        : 0;
+                    const displayTitleAR =
+                      blog.v2?.titleAR || blog.titleAR;
+                    return (
+                      <tr key={blog._id} className="text-sm hover:bg-gray-50">
+                        <td className="border p-3">
+                          {(page - 1) * 10 + index + 1}
+                        </td>
+                        <td className="border p-3">
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {truncateText(blog.title, 120)}
+                            </div>
+                            {displayTitleAR && (
+                              <div
+                                dir="rtl"
+                                className="mt-0.5 font-medium text-secondary"
+                              >
+                                {truncateText(displayTitleAR, 120)}
+                              </div>
+                            )}
+                            <div className="mt-1 text-xs text-gray-600">
+                              {truncateText(stripHtml(blog.excerpt), 200)}
+                            </div>
                           </div>
-                          <div className="mt-1 text-xs text-gray-600">
-                            {truncateText(stripHtml(blog.excerpt), 1000)}
-                          </div>
-                        </div>
-                      </td>
-                      {/* <td className="border p-3">
-                        <div className="flex items-center gap-2">
-                          {blog.author.imageURL && (
-                            <img
-                              src={blog.author.imageURL}
-                              alt={blog.author.username}
-                              className="w-6 h-6 rounded-full"
-                            />
+                        </td>
+                        <td className="border p-3 text-center">
+                          {blockCount > 0 ? (
+                            <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-800">
+                              {blockCount} block{blockCount > 1 ? "s" : ""}
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                              Legacy HTML
+                            </span>
                           )}
-                          <span>
-                            {blog.author.firstName && blog.author.lastName
-                              ? `${blog.author.firstName} ${blog.author.lastName}`
-                              : blog.author.username}
+                        </td>
+                        <td className="border p-3">
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadge(blog.status)}`}
+                          >
+                            {blog.status.charAt(0).toUpperCase() +
+                              blog.status.slice(1)}
                           </span>
-                        </div>
-                      </td> */}
-                      <td className="border p-3">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadge(blog.status)}`}
-                        >
-                          {blog.status.charAt(0).toUpperCase() +
-                            blog.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="border p-3 text-center">
-                        {blog.featured ? (
-                          <span className="text-yellow-500">⭐</span>
-                        ) : (
-                          <span className="text-gray-300">☆</span>
-                        )}
-                      </td>
-                      <td className="border p-3 text-center">
-                        <div className="font-semibold text-gray-800">
-                          {blog.viewCount ?? 0}
-                        </div>
-                        <div className="mt-1 flex items-center justify-center gap-1.5 text-xs text-gray-500">
-                          <span title="Web views" className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700">
-                            🌐 {blog.webViewCount ?? 0}
-                          </span>
-                          <span title="Mobile views" className="rounded bg-purple-50 px-1.5 py-0.5 text-purple-700">
-                            📱 {blog.mobileViewCount ?? 0}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="border p-3">
-                        {new Date(blog.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="space-x-2 border p-3">
-                        <button
-                          onClick={() => openModal("view", blog)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => openModal("edit", blog)}
-                          className="text-green-600 hover:underline"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => openModal("delete", blog)}
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="border p-3 text-center">
+                          {blog.featured ? (
+                            <span className="text-yellow-500">⭐</span>
+                          ) : (
+                            <span className="text-gray-300">☆</span>
+                          )}
+                        </td>
+                        <td className="border p-3 text-center">
+                          <div className="font-semibold text-gray-800">
+                            {blog.viewCount ?? 0}
+                          </div>
+                          <div className="mt-1 flex items-center justify-center gap-1.5 text-xs text-gray-500">
+                            <span
+                              title="Web views"
+                              className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700"
+                            >
+                              🌐 {blog.webViewCount ?? 0}
+                            </span>
+                            <span
+                              title="Mobile views"
+                              className="rounded bg-purple-50 px-1.5 py-0.5 text-purple-700"
+                            >
+                              📱 {blog.mobileViewCount ?? 0}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="border p-3">
+                          {new Date(blog.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="space-x-2 border p-3">
+                          <button
+                            onClick={() => openModal("view", blog)}
+                            className="text-blue-600 hover:underline"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => openModal("edit", blog)}
+                            className="text-green-600 hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => openModal("delete", blog)}
+                            className="text-red-600 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -318,7 +340,7 @@ const BlogsPage = () => {
 
         {/* Modal */}
         {modalType && (
-          <BlogModal
+          <BlogBlocksModal
             type={modalType}
             blog={selectedBlog}
             closeModal={closeModal}
