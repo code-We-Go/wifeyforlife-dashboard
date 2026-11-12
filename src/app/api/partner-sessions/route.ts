@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { ConnectDB } from "@/config/db";
 import PartnerSessionModel from "@/app/models/partnerSessionModel";
+import PartnerSessionOrderModel from "@/app/models/partnerSessionOrderModel";
 
 const loadDB = async () => {
   await ConnectDB();
@@ -31,8 +33,43 @@ export async function GET(request: Request) {
         ? { createdAt: -1 }
         : { order: 1, createdAt: -1 };
 
-    const sessions = await PartnerSessionModel.find(query).sort(sortOption);
-    return NextResponse.json({ data: sessions }, { status: 200 });
+    const sessions = await PartnerSessionModel.find(query).sort(sortOption).lean();
+
+    const orderIds = Array.from(
+      new Set(
+        sessions
+          .flatMap((s: any) => s.bookings || [])
+          .map((b: any) => b.orderId)
+          .filter((id: any) => typeof id === "string" && mongoose.Types.ObjectId.isValid(id))
+      )
+    );
+
+    const orderMap = new Map<string, { finalPrice: number; ourProfitAmount: number }>();
+    if (orderIds.length > 0) {
+      const orders = await PartnerSessionOrderModel.find({ _id: { $in: orderIds } })
+        .select("_id finalPrice ourProfitAmount")
+        .lean();
+      for (const order of orders as any[]) {
+        orderMap.set(String(order._id), {
+          finalPrice: order.finalPrice,
+          ourProfitAmount: order.ourProfitAmount,
+        });
+      }
+    }
+
+    const enrichedSessions = sessions.map((s: any) => ({
+      ...s,
+      bookings: (s.bookings || []).map((b: any) => {
+        const order = b.orderId ? orderMap.get(String(b.orderId)) : undefined;
+        return {
+          ...b,
+          paidAmount: order ? order.finalPrice : undefined,
+          profitAmount: order ? order.ourProfitAmount : undefined,
+        };
+      }),
+    }));
+
+    return NextResponse.json({ data: enrichedSessions }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Failed to fetch partner sessions" },

@@ -23,6 +23,8 @@ export interface PartnerSessionBooking {
   variantTitle?: string;
   bookedAt?: string | Date;
   status?: string;
+  paidAmount?: number;
+  profitAmount?: number;
 }
 
 export interface PartnerSession {
@@ -298,11 +300,10 @@ export default function PartnerSessionsPage() {
             </select>
             {(orderSaving || toastMessage) && (
               <span
-                className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${
-                  orderSaving
+                className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${orderSaving
                     ? "bg-yellow-100 text-yellow-800 animate-pulse"
                     : "bg-green-100 text-green-800"
-                }`}
+                  }`}
               >
                 {orderSaving ? "Saving order..." : toastMessage}
               </span>
@@ -851,22 +852,20 @@ export default function PartnerSessionsPage() {
                           type="button"
                           onClick={() => toggleFeatured(s._id, s.featured)}
                           title="Click to toggle featured"
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all ${
-                            s.featured
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all ${s.featured
                               ? "bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200"
                               : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                          }`}
+                            }`}
                         >
                           {s.featured ? "★ Featured" : "☆ Standard"}
                         </button>
                       </td>
                       <td className="px-3 py-2">
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            s.isActive
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
-                          }`}
+                            }`}
                         >
                           {s.isActive ? "Yes" : "No"}
                         </span>
@@ -897,121 +896,211 @@ export default function PartnerSessionsPage() {
       </div>
 
       {/* Bookings / Attendees Modal */}
-      {viewingBookingsSession && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setViewingBookingsSession(null)}
-        >
+      {viewingBookingsSession && (() => {
+        const bookingTotals = (viewingBookingsSession.bookings || []).reduce(
+          (acc, b) => {
+            const matchedVariant = b.variantTitle
+              ? viewingBookingsSession.variants?.find(
+                (v) => v.title === b.variantTitle
+              )
+              : undefined;
+            const fallbackPrice = matchedVariant
+              ? matchedVariant.price
+              : viewingBookingsSession.price;
+            const isFree =
+              b.paidAmount === 0 ||
+              b.status === "free" ||
+              (b.paidAmount === undefined && fallbackPrice === 0);
+
+            if (!isFree) {
+              if (typeof b.paidAmount === "number") acc.paid += b.paidAmount;
+              if (typeof b.profitAmount === "number") acc.profit += b.profitAmount;
+            }
+            return acc;
+          },
+          { paid: 0, profit: 0 }
+        );
+
+        return (
           <div
-            className="w-full max-w-3xl max-h-[85vh] overflow-hidden rounded-xl bg-white shadow-2xl flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setViewingBookingsSession(null)}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b px-6 py-4 bg-gray-50">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Bookings: {viewingBookingsSession.title}
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Partner: <span className="font-medium text-gray-700">{viewingBookingsSession.partnerName}</span> • Type:{" "}
-                  <span className="capitalize font-medium text-gray-700">{viewingBookingsSession.sessionType}</span> • Total Bookings:{" "}
-                  <span className="font-bold text-blue-600">{viewingBookingsSession.bookings?.length || 0}</span>
-                  {viewingBookingsSession.maxCapacity && viewingBookingsSession.maxCapacity > 0
-                    ? ` / ${viewingBookingsSession.maxCapacity} seats`
-                    : ""}
-                </p>
+            <div
+              className="w-full max-w-5xl max-h-[85vh] overflow-hidden rounded-xl bg-white shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b px-6 py-4 bg-gray-50">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Bookings: {viewingBookingsSession.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Partner: <span className="font-medium text-gray-700">{viewingBookingsSession.partnerName}</span> • Type:{" "}
+                    <span className="capitalize font-medium text-gray-700">{viewingBookingsSession.sessionType}</span> • Total Bookings:{" "}
+                    <span className="font-bold text-blue-600">{viewingBookingsSession.bookings?.length || 0}</span>
+                    {viewingBookingsSession.maxCapacity && viewingBookingsSession.maxCapacity > 0
+                      ? ` / ${viewingBookingsSession.maxCapacity} seats`
+                      : ""}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setViewingBookingsSession(null)}
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 font-bold"
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setViewingBookingsSession(null)}
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 font-bold"
-              >
-                ✕
-              </button>
-            </div>
 
-            {/* Modal Content / Bookings Table */}
-            <div className="overflow-y-auto p-6 flex-1">
-              {(!viewingBookingsSession.bookings || viewingBookingsSession.bookings.length === 0) ? (
-                <div className="text-center py-12 text-gray-400 text-sm">
-                  No bookings recorded yet for this session.
-                </div>
-              ) : (
-                <div className="overflow-x-auto border rounded-lg">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-gray-100 text-gray-700 font-semibold border-b">
-                      <tr>
-                        <th className="px-3 py-2.5">#</th>
-                        <th className="px-3 py-2.5">Attendee</th>
-                        <th className="px-3 py-2.5">Email</th>
-                        <th className="px-3 py-2.5">Phone</th>
-                        <th className="px-3 py-2.5">Variant</th>
-                        <th className="px-3 py-2.5">Booked At</th>
-                        <th className="px-3 py-2.5">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {viewingBookingsSession.bookings.map((b, idx) => (
-                        <tr key={b._id || idx} className="hover:bg-gray-50">
-                          <td className="px-3 py-2 font-mono text-gray-400">{idx + 1}</td>
-                          <td className="px-3 py-2 font-medium text-gray-900">
-                            {b.clientFirstName} {b.clientLastName}
-                          </td>
-                          <td className="px-3 py-2 text-gray-600 font-mono">
-                            <a href={`mailto:${b.clientEmail}`} className="hover:underline">
-                              {b.clientEmail}
-                            </a>
-                          </td>
-                          <td className="px-3 py-2 text-gray-600 font-mono">
-                            <a
-                              href={`https://wa.me/${String(b.clientPhone).replace(/[^0-9]/g, "")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-emerald-700 hover:underline"
-                            >
-                              {b.clientPhone}
-                            </a>
-                          </td>
-                          <td className="px-3 py-2 text-gray-600">
-                            {b.variantTitle || <span className="text-gray-400">-</span>}
-                          </td>
-                          <td className="px-3 py-2 text-gray-500 whitespace-nowrap">
-                            {b.bookedAt ? new Date(b.bookedAt).toLocaleString() : "-"}
-                          </td>
-                          <td className="px-3 py-2">
-                            <span
-                              className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                                b.status === "paid"
-                                  ? "bg-green-100 text-green-800"
-                                  : b.status === "instapay_review"
-                                  ? "bg-amber-100 text-amber-800"
-                                  : "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              {b.status || "confirmed"}
-                            </span>
-                          </td>
+              {/* Modal Content / Bookings Table */}
+              <div className="overflow-y-auto p-6 flex-1">
+                {(!viewingBookingsSession.bookings || viewingBookingsSession.bookings.length === 0) ? (
+                  <div className="text-center py-12 text-gray-400 text-sm">
+                    No bookings recorded yet for this session.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto border rounded-lg">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-gray-100 text-gray-700 font-semibold border-b">
+                        <tr>
+                          <th className="px-3 py-2.5">#</th>
+                          <th className="px-3 py-2.5">Attendee</th>
+                          <th className="px-3 py-2.5">Email</th>
+                          <th className="px-3 py-2.5">Phone</th>
+                          <th className="px-3 py-2.5">Variant</th>
+                          <th className="px-3 py-2.5">Paid Amount</th>
+                          <th className="px-3 py-2.5">Our Profit</th>
+                          <th className="px-3 py-2.5">Booked At</th>
+                          <th className="px-3 py-2.5">Status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {viewingBookingsSession.bookings.map((b, idx) => {
+                          const matchedVariant = b.variantTitle
+                            ? viewingBookingsSession.variants?.find(
+                              (v) => v.title === b.variantTitle
+                            )
+                            : undefined;
+                          const fallbackPrice = matchedVariant
+                            ? matchedVariant.price
+                            : viewingBookingsSession.price;
+                          const isFree =
+                            b.paidAmount === 0 ||
+                            b.status === "free" ||
+                            (b.paidAmount === undefined && fallbackPrice === 0);
 
-            {/* Modal Footer */}
-            <div className="flex justify-end border-t px-6 py-3 bg-gray-50">
-              <button
-                type="button"
-                onClick={() => setViewingBookingsSession(null)}
-                className="rounded-lg bg-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-300"
-              >
-                Close
-              </button>
+                          return (
+                            <tr key={b._id || idx} className="hover:bg-gray-50">
+                              <td className="px-3 py-2 font-mono text-gray-400">{idx + 1}</td>
+                              <td className="px-3 py-2 font-medium text-gray-900">
+                                {b.clientFirstName} {b.clientLastName}
+                              </td>
+                              <td className="px-3 py-2 text-gray-600 font-mono">
+                                <a href={`mailto:${b.clientEmail}`} className="hover:underline">
+                                  {b.clientEmail}
+                                </a>
+                              </td>
+                              <td className="px-3 py-2 text-gray-600 font-mono">
+                                <a
+                                  href={`https://wa.me/${String(b.clientPhone).replace(/[^0-9]/g, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-emerald-700 hover:underline"
+                                >
+                                  {b.clientPhone}
+                                </a>
+                              </td>
+                              <td className="px-3 py-2 text-gray-600">
+                                {b.variantTitle || <span className="text-gray-400">-</span>}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                {isFree ? (
+                                  <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                    Free
+                                  </span>
+                                ) : typeof b.paidAmount === "number" ? (
+                                  <span className="font-medium text-gray-900">
+                                    {b.paidAmount} EGP
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                {isFree ? (
+                                  <span className="text-gray-500">0 EGP</span>
+                                ) : typeof b.profitAmount === "number" ? (
+                                  <span className="font-medium text-green-700">
+                                    {b.profitAmount} EGP
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2 text-gray-500 whitespace-nowrap">
+                                {b.bookedAt ? new Date(b.bookedAt).toLocaleString() : "-"}
+                              </td>
+                              <td className="px-3 py-2">
+                                <span
+                                  className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.status === "paid"
+                                      ? "bg-green-100 text-green-800"
+                                      : b.status === "instapay_review"
+                                        ? "bg-amber-100 text-amber-800"
+                                        : "bg-gray-100 text-gray-700"
+                                    }`}
+                                >
+                                  {b.status || "confirmed"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot className="bg-gray-50 border-t font-semibold text-gray-900">
+                        <tr>
+                          <td colSpan={5} className="px-3 py-2.5 text-right text-gray-600">
+                            Total
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {bookingTotals.paid} EGP
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap text-green-700">
+                            {bookingTotals.profit} EGP
+                          </td>
+                          <td colSpan={2} />
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t px-6 py-3 bg-gray-50">
+                <div className="flex items-center gap-4 text-xs">
+                  <span className="text-gray-600">
+                    Total Paid:{" "}
+                    <span className="font-bold text-gray-900">{bookingTotals.paid} EGP</span>
+                  </span>
+                  <span className="text-gray-600">
+                    Total Our Profit:{" "}
+                    <span className="font-bold text-green-700">{bookingTotals.profit} EGP</span>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setViewingBookingsSession(null)}
+                  className="rounded-lg bg-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </DefaultLayout>
   );
 }
