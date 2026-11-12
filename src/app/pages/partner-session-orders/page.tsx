@@ -57,6 +57,8 @@ export default function PartnerSessionOrdersPage() {
   const [sessions, setSessions] = useState<PartnerSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchEmail, setSearchEmail] = useState("");
+  const [debouncedSearchEmail, setDebouncedSearchEmail] = useState("");
+  const [sessionFilter, setSessionFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const [showAdd, setShowAdd] = useState(false);
@@ -65,25 +67,38 @@ export default function PartnerSessionOrdersPage() {
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [previewReceipt, setPreviewReceipt] = useState<string | null>(null);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchEmail(searchEmail.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchEmail]);
+
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
-    if (searchEmail) params.set("clientEmail", searchEmail);
+    if (debouncedSearchEmail) params.set("clientEmail", debouncedSearchEmail);
+    if (sessionFilter !== "all") params.set("sessionId", sessionFilter);
     if (statusFilter !== "all") params.set("status", statusFilter);
     if (paymentMethodFilter !== "all") params.set("paymentMethod", paymentMethodFilter);
     return params.toString();
-  }, [searchEmail, statusFilter, paymentMethodFilter]);
+  }, [debouncedSearchEmail, sessionFilter, statusFilter, paymentMethodFilter]);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     try {
       const res = await axios.get(
         `/api/partner-session-orders${queryString ? `?${queryString}` : ""}`,
+        { signal },
       );
       setOrders(res.data.data || []);
-    } catch (e) {
-      console.error("Failed to load orders", e);
+    } catch (e: any) {
+      if (!axios.isCancel(e)) {
+        console.error("Failed to load orders", e);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [queryString]);
 
@@ -97,7 +112,9 @@ export default function PartnerSessionOrdersPage() {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
+    const controller = new AbortController();
+    fetchOrders(controller.signal);
+    return () => controller.abort();
   }, [fetchOrders]);
 
   useEffect(() => {
@@ -251,7 +268,7 @@ export default function PartnerSessionOrdersPage() {
       console.error("Error approving instapay payment:", error);
       alert(
         "An error occurred while approving the payment: " +
-          (error.response?.data?.message || error.message),
+        (error.response?.data?.message || error.message),
       );
     } finally {
       setApprovingId(null);
@@ -298,6 +315,20 @@ export default function PartnerSessionOrdersPage() {
               value={searchEmail}
               onChange={(e) => setSearchEmail(e.target.value)}
             />
+
+            <select
+              className="max-w-xs rounded border p-2 text-sm shadow-sm"
+              value={sessionFilter}
+              onChange={(e) => setSessionFilter(e.target.value)}
+            >
+              <option value="all">All Sessions</option>
+              {sessions.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.title} ({s.partnerName})
+                </option>
+              ))}
+            </select>
+
             <select
               className="rounded border p-2 text-sm shadow-sm"
               value={statusFilter}
@@ -446,8 +477,8 @@ export default function PartnerSessionOrdersPage() {
                           <div className="flex flex-col gap-1 items-start">
                             <span
                               className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${isInstapay
-                                  ? "bg-purple-100 text-purple-800"
-                                  : "bg-blue-100 text-blue-800"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-blue-100 text-blue-800"
                                 }`}
                             >
                               {isInstapay ? "Instapay" : "Card"}
@@ -543,8 +574,8 @@ export default function PartnerSessionOrdersPage() {
                                 disabled={isApproving}
                                 onClick={() => handleApproveInstapay(o)}
                                 className={`rounded px-2.5 py-1 text-xs font-semibold bg-green-700 text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 ${isApproving
-                                    ? "cursor-not-allowed bg-gray-400"
-                                    : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+                                  ? "cursor-not-allowed bg-gray-400"
+                                  : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
                                   }`}
                               >
                                 {isApproving ? "..." : "Approve"}

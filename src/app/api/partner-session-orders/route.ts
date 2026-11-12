@@ -19,7 +19,12 @@ export async function GET(request: Request) {
   const query: any = {};
   if (status) query.status = status;
   if (paymentMethod) query.paymentMethod = paymentMethod;
-  if (clientEmail) query.clientEmail = { $regex: clientEmail, $options: "i" };
+  if (clientEmail && clientEmail.trim()) {
+    const escapedEmail = clientEmail
+      .trim()
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    query.clientEmail = { $regex: escapedEmail, $options: "i" };
+  }
   if (sessionId) query.sessionId = sessionId;
 
   try {
