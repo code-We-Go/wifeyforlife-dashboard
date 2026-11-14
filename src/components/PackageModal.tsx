@@ -1,5 +1,5 @@
 "use client";
-import { ComparisonFeature, Inspo, Ipackage, PackageCard, PackageItem, Partner, Playlist, Product, SupportCard, SubSubscriptionSlot } from "@/interfaces/interfaces";
+import { ComparisonFeature, Inspo, Ipackage, PackageCard, PackageItem, PackageVariant, Partner, Playlist, Product, SupportCard, SubSubscriptionSlot } from "@/interfaces/interfaces";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -66,10 +66,22 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   const [partners, setPartners] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
-  const [newVariant, setNewVariant] = useState({
+  const [newVariant, setNewVariant] = useState<{
+    price: number;
+    discountedFrom?: number;
+    duration: number;
+    saving?: string;
+    arPrice?: number;
+    arDiscountedFrom?: number;
+    arSaving?: string;
+  }>({
     price: 0,
+    discountedFrom: undefined,
     duration: 0,
     saving: "",
+    arPrice: undefined,
+    arDiscountedFrom: undefined,
+    arSaving: "",
   });
 
   const [newRenewal, setNewRenewal] = useState({
@@ -435,11 +447,32 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   // Variant management functions
   const addVariant = () => {
     if (newVariant.price > 0 && newVariant.duration > 0) {
+      const variantToAdd: PackageVariant = {
+        price: newVariant.price,
+        discountedFrom: newVariant.discountedFrom,
+        duration: newVariant.duration,
+        saving: newVariant.saving || undefined,
+        translations: {
+          ar: {
+            price: newVariant.arPrice,
+            discountedFrom: newVariant.arDiscountedFrom,
+            saving: newVariant.arSaving || undefined,
+          },
+        },
+      };
       setFormData(prev => ({
         ...prev,
-        variants: [...(prev.variants || []), { ...newVariant }]
+        variants: [...(prev.variants || []), variantToAdd]
       }));
-      setNewVariant({ price: 0, duration: 0, saving: "" });
+      setNewVariant({
+        price: 0,
+        discountedFrom: undefined,
+        duration: 0,
+        saving: "",
+        arPrice: undefined,
+        arDiscountedFrom: undefined,
+        arSaving: "",
+      });
     }
   };
 
@@ -1136,6 +1169,51 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             </div>
           </div>
 
+          <div className="p-3 bg-amber-50/50 border border-amber-300 rounded-lg">
+            <h4 className="text-sm font-semibold text-primary mb-2 flex items-center justify-between">
+              <span>Arabic Edition Pricing (Optional)</span>
+              <span className="text-xs text-primary font-normal">تسعير النسخة العربية (اختياري - يترك فارغاً لاستخدام السعر الأصلي)</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">
+                  Arabic Price (LE) / السعر بالعربي
+                </label>
+                <input
+                  type="number"
+                  value={formData.translations?.ar?.price !== undefined && formData.translations?.ar?.price !== null ? formData.translations.ar.price : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    updateArabicPackageField("price", val === "" ? undefined : parseFloat(val) || 0);
+                  }}
+                  placeholder={formData.price ? `Default: ${formData.price} LE` : "Leave empty to use default"}
+                  className="w-full px-3 py-2 border border-amber-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                  min="0"
+                  step="0.01"
+                />
+                <span className="text-[11px] text-gray-500">Leave empty to use default ({formData.price || 0} LE)</span>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">
+                  Arabic Discounted From (LE) / السعر قبل الخصم بالعربي
+                </label>
+                <input
+                  type="number"
+                  value={formData.translations?.ar?.discountedFrom !== undefined && formData.translations?.ar?.discountedFrom !== null ? formData.translations.ar.discountedFrom : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    updateArabicPackageField("discountedFrom", val === "" ? undefined : parseFloat(val) || 0);
+                  }}
+                  placeholder={formData.discountedFrom ? `Default: ${formData.discountedFrom} LE` : "e.g., 2500"}
+                  className="w-full px-3 py-2 border border-amber-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-primaryLight text-sm"
+                  min="0"
+                  step="0.01"
+                />
+                <span className="text-[11px] text-gray-500">Leave empty to use default ({formData.discountedFrom || "None"})</span>
+              </div>
+            </div>
+          </div>
+
           <div className="border border-primary/30 rounded-lg p-4 space-y-4">
             <label className="block text-sm font-medium text-primary mb-1">
               Badge & Callout Details (English & Arabic)
@@ -1381,22 +1459,33 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
             <div className="space-y-2">
               {(formData.variants || []).map((variant, index) => (
-                <div key={index} className="flex items-center gap-4 p-2 bg-creamey border border-primary/50 rounded text-sm">
-                  <div className="flex-1">
+                <div key={index} className="flex flex-wrap items-center gap-3 p-2 bg-creamey border border-primary/50 rounded text-sm">
+                  <div>
                     <span className="font-semibold">Duration:</span> {variant.duration} Months
                   </div>
-                  <div className="flex-1">
+                  <div>
                     <span className="font-semibold">Price:</span> {variant.price} LE
                   </div>
+                  {variant.discountedFrom !== undefined && variant.discountedFrom > 0 && (
+                    <div className="line-through text-gray-500">
+                      {variant.discountedFrom} LE
+                    </div>
+                  )}
                   {variant.saving && (
-                    <div className="flex-1 text-green-600 font-medium">
+                    <div className="text-green-600 font-medium">
                       {variant.saving}
+                    </div>
+                  )}
+                  {variant.translations?.ar?.price !== undefined && variant.translations.ar.price > 0 && (
+                    <div className="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs border border-amber-300">
+                      <span className="font-semibold">AR Price:</span> {variant.translations.ar.price} LE
+                      {variant.translations.ar.discountedFrom ? ` (from ${variant.translations.ar.discountedFrom})` : ""}
                     </div>
                   )}
                   <button
                     type="button"
                     onClick={() => removeVariant(index)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 ml-auto"
                   >
                     ✕
                   </button>
@@ -1404,11 +1493,11 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               ))}
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               <div>
                 <input
                   type="number"
-                  placeholder="Months"
+                  placeholder="Months *"
                   value={newVariant.duration || ""}
                   onChange={(e) => setNewVariant(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
                   className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
@@ -1416,25 +1505,61 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               </div>
               <div>
                 <input
+                  type="number"
+                  placeholder="Price (LE) *"
+                  value={newVariant.price || ""}
+                  onChange={(e) => setNewVariant(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div>
+                <input
+                  type="number"
+                  placeholder="Disc. From (LE)"
+                  value={newVariant.discountedFrom !== undefined ? newVariant.discountedFrom : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewVariant(prev => ({ ...prev, discountedFrom: val === "" ? undefined : parseFloat(val) || 0 }));
+                  }}
+                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
+              <div>
+                <input
                   type="text"
-                  placeholder="Saving (e.g. Save 20%)"
+                  placeholder="Saving Text"
                   value={newVariant.saving}
                   onChange={(e) => setNewVariant(prev => ({ ...prev, saving: e.target.value }))}
                   className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
                 />
               </div>
+              <div>
+                <input
+                  type="number"
+                  placeholder="AR Price (LE)"
+                  value={newVariant.arPrice !== undefined ? newVariant.arPrice : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewVariant(prev => ({ ...prev, arPrice: val === "" ? undefined : parseFloat(val) || 0 }));
+                  }}
+                  className="w-full px-2 py-1 border border-amber-300 bg-amber-50/50 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                />
+              </div>
               <div className="flex gap-2">
                 <input
                   type="number"
-                  placeholder="Price"
-                  value={newVariant.price || ""}
-                  onChange={(e) => setNewVariant(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                  placeholder="AR Disc. From"
+                  value={newVariant.arDiscountedFrom !== undefined ? newVariant.arDiscountedFrom : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewVariant(prev => ({ ...prev, arDiscountedFrom: val === "" ? undefined : parseFloat(val) || 0 }));
+                  }}
+                  className="w-full px-2 py-1 border border-amber-300 bg-amber-50/50 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
                 />
                 <button
                   type="button"
                   onClick={addVariant}
-                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
+                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary flex-shrink-0"
                 >
                   Add
                 </button>

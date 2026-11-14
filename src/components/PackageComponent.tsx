@@ -164,6 +164,15 @@ const PackageComponent = ({ package: packageItem, setPackages }: PackageComponen
                   {packageItem.saving}
                 </p>
               )}
+              {packageItem.translations?.ar?.price !== undefined && packageItem.translations.ar.price > 0 && (
+                <div className="text-[11px] bg-amber-400/20 text-amber-200 px-1.5 py-0.5 rounded border border-amber-300/40 mt-1 flex items-center gap-1">
+                  <span>AR:</span>
+                  {packageItem.translations.ar.discountedFrom !== undefined && packageItem.translations.ar.discountedFrom > packageItem.translations.ar.price && (
+                    <span className="line-through opacity-70">{packageItem.translations.ar.discountedFrom}</span>
+                  )}
+                  <span className="font-bold">{packageItem.translations.ar.price} LE</span>
+                </div>
+              )}
             </div>
             <div className="relative">
               <button

@@ -46,10 +46,13 @@ const PackageSchema = new Schema(
       type: [
         {
           price: { type: Number, required: true },
+          discountedFrom: { type: Number, required: false },
           duration: { type: Number, required: true },
           saving: { type: String, required: false },
           translations: {
             ar: {
+              price: { type: Number, required: false, min: 0 },
+              discountedFrom: { type: Number, required: false, min: 0 },
               saving: { type: String, required: false },
             },
           },
@@ -140,6 +143,8 @@ const PackageSchema = new Schema(
     translations: {
       ar: {
         name: { type: String, required: false },
+        price: { type: Number, required: false, min: 0 },
+        discountedFrom: { type: Number, required: false, min: 0 },
         partOf: { type: String, required: false },
         saving: { type: String, required: false },
         notes: { type: [String], required: false },

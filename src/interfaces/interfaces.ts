@@ -11,10 +11,13 @@ export interface IAccountFeature {
 
 export interface PackageVariant {
   price: number;
+  discountedFrom?: number;
   duration: number;
   saving?: string;
   translations?: {
     ar?: {
+      price?: number;
+      discountedFrom?: number;
       saving?: string;
     };
   };
@@ -117,6 +120,8 @@ export interface Ipackage {
   translations?: {
     ar?: {
       name?: string;
+      price?: number;
+      discountedFrom?: number;
       partOf?: string;
       saving?: string;
       notes?: string[];
