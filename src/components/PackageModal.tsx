@@ -1679,7 +1679,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
 
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-primary mb-1">
               Items
             </label>
@@ -1727,7 +1727,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-primary mb-1">
@@ -1807,7 +1807,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             </div>
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-primary mb-1">
               Cards (Image & Points)
             </label>
@@ -2011,15 +2011,14 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Support Cards Section */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-primary mb-1">
               Support Cards
             </label>
 
-            {/* Existing support cards */}
             <div className="space-y-4 mb-4">
               {formData.supportCards.map((sc, index) => (
                 <div key={sc.id} className="p-3 border border-primary/50 rounded bg-creamey">
@@ -2156,7 +2155,6 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               ))}
             </div>
 
-            {/* Add new support card */}
             <div className="p-3 border border-dashed border-primary/40 rounded bg-creamey space-y-2">
               <p className="text-xs font-semibold text-primary/70">New Support Card</p>
               <div className="grid grid-cols-2 gap-2">
@@ -2255,7 +2253,7 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
                 Add Support Card
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* Playlists Selection */}
           <div className="border border-primary/30 rounded-lg p-4 space-y-4">
