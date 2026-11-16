@@ -341,7 +341,7 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
             description: formData.descriptionAr.filter(Boolean),
             category:
               formData.category === "Gehaz Bestie Experience"
-                ? "تجربة جهاز البيستي"
+                ? "تجربة جهاز بيستي"
                 : formData.category === "Wedding Planning Experience"
                   ? "تجربة تخطيط الفرح"
                   : formData.category,
@@ -726,8 +726,8 @@ const PlaylistComponent: React.FC<PlaylistComponentProps> = ({
                         <div
                           key={video._id}
                           className={`flex cursor-pointer items-center space-x-2 rounded p-2 ${isVideoSelected(video._id || "")
-                              ? "border border-primary bg-primary/10"
-                              : "bg-gray-50 hover:bg-gray-100"
+                            ? "border border-primary bg-primary/10"
+                            : "bg-gray-50 hover:bg-gray-100"
                             }`}
                           onClick={() => toggleVideo(video._id || "")}
                         >

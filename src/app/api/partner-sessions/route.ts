@@ -22,6 +22,8 @@ export async function GET(request: Request) {
     query.$or = [
       { title: { $regex: search, $options: "i" } },
       { partnerName: { $regex: search, $options: "i" } },
+      { "translations.ar.title": { $regex: search, $options: "i" } },
+      { "translations.ar.partnerName": { $regex: search, $options: "i" } },
     ];
   }
   if (isActive === "true") query.isActive = true;

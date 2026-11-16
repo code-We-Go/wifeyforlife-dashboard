@@ -5,6 +5,12 @@ export interface IPartnerSessionVariant {
   description: string;
   price: number;
   duration: number;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string;
+    };
+  };
 }
 
 export interface IPartnerSessionBooking {
@@ -38,6 +44,13 @@ export interface IPartnerSession extends Document {
   bookings?: IPartnerSessionBooking[];
   variants?: IPartnerSessionVariant[];
   meetingLink?: string;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string;
+      partnerName?: string;
+    };
+  };
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
@@ -48,6 +61,12 @@ const PartnerSessionVariantSchema = new Schema<IPartnerSessionVariant>(
     description: { type: String, required: false, default: "" },
     price: { type: Number, required: true, min: 0 },
     duration: { type: Number, required: true, min: 0 },
+    translations: {
+      ar: {
+        title: { type: String, required: false },
+        description: { type: String, required: false },
+      },
+    },
   },
   { _id: false }
 );
@@ -95,6 +114,13 @@ const PartnerSessionSchema = new Schema<IPartnerSession>(
     bookings: { type: [PartnerSessionBookingSchema], default: [] },
     variants: { type: [PartnerSessionVariantSchema], default: [] },
     meetingLink: { type: String, required: false, default: "" },
+    translations: {
+      ar: {
+        title: { type: String, required: false },
+        description: { type: String, required: false },
+        partnerName: { type: String, required: false },
+      },
+    },
   },
   { timestamps: true }
 );

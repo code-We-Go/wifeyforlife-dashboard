@@ -11,6 +11,12 @@ export interface PartnerSessionVariant {
   description: string;
   price: number;
   duration: number;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string;
+    };
+  };
 }
 
 export interface PartnerSessionBooking {
@@ -46,6 +52,13 @@ export interface PartnerSession {
   bookings?: PartnerSessionBooking[];
   variants?: PartnerSessionVariant[];
   meetingLink?: string;
+  translations?: {
+    ar?: {
+      title?: string;
+      description?: string;
+      partnerName?: string;
+    };
+  };
   createdAt?: string;
 }
 
@@ -67,6 +80,13 @@ const emptyForm: PartnerSession = {
   bookings: [],
   variants: [],
   meetingLink: "",
+  translations: {
+    ar: {
+      title: "",
+      description: "",
+      partnerName: "",
+    },
+  },
 };
 
 export default function PartnerSessionsPage() {
@@ -234,9 +254,42 @@ export default function PartnerSessionsPage() {
       ...session,
       order: session.order ?? 0,
       maxCapacity: session.maxCapacity ?? 0,
-      variants: session.variants ? [...session.variants] : [],
+      variants: session.variants
+        ? session.variants.map((v) => ({
+          ...v,
+          translations: {
+            ar: {
+              title: v.translations?.ar?.title || "",
+              description: v.translations?.ar?.description || "",
+            },
+          },
+        }))
+        : [],
+      translations: {
+        ar: {
+          title: session.translations?.ar?.title || "",
+          description: session.translations?.ar?.description || "",
+          partnerName: session.translations?.ar?.partnerName || "",
+        },
+      },
     });
     setShowAdd(true);
+  };
+
+  const updateArabicField = (
+    field: "title" | "description" | "partnerName",
+    value: string,
+  ) => {
+    setForm((f) => ({
+      ...f,
+      translations: {
+        ...f.translations,
+        ar: {
+          ...f.translations?.ar,
+          [field]: value,
+        },
+      },
+    }));
   };
 
   const addVariant = () => {
@@ -244,7 +297,13 @@ export default function PartnerSessionsPage() {
       ...f,
       variants: [
         ...(f.variants || []),
-        { title: "", description: "", price: 0, duration: 30 },
+        {
+          title: "",
+          description: "",
+          price: 0,
+          duration: 30,
+          translations: { ar: { title: "", description: "" } },
+        },
       ],
     }));
   };
@@ -257,6 +316,27 @@ export default function PartnerSessionsPage() {
     setForm((f) => {
       const updated = [...(f.variants || [])];
       updated[index] = { ...updated[index], [field]: value };
+      return { ...f, variants: updated };
+    });
+  };
+
+  const updateVariantArabic = (
+    index: number,
+    field: "title" | "description",
+    value: string,
+  ) => {
+    setForm((f) => {
+      const updated = [...(f.variants || [])];
+      updated[index] = {
+        ...updated[index],
+        translations: {
+          ...updated[index].translations,
+          ar: {
+            ...updated[index].translations?.ar,
+            [field]: value,
+          },
+        },
+      };
       return { ...f, variants: updated };
     });
   };
@@ -301,8 +381,8 @@ export default function PartnerSessionsPage() {
             {(orderSaving || toastMessage) && (
               <span
                 className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all ${orderSaving
-                    ? "bg-yellow-100 text-yellow-800 animate-pulse"
-                    : "bg-green-100 text-green-800"
+                  ? "bg-yellow-100 text-yellow-800 animate-pulse"
+                  : "bg-green-100 text-green-800"
                   }`}
               >
                 {orderSaving ? "Saving order..." : toastMessage}
@@ -331,7 +411,9 @@ export default function PartnerSessionsPage() {
             </h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium">Title</label>
+                <label className="mb-1 block text-sm font-medium">
+                  Title (English)
+                </label>
                 <input
                   className="w-full rounded border p-2"
                   value={form.title}
@@ -341,8 +423,21 @@ export default function PartnerSessionsPage() {
                 />
               </div>
               <div>
+                <label className="mb-1 flex items-center justify-between text-sm font-medium">
+                  <span>Title (Arabic)</span>
+                  <span className="text-xs text-amber-700">عنوان الجلسة بالعربية</span>
+                </label>
+                <input
+                  dir="rtl"
+                  placeholder="عنوان الجلسة بالعربية..."
+                  className="w-full rounded border border-amber-300 bg-amber-50/40 p-2 text-right"
+                  value={form.translations?.ar?.title || ""}
+                  onChange={(e) => updateArabicField("title", e.target.value)}
+                />
+              </div>
+              <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Partner Name
+                  Partner Name (English)
                 </label>
                 <input
                   className="w-full rounded border p-2"
@@ -352,17 +447,44 @@ export default function PartnerSessionsPage() {
                   }
                 />
               </div>
-              <div className="md:col-span-2">
+              <div>
+                <label className="mb-1 flex items-center justify-between text-sm font-medium">
+                  <span>Partner Name (Arabic)</span>
+                  <span className="text-xs text-amber-700">اسم الخبير بالعربية</span>
+                </label>
+                <input
+                  dir="rtl"
+                  placeholder="اسم الخبير بالعربية..."
+                  className="w-full rounded border border-amber-300 bg-amber-50/40 p-2 text-right"
+                  value={form.translations?.ar?.partnerName || ""}
+                  onChange={(e) => updateArabicField("partnerName", e.target.value)}
+                />
+              </div>
+              <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Description
+                  Description (English)
                 </label>
                 <textarea
                   className="w-full rounded border p-2"
-                  rows={3}
+                  rows={4}
                   value={form.description}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, description: e.target.value }))
                   }
+                />
+              </div>
+              <div>
+                <label className="mb-1 flex items-center justify-between text-sm font-medium">
+                  <span>Description (Arabic)</span>
+                  <span className="text-xs text-amber-700">وصف الجلسة بالعربية</span>
+                </label>
+                <textarea
+                  dir="rtl"
+                  placeholder="وصف الجلسة بالتفصيل بالعربية..."
+                  className="w-full rounded border border-amber-300 bg-amber-50/40 p-2 text-right"
+                  rows={4}
+                  value={form.translations?.ar?.description || ""}
+                  onChange={(e) => updateArabicField("description", e.target.value)}
                 />
               </div>
               <div>
@@ -601,10 +723,10 @@ export default function PartnerSessionsPage() {
                             Remove
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                              Variant Title
+                              Variant Title (English)
                             </label>
                             <input
                               type="text"
@@ -613,6 +735,22 @@ export default function PartnerSessionsPage() {
                               value={v.title}
                               onChange={(e) =>
                                 updateVariant(idx, "title", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 flex items-center justify-between text-xs font-medium text-gray-600">
+                              <span>Variant Title (Arabic)</span>
+                              <span className="text-[11px] text-amber-700">عنوان الباقة الفرعية بالعربية</span>
+                            </label>
+                            <input
+                              type="text"
+                              dir="rtl"
+                              placeholder="مثال: جلسة ٣٠ دقيقة"
+                              className="w-full rounded border border-amber-300 bg-amber-50/40 p-2 text-right text-sm"
+                              value={v.translations?.ar?.title || ""}
+                              onChange={(e) =>
+                                updateVariantArabic(idx, "title", e.target.value)
                               }
                             />
                           </div>
@@ -654,17 +792,33 @@ export default function PartnerSessionsPage() {
                               }
                             />
                           </div>
-                          <div className="sm:col-span-3">
+                          <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                              Description
+                              Description (English)
                             </label>
                             <textarea
                               placeholder="Details about what is covered in this variant..."
-                              rows={2}
+                              rows={3}
                               className="w-full rounded border bg-white p-2 text-sm"
                               value={v.description}
                               onChange={(e) =>
                                 updateVariant(idx, "description", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 flex items-center justify-between text-xs font-medium text-gray-600">
+                              <span>Description (Arabic)</span>
+                              <span className="text-[11px] text-amber-700">الوصف بالعربية</span>
+                            </label>
+                            <textarea
+                              dir="rtl"
+                              placeholder="تفاصيل هذه الباقة بالعربية..."
+                              rows={3}
+                              className="w-full rounded border border-amber-300 bg-amber-50/40 p-2 text-right text-sm"
+                              value={v.translations?.ar?.description || ""}
+                              onChange={(e) =>
+                                updateVariantArabic(idx, "description", e.target.value)
                               }
                             />
                           </div>
@@ -782,18 +936,32 @@ export default function PartnerSessionsPage() {
                       </td>
                       <td className="px-3 py-2 font-medium">
                         <div>{s.title}</div>
+                        {s.translations?.ar?.title && (
+                          <div dir="rtl" className="text-xs text-amber-800 bg-amber-50/80 border border-amber-200 px-1.5 py-0.5 rounded mt-1 inline-block">
+                            {s.translations.ar.title}
+                          </div>
+                        )}
                         {s.meetingLink && (
-                          <a
-                            href={s.meetingLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block text-xs font-normal text-primary underline"
-                          >
-                            Meeting Link ↗
-                          </a>
+                          <div className="mt-0.5">
+                            <a
+                              href={s.meetingLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block text-xs font-normal text-primary underline"
+                            >
+                              Meeting Link ↗
+                            </a>
+                          </div>
                         )}
                       </td>
-                      <td className="px-3 py-2">{s.partnerName}</td>
+                      <td className="px-3 py-2">
+                        <div>{s.partnerName}</div>
+                        {s.translations?.ar?.partnerName && (
+                          <div dir="rtl" className="text-xs text-amber-800 mt-0.5">
+                            {s.translations.ar.partnerName}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-3 py-2">{s.sessionType || "-"}</td>
                       <td className="px-3 py-2">
                         {s.variants && s.variants.length > 0 ? (
@@ -853,8 +1021,8 @@ export default function PartnerSessionsPage() {
                           onClick={() => toggleFeatured(s._id, s.featured)}
                           title="Click to toggle featured"
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all ${s.featured
-                              ? "bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200"
-                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            ? "bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200"
+                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                             }`}
                         >
                           {s.featured ? "★ Featured" : "☆ Standard"}
@@ -863,8 +1031,8 @@ export default function PartnerSessionsPage() {
                       <td className="px-3 py-2">
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
                             }`}
                         >
                           {s.isActive ? "Yes" : "No"}
@@ -1045,10 +1213,10 @@ export default function PartnerSessionsPage() {
                               <td className="px-3 py-2">
                                 <span
                                   className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.status === "paid"
-                                      ? "bg-green-100 text-green-800"
-                                      : b.status === "instapay_review"
-                                        ? "bg-amber-100 text-amber-800"
-                                        : "bg-gray-100 text-gray-700"
+                                    ? "bg-green-100 text-green-800"
+                                    : b.status === "instapay_review"
+                                      ? "bg-amber-100 text-amber-800"
+                                      : "bg-gray-100 text-gray-700"
                                     }`}
                                 >
                                   {b.status || "confirmed"}

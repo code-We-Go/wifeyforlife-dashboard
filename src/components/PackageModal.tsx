@@ -98,6 +98,13 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
     feature: "",
     fullValue: "",
     miniValue: "",
+    translations: {
+      ar: {
+        feature: "",
+        fullValue: "",
+        miniValue: "",
+      },
+    },
   });
   const [editingComparisonIndex, setEditingComparisonIndex] = useState<number | null>(null);
   const [editingComparisonFeature, setEditingComparisonFeature] = useState<ComparisonFeature | null>(null);
@@ -522,11 +529,43 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
   // Comparison Feature management functions
   const addComparisonFeature = () => {
     if (newComparisonFeature.feature.trim() && newComparisonFeature.fullValue.trim() && newComparisonFeature.miniValue.trim()) {
+      const arFeature = newComparisonFeature.translations?.ar?.feature?.trim() || "";
+      const arFullValue = newComparisonFeature.translations?.ar?.fullValue?.trim() || "";
+      const arMiniValue = newComparisonFeature.translations?.ar?.miniValue?.trim() || "";
+
+      const featureToAdd: ComparisonFeature = {
+        feature: newComparisonFeature.feature.trim(),
+        fullValue: newComparisonFeature.fullValue.trim(),
+        miniValue: newComparisonFeature.miniValue.trim(),
+        ...(arFeature || arFullValue || arMiniValue
+          ? {
+              translations: {
+                ar: {
+                  feature: arFeature || undefined,
+                  fullValue: arFullValue || undefined,
+                  miniValue: arMiniValue || undefined,
+                },
+              },
+            }
+          : {}),
+      };
+
       setFormData(prev => ({
         ...prev,
-        comparisonFeatures: [...(prev.comparisonFeatures || []), { ...newComparisonFeature }]
+        comparisonFeatures: [...(prev.comparisonFeatures || []), featureToAdd]
       }));
-      setNewComparisonFeature({ feature: "", fullValue: "", miniValue: "" });
+      setNewComparisonFeature({
+        feature: "",
+        fullValue: "",
+        miniValue: "",
+        translations: {
+          ar: {
+            feature: "",
+            fullValue: "",
+            miniValue: "",
+          },
+        },
+      });
     }
   };
 
@@ -539,14 +578,45 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
 
   const startEditComparisonFeature = (index: number, feature: ComparisonFeature) => {
     setEditingComparisonIndex(index);
-    setEditingComparisonFeature({ ...feature });
+    setEditingComparisonFeature({
+      ...feature,
+      translations: {
+        ar: {
+          feature: feature.translations?.ar?.feature || "",
+          fullValue: feature.translations?.ar?.fullValue || "",
+          miniValue: feature.translations?.ar?.miniValue || "",
+        },
+      },
+    });
   };
 
   const saveEditComparisonFeature = (index: number) => {
     if (editingComparisonFeature && editingComparisonFeature.feature.trim() && editingComparisonFeature.fullValue.trim() && editingComparisonFeature.miniValue.trim()) {
+      const arFeature = editingComparisonFeature.translations?.ar?.feature?.trim() || "";
+      const arFullValue = editingComparisonFeature.translations?.ar?.fullValue?.trim() || "";
+      const arMiniValue = editingComparisonFeature.translations?.ar?.miniValue?.trim() || "";
+
+      const updatedFeature: ComparisonFeature = {
+        ...editingComparisonFeature,
+        feature: editingComparisonFeature.feature.trim(),
+        fullValue: editingComparisonFeature.fullValue.trim(),
+        miniValue: editingComparisonFeature.miniValue.trim(),
+        ...(arFeature || arFullValue || arMiniValue
+          ? {
+              translations: {
+                ar: {
+                  feature: arFeature || undefined,
+                  fullValue: arFullValue || undefined,
+                  miniValue: arMiniValue || undefined,
+                },
+              },
+            }
+          : {}),
+      };
+
       setFormData(prev => ({
         ...prev,
-        comparisonFeatures: (prev.comparisonFeatures || []).map((cf, i) => i === index ? editingComparisonFeature : cf)
+        comparisonFeatures: (prev.comparisonFeatures || []).map((cf, i) => i === index ? updatedFeature : cf)
       }));
       setEditingComparisonIndex(null);
       setEditingComparisonFeature(null);
@@ -1326,84 +1396,176 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
             </div>
           </div>
           <div className="border border-primary/30 rounded-lg p-4 space-y-4">
-            <label className="block text-sm font-medium text-primary mb-1">
-              Comparison Features
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-primary">
+                Comparison Features
+              </label>
+              <span className="text-xs text-primary/70">
+                مقارنة باقة Full مقابل Mini
+              </span>
+            </div>
 
             <div className="space-y-2">
               {(formData.comparisonFeatures || []).map((cf, index) => (
-                <div key={index} className="p-2 bg-creamey border border-primary/50 rounded text-sm space-y-2">
+                <div key={index} className="p-3 bg-creamey border border-primary/50 rounded text-sm space-y-3">
                   {editingComparisonIndex === index && editingComparisonFeature ? (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div>
-                          <label className="block text-xs font-medium text-primary mb-1">Feature *</label>
-                          <input
-                            type="text"
-                            value={editingComparisonFeature.feature}
-                            onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, feature: e.target.value } : prev)}
-                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-primary mb-1">Full Value *</label>
-                          <input
-                            type="text"
-                            value={editingComparisonFeature.fullValue}
-                            onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, fullValue: e.target.value } : prev)}
-                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-primary mb-1">Mini Value *</label>
-                          <input
-                            type="text"
-                            value={editingComparisonFeature.miniValue}
-                            onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, miniValue: e.target.value } : prev)}
-                            className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                          />
+                    <div className="space-y-3 bg-white/70 p-3 rounded border border-primary/30">
+                      {/* English Fields */}
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-semibold text-primary uppercase tracking-wide">English</span>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-xs font-medium text-primary mb-1">Feature (EN) *</label>
+                            <input
+                              type="text"
+                              value={editingComparisonFeature.feature}
+                              onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, feature: e.target.value } : prev)}
+                              className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-primary mb-1">Full Value (EN) *</label>
+                            <input
+                              type="text"
+                              value={editingComparisonFeature.fullValue}
+                              onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, fullValue: e.target.value } : prev)}
+                              className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-primary mb-1">Mini Value (EN) *</label>
+                            <input
+                              type="text"
+                              value={editingComparisonFeature.miniValue}
+                              onChange={(e) => setEditingComparisonFeature(prev => prev ? { ...prev, miniValue: e.target.value } : prev)}
+                              className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+
+                      {/* Arabic Fields */}
+                      <div className="space-y-1 pt-1 border-t border-amber-200">
+                        <span className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">العربية (Arabic)</span>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-xs font-medium text-primary mb-1 text-right">الميزة بالعربية</label>
+                            <input
+                              type="text"
+                              dir="rtl"
+                              value={editingComparisonFeature.translations?.ar?.feature || ""}
+                              onChange={(e) => setEditingComparisonFeature(prev => prev ? {
+                                ...prev,
+                                translations: {
+                                  ...prev.translations,
+                                  ar: {
+                                    ...prev.translations?.ar,
+                                    feature: e.target.value,
+                                  },
+                                },
+                              } : prev)}
+                              placeholder="اسم الميزة بالعربية"
+                              className="w-full px-2 py-1 border border-amber-300 bg-amber-50/40 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-primary mb-1 text-right">القيمة للكاملة (عربي)</label>
+                            <input
+                              type="text"
+                              dir="rtl"
+                              value={editingComparisonFeature.translations?.ar?.fullValue || ""}
+                              onChange={(e) => setEditingComparisonFeature(prev => prev ? {
+                                ...prev,
+                                translations: {
+                                  ...prev.translations,
+                                  ar: {
+                                    ...prev.translations?.ar,
+                                    fullValue: e.target.value,
+                                  },
+                                },
+                              } : prev)}
+                              placeholder="✓ أو 12 قائمة تشغيل"
+                              className="w-full px-2 py-1 border border-amber-300 bg-amber-50/40 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-primary mb-1 text-right">القيمة للمصغرة (عربي)</label>
+                            <input
+                              type="text"
+                              dir="rtl"
+                              value={editingComparisonFeature.translations?.ar?.miniValue || ""}
+                              onChange={(e) => setEditingComparisonFeature(prev => prev ? {
+                                ...prev,
+                                translations: {
+                                  ...prev.translations,
+                                  ar: {
+                                    ...prev.translations?.ar,
+                                    miniValue: e.target.value,
+                                  },
+                                },
+                              } : prev)}
+                              placeholder="— أو قائمة واحدة"
+                              className="w-full px-2 py-1 border border-amber-300 bg-amber-50/40 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
                         <button
                           type="button"
                           onClick={() => saveEditComparisonFeature(index)}
-                          className="px-3 py-1 bg-green-600 text-white rounded text-xs"
+                          className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
                         >
                           Save
                         </button>
                         <button
                           type="button"
                           onClick={cancelEditComparisonFeature}
-                          className="px-3 py-1 bg-gray-500 text-white rounded text-xs"
+                          className="px-3 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
                         >
                           Cancel
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <span className="font-semibold">Feature:</span> {cf.feature}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-1.5">
+                        <div className="flex items-baseline flex-wrap gap-2">
+                          <span className="font-semibold text-primary">EN:</span>
+                          <span className="text-gray-800 font-medium">{cf.feature}</span>
+                          <span className="text-xs text-gray-500">
+                            (Full: <span className="font-semibold text-primary">{cf.fullValue}</span> | Mini: <span className="font-semibold text-primary">{cf.miniValue}</span>)
+                          </span>
+                        </div>
+                        {cf.translations?.ar?.feature ? (
+                          <div dir="rtl" className="text-right text-amber-900 bg-amber-50/70 px-2.5 py-1 rounded border border-amber-200 text-xs flex items-baseline flex-wrap gap-2 justify-start">
+                            <span className="font-bold text-amber-800">عربي:</span>
+                            <span className="font-medium">{cf.translations.ar.feature}</span>
+                            <span className="text-gray-500 text-[11px]">
+                              (الكاملة: <span className="font-semibold">{cf.translations.ar.fullValue || cf.fullValue}</span> | المصغرة: <span className="font-semibold">{cf.translations.ar.miniValue || cf.miniValue}</span>)
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-amber-700 italic">
+                            ⚠️ لا يوجد ترجمة عربية لهذه الميزة
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1">
-                        <span className="font-semibold">Full:</span> {cf.fullValue}
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-semibold">Mini:</span> {cf.miniValue}
-                      </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0 pt-0.5">
                         <button
                           type="button"
                           onClick={() => startEditComparisonFeature(index, cf)}
-                          className="text-blue-500 hover:text-blue-700 text-xs"
+                          className="p-1 text-blue-500 hover:text-blue-700 text-xs"
+                          title="Edit"
                         >
                           ✎
                         </button>
                         <button
                           type="button"
                           onClick={() => removeComparisonFeature(index)}
-                          className="text-red-500 hover:text-red-700 text-xs"
+                          className="p-1 text-red-500 hover:text-red-700 text-xs"
+                          title="Remove"
                         >
                           ✕
                         </button>
@@ -1414,40 +1576,119 @@ const PackageModal = ({ isOpen, onClose, package: packageItem, setPackages }: Pa
               ))}
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <input
-                  type="text"
-                  placeholder="Feature (e.g. Guest Slots)"
-                  value={newComparisonFeature.feature}
-                  onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, feature: e.target.value }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
+            {/* Add New Comparison Feature Box */}
+            <div className="p-3 bg-white/60 border border-primary/30 rounded-lg space-y-3">
+              <span className="block text-xs font-bold text-primary uppercase tracking-wide">
+                Add Comparison Feature / إضافة ميزة مقارنة
+              </span>
+
+              {/* English Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[11px] font-medium text-primary mb-0.5">Feature (EN) *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Video Guides"
+                    value={newComparisonFeature.feature}
+                    onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, feature: e.target.value }))}
+                    className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-primary mb-0.5">Full Value (EN) *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 12 playlists or ✓"
+                    value={newComparisonFeature.fullValue}
+                    onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, fullValue: e.target.value }))}
+                    className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-primary mb-0.5">Mini Value (EN) *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 1 playlist or —"
+                    value={newComparisonFeature.miniValue}
+                    onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, miniValue: e.target.value }))}
+                    className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight"
+                  />
+                </div>
               </div>
-              <div>
-                <input
-                  type="text"
-                  placeholder="Full Value (e.g. Unlimited)"
-                  value={newComparisonFeature.fullValue}
-                  onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, fullValue: e.target.value }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Mini Value (e.g. 5 Max)"
-                  value={newComparisonFeature.miniValue}
-                  onChange={(e) => setNewComparisonFeature(prev => ({ ...prev, miniValue: e.target.value }))}
-                  className="w-full px-2 py-1 border border-primary/50 bg-creamey rounded text-sm focus:outline-none focus:ring-2 focus:ring-primaryLight"
-                />
-                <button
-                  type="button"
-                  onClick={addComparisonFeature}
-                  className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-secondary flex-shrink-0"
-                >
-                  Add
-                </button>
+
+              {/* Arabic Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1 border-t border-amber-200">
+                <div>
+                  <label className="block text-[11px] font-medium text-primary mb-0.5 text-right">الميزة (عربي)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    placeholder="مثال: فيديوهات إرشادية"
+                    value={newComparisonFeature.translations?.ar?.feature || ""}
+                    onChange={(e) => setNewComparisonFeature(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        ar: {
+                          ...prev.translations?.ar,
+                          feature: e.target.value,
+                        },
+                      },
+                    }))}
+                    className="w-full px-2 py-1 border border-amber-300 bg-amber-50/40 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-primary mb-0.5 text-right">قيمة الكاملة (عربي)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    placeholder="مثال: 12 قائمة تشغيل أو ✓"
+                    value={newComparisonFeature.translations?.ar?.fullValue || ""}
+                    onChange={(e) => setNewComparisonFeature(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        ar: {
+                          ...prev.translations?.ar,
+                          fullValue: e.target.value,
+                        },
+                      },
+                    }))}
+                    className="w-full px-2 py-1 border border-amber-300 bg-amber-50/40 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-medium text-primary mb-0.5 text-right">قيمة المصغرة (عربي)</label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      placeholder="مثال: قائمة واحدة أو —"
+                      value={newComparisonFeature.translations?.ar?.miniValue || ""}
+                      onChange={(e) => setNewComparisonFeature(prev => ({
+                        ...prev,
+                        translations: {
+                          ...prev.translations,
+                          ar: {
+                            ...prev.translations?.ar,
+                            miniValue: e.target.value,
+                          },
+                        },
+                      }))}
+                      className="w-full px-2 py-1 border border-amber-300 bg-amber-50/40 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primaryLight text-right"
+                    />
+                  </div>
+                  <div className="self-end pb-0.5">
+                    <button
+                      type="button"
+                      onClick={addComparisonFeature}
+                      className="px-4 py-1.5 bg-primary text-white rounded text-xs hover:bg-secondary font-medium transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
